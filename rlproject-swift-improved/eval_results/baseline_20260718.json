@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-07-18 13:17:13",
+  "model_path": "D:\\task\\xchallenge\\rlproject\\rlproject-\u57fa\u672c\u6846\u67b6\\rlproject-swift-improved\\saved_models\\ppo_swift_3000ep_20260712_115059",
+  "num_episodes": 50,
+  "seed": 42,
+  "success_rate": 0.96,
+  "collision_rate": 0.04,
+  "timeout_rate": 0.0,
+  "avg_reward": 451.6420720668996,
+  "reward_std": 134.18996592647997,
+  "avg_path_length": 14.752429008483887,
+  "avg_min_obs_dist": 1.3539985948695594,
+  "reward_components": {
+    "r_dist": -3.9954179633127516,
+    "r_heading": 11.208525894155105,
+    "r_obs": -0.6263075463251853,
+    "r_smooth": -0.1053891712669728,
+    "r_goal": 2.8681780708985984,
+    "r_collision": -0.041220115416323165,
+    "r_timeout": 0.0
+  }
+}

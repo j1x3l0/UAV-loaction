@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swift论文与项目实现对照分析报告</title>
+<style>
+  @font-face { font-family: 'NotoSansSC'; src: url('./_shared/fonts/NotoSansSC-Regular.ttf') format('truetype'); font-weight: 400; }
+  :root { --bg: #ffffff; --ink: #1a1a2e; --muted: #6b7280; --accent: #2563eb; --accent2: #0891b2; --light: #f1f5f9; --border: #d1d5db; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'NotoSansSC','PingFang SC','Microsoft YaHei',sans-serif; font-size: 15px; line-height: 1.8; color: var(--ink); background: var(--bg); }
+  .container { max-width: 840px; margin: 0 auto; padding: 0 2rem; }
+
+  /* Cover */
+  .cover { text-align: center; padding: 4rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+  .cover h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .cover .sub { font-size: 1rem; color: var(--muted); margin-bottom: 1rem; }
+  .cover .meta { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+  /* Headings */
+  h2 { font-size: 1.35rem; font-weight: 700; color: var(--accent); margin: 2.5rem 0 1rem; padding-bottom: 0.3rem; border-bottom: 2px solid var(--accent); }
+  h3 { font-size: 1.1rem; font-weight: 700; color: var(--accent2); margin: 1.8rem 0 0.8rem; }
+
+  /* Bilingual */
+  .bilingual { margin: 0.6rem 0; }
+  .bilingual .en { background: var(--light); border-left: 3px solid var(--accent); padding: 0.4rem 0.8rem; font-size: 0.88rem; color: #475569; }
+  .bilingual .zh { padding: 0.2rem 0.8rem; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; margin: 1rem 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  thead th { background: var(--accent); color: #fff; padding: 0.5rem 0.6rem; text-align: center; font-weight: 600; }
+  tbody td { padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+  tbody tr:nth-child(even) { background: #f8fafc; }
+
+  p { margin-bottom: 0.7rem; text-align: justify; }
+  strong { font-weight: 700; }
+
+  footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--muted); text-align: center; }
+
+  /* Highlight row */
+  .hl td { background: #eef1f6 !important; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="cover">
+  <h1>Swift 论文与项目实现对照分析报告</h1>
+  <div class="sub">控制策略 (Control Policy) 与 奖励函数 (Reward Function) 实现差异分析</div>
+  <div class="meta">
+    参照论文: Swift, Champion-level Drone Racing using Deep Reinforcement Learning, Nature 2023<br>
+    项目: 基于深度强化学习的四旋翼无人机复杂环境三维路径规划<br>
+    2026年7月
+  </div>
+</div>
+
+<!-- ===================== 一、控制策略 ===================== -->
+<h2>一、控制策略 (Control Policy) 实现差异分析</h2>
+
+<h3>1.1 论文原文描述</h3>
+
+<div class="bilingual">
+  <div class="en">The control policy, represented by a two-layer perceptron, maps the output of the Kalman filter to control commands for the aircraft.</div>
+  <div class="zh">控制策略是一个两层感知器（MLP），将卡尔曼滤波器的输出映射为飞行器的控制指令。</div>
+</div>
+<div class="bilingual">
+  <div class="en">The policy is trained using on-policy model-free deep RL with Proximal Policy Optimization (PPO).</div>
+  <div class="zh">策略使用基于在策略的无模型深度强化学习和近端策略优化（PPO）进行训练。</div>
+</div>
+<div class="bilingual">
+  <div class="en">The control commands consist of a collective thrust and three body angular rates (roll, pitch, yaw), which is the same control interface used by human pilots.</div>
+  <div class="zh">控制指令包括总推力和三个机体角速度（横滚、俯仰、偏航），与人类飞手使用的控制接口相同。</div>
+</div>
+
+<h3>1.2 网络架构对比</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>对比维度</th><th>Swift 论文原文</th><th>项目实现</th></tr></thead>
+  <tbody>
+    <tr><td>网络类型</td><td>两层前馈 MLP，每层 128 神经元</td><td>两层 MLP(128x128)，Actor/Critic 共享第一层</td></tr>
+    <tr><td>激活函数</td><td>tanh</td><td>第一层 ReLU，后续层 tanh</td></tr>
+    <tr><td>Actor/Critic</td><td>共享同一网络体，共享所有层</td><td>共享第一层，第二层各自独立</td></tr>
+    <tr><td>动作空间</td><td>总推力 + 3个角速度（共 4 维）</td><td>3 维连续向量（推力 x/y/z）</td></tr>
+    <tr><td>状态输入</td><td>卡尔曼滤波器融合后的低维状态表征</td><td>14 维紧凑向量（位置+速度+目标+障碍物）</td></tr>
+    <tr><td>策略输出</td><td>动作均值 + 标准差（高斯分布）</td><td>动作均值 + 可学习的 log_std（高斯分布）</td></tr>
+    <tr><td>参数量</td><td>约 35,000（估算）</td><td>约 35,000（14x128+128x128+128x3+128x1）</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>1.3 关键差异解读</h3>
+
+<p><strong>差异一：动作空间与控制接口。</strong>Swift 论文的控制指令是总推力 + 三个机体角速度，与真实 FPV 飞手的遥控器接口一致。项目实现使用 3 维连续向量作为推力 x/y/z，这是一个简化模型——真实四旋翼的控制是通过调节四个电机转速来改变推力方向和大小的，而不是直接控制 x/y/z 推力。</p>
+
+<p><strong>差异二：策略输入的来源。</strong>Swift 论文的控制策略输入来自感知系统（VIO + 门框检测 + 卡尔曼滤波）融合后的低维状态表征。项目实现使用 14 维向量，包含位置、速度、目标相对位置和障碍物信息。这是因为项目是一个纯仿真环境，不涉及传感器和感知系统。</p>
+
+<p><strong>差异三：激活函数。</strong>Swift 论文明确使用 tanh 激活函数。项目实现在第一层使用 ReLU，后续层使用 tanh。这种混合使用在 RL 实践中并不罕见，第一层的 ReLU 有助于特征提取，而 tanh 约束输出范围。</p>
+
+<p><strong>差异四：环境并行度。</strong>Swift 论文使用 100 个并行环境在仿真中训练。项目实现使用 8 个并行环境（SyncVectorEnv），数量较少但足以提供稳定的梯度估计。论文总训练交互量为 1x10^8，项目训练 200 轮即达 98% 成功率。</p>
+
+<h3>1.4 项目创新点（论文未涉及）</h3>
+
+<p><strong>1. 自适应熵系数。</strong>项目实现了 AdaptiveEntropyCoeff 类，根据当前策略熵动态调整探索强度。Swift 论文未提及该方法，这是项目的创新改进。</p>
+
+<p><strong>2. 梯度裁剪。</strong>项目在训练中使用了 max_grad_norm=0.5 的梯度裁剪，防止梯度爆炸。论文未明确说明是否使用梯度裁剪。</p>
+
+<p><strong>3. GAE per-environment 修复。</strong>项目发现并修复了并行环境下 GAE 跨环境边界计算错误的关键 bug，这是论文未讨论的工程实践问题。</p>
+
+<!-- ===================== 二、奖励函数 ===================== -->
+<h2>二、奖励函数 (Reward Function) 实现差异分析</h2>
+
+<h3>2.1 论文原文描述</h3>
+
+<div class="bilingual">
+  <div class="en">During training, the policy maximizes a reward that combines progress towards the next racing gate with a perception objective that rewards keeping the next gate in the field of view of the camera.</div>
+  <div class="zh">训练中，策略最大化一个奖励，该奖励结合了朝向下一个门框的进度和一个感知目标，该目标奖励保持下一个门框在摄像头视野内。</div>
+</div>
+<div class="bilingual">
+  <div class="en">Seeing the next gate is rewarded because it increases the accuracy of pose estimation.</div>
+  <div class="zh">奖励看到下一个门框是因为这会提高位姿估计的精度。</div>
+</div>
+
+<p>论文奖励函数的数学表达式：</p>
+<p style="text-align:center;font-weight:700;color:var(--accent);font-size:1.05rem;">r(t) = r_prog(t) + r_perc(t) + r_cmd(t) - r_crash(t)</p>
+
+<h3>2.2 奖励函数组件全面对比</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>组件</th><th>Swift 论文</th><th>项目实现</th><th>差异说明</th><th>对应关系</th></tr></thead>
+  <tbody>
+    <tr class="hl">
+      <td>进度奖励 r_prog</td>
+      <td>朝向下个门框的进度。距离缩短则奖励</td>
+      <td>指数衰减距离引导：-5.0*(1-exp(-0.3*d)) + 速度方向奖励：speed*cos(theta)*2.0</td>
+      <td>相同思想：奖励朝目标移动。但项目拆为两个子组件，额外加入了速度方向引导</td>
+      <td>直接对应</td>
+    </tr>
+    <tr>
+      <td>感知奖励 r_perc</td>
+      <td>奖励保持下个门框在摄像头视野内，提升位姿估计精度</td>
+      <td>无对应组件</td>
+      <td>项目是纯仿真环境，无摄像头和感知系统，不需要感知奖励</td>
+      <td style="color:#999">不适用</td>
+    </tr>
+    <tr class="hl">
+      <td>控制平滑奖励 r_cmd</td>
+      <td>惩罚过大的控制指令变化</td>
+      <td>r_smooth = -0.5 * ||a(t) - a(t-1)||</td>
+      <td>思想一致：惩罚剧烈操作。但具体实现形式可能略有不同</td>
+      <td>直接对应</td>
+    </tr>
+    <tr>
+      <td>碰撞惩罚 r_crash</td>
+      <td>碰撞时触发，终止训练回合</td>
+      <td>r_collision = -50.0，触发 terminated</td>
+      <td>思想一致。论文未明确具体数值，项目设为 -50</td>
+      <td>直接对应</td>
+    </tr>
+    <tr class="hl">
+      <td>障碍物惩罚 r_obs</td>
+      <td>无（论文赛道无障碍物，只有门框）</td>
+      <td>r_obs = -2.0 / (min_dist + 0.5)，势场式渐进惩罚</td>
+      <td>项目独有，论文无此组件。用于三维路径规划的避障场景</td>
+      <td style="color:var(--accent2)">项目新增</td>
+    </tr>
+    <tr>
+      <td>到达奖励 r_goal</td>
+      <td>通过所有门框完成赛事（隐式在进度奖励中）</td>
+      <td>r_goal = 100 + 50 * remaining_ratio，明确到达奖励 + 时间效率奖励</td>
+      <td>项目是点到点导航，论文是多门框竞速，任务目标不同</td>
+      <td style="color:var(--accent2)">任务适配</td>
+    </tr>
+    <tr class="hl">
+      <td>超时惩罚 r_timeout</td>
+      <td>无明确提及</td>
+      <td>r_timeout = -10.0，达到最大步数时触发</td>
+      <td>项目新增，防止智能体得到无尽循环</td>
+      <td style="color:var(--accent2)">项目新增</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3>2.3 关键差异解读</h3>
+
+<p><strong>差异一：任务差异导致奖励结构不同。</strong>Swift 论文的任务是竞速（尽快穿越多个门框），奖励围绕"门框进度"设计。项目的任务是点到点导航（避开障碍物到达目标），奖励围绕"目标距离"设计。这是两个完全不同的任务场景，导致奖励函数结构存在必然差异。</p>
+
+<p><strong>差异二：感知奖励不适用。</strong>Swift 论文的 r_perc 组件是专门为机载感知系统设计的——奖励智能体保持下一个门框在摄像头视野内，从而提高位姿估计精度。项目是纯仿真环境，无摄像头和感知系统，因此该组件不适用。</p>
+
+<p><strong>差异三：项目新增了三个奖励组件。</strong>项目新增了障碍物势场惩罚（r_obs）、到达奖励（r_goal）和超时惩罚（r_timeout）。这三个组件是根据项目的导航任务特点设计的，Swift 论文的竞速场景不需要它们。</p>
+
+<p><strong>差异四：从稀疏到密集的奖励信号。</strong>项目原始版本的奖励函数只有 3 个组件（距离改善量x10、碰撞-20、到达+100），大部分时间步的奖励为 0，信号极度稀疏。改进版本参照 Swift 的密集奖励思想，扩展为 7 个组件，每个时间步都有非零奖励信号。这是成功率从 0% 提升到 98% 的核心原因之一。</p>
+
+<!-- ===================== 三、总结 ===================== -->
+<h2>三、总结与对课题的启示</h2>
+
+<h3>3.1 核心差异总结</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>维度</th><th>Swift 论文</th><th>项目实现</th></tr></thead>
+  <tbody>
+    <tr><td>任务场景</td><td>竞速：穿越多个门框，追求速度</td><td>导航：避障碍物到达目标，追求安全到达</td></tr>
+    <tr><td>控制接口</td><td>总推力 + 3角速度（真实无人机接口）</td><td>3维连续向量（简化模型）</td></tr>
+    <tr><td>感知系统</td><td>VIO + U-Net门框检测 + 卡尔曼滤波</td><td>无（完美传感器）</td></tr>
+    <tr><td>Sim-to-Real</td><td>高斯过程残差观测 + k-NN残差动力学</td><td>无（纯仿真）</td></tr>
+    <tr><td>奖励组件数</td><td>4 个（进度+感知+平滑+碰撞）</td><td>7 个（距离+速度+障碍物+平滑+到达+碰撞+超时）</td></tr>
+    <tr><td>训练规模</td><td>100环境并行，1x10^8 次交互</td><td>8环境并行，200轮即达98%成功率</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>3.2 对课题的启示</h3>
+
+<p><strong>1. Swift 的密集奖励设计思想是核心参考。</strong>从稀疏奖励转向密集奖励是项目成功的关键。Swift 论文中每个时间步都有进度奖励和控制平滑奖励，这个思想应该在课题中继续延伸。</p>
+
+<p><strong>2. 任务差异决定了奖励函数差异。</strong>竞速与导航是不同的任务，奖励函数必须围绕任务目标设计。课题中的"复杂环境"意味着需要更多的奖励组件来处理动态障碍物、多目标等场景。</p>
+
+<p><strong>3. PPO + 简洁 MLP 架构已验证可行。</strong>项目实现证明，Swift 风格的两层 MLP(128x128) + PPO 架构在三维路径规划中是可行且高效的。无需复杂的 CNN 或 Transformer 架构。</p>
+
+<p><strong>4. Sim-to-Real 是课题下一步的关键方向。</strong>当前项目是纯仿真，无感知噪声和动力学偏差。Swift 论文的残差建模方法（高斯过程 + k-NN）是将课题从仿真迁移到现实的重要技术路线。</p>
+
+<p><strong>5. 并行环境下的 GAE 实现需要警惕。</strong>项目发现的 GAE 跨环境边界计算错误是一个重要的工程教训，在课题的后续研究中应当避免这类错误。</p>
+
+</div>
+
+<footer>
+  <p>本报告参照 Swift (Nature 2023) 论文与项目源码进行对照分析，仅供学习交流用途。</p>
+</footer>
+
+</body>
+</html>

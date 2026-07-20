@@ -1,0 +1,445 @@
+{
+  "timestamp": "2026-07-20 11:27:16",
+  "device": "cpu",
+  "fast_mode": false,
+  "results": {
+    "baseline": {
+      "name": "baseline_reproduction",
+      "model_path": "D:\\task\\xchallenge\\rlproject\\rlproject-基本框架\\rlproject-swift-improved\\saved_models\\ppo_swift_3000ep_20260712_115059",
+      "num_episodes": 50,
+      "seed": 42,
+      "success_rate": 98.0,
+      "collision_rate": 2.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 474.26140660323944,
+      "reward_std": 86.80808975297973,
+      "avg_success_steps": 50.36734693877551,
+      "avg_path_length": 15.464511947631836,
+      "avg_min_obs_dist": 1.2275063327705622,
+      "pass_success": true,
+      "pass_collision": true,
+      "overall_pass": true
+    },
+    "noisy_training": {
+      "name": "noisy_training_integrity",
+      "noise_pattern": "pos",
+      "sigma": 0.5,
+      "num_episodes": 100,
+      "completed_episodes": 100,
+      "crashes": 0,
+      "pipeline_intact": true,
+      "avg_reward": -1370.909856550167,
+      "avg_length": 256.0,
+      "total_time_seconds": 29.748838663101196
+    },
+    "noisy_obs": {
+      "name": "noisy_obs_comparison",
+      "noise_pattern": "pos",
+      "sigma": 0.5,
+      "num_timesteps": 3,
+      "comparisons": [
+        {
+          "timestep": 1,
+          "dims": {
+            "0": {
+              "name": "pos_x",
+              "clean": -0.48648345470428467,
+              "noisy": -0.9960921406745911,
+              "noise": -0.5096086859703064,
+              "abs_diff": 0.5096086859703064,
+              "is_active": true
+            },
+            "1": {
+              "name": "pos_y",
+              "clean": -4.172337055206299,
+              "noisy": -2.972029209136963,
+              "noise": 1.200307846069336,
+              "abs_diff": 1.200307846069336,
+              "is_active": true
+            },
+            "2": {
+              "name": "pos_z",
+              "clean": 1.8585978746414185,
+              "noisy": 2.259943962097168,
+              "noise": 0.4013460874557495,
+              "abs_diff": 0.4013460874557495,
+              "is_active": true
+            },
+            "3": {
+              "name": "vel_x",
+              "clean": 0.0,
+              "noisy": 0.0,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "4": {
+              "name": "vel_y",
+              "clean": 0.0,
+              "noisy": 0.0,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "5": {
+              "name": "vel_z",
+              "clean": 0.0,
+              "noisy": 0.0,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "6": {
+              "name": "tgt_dx",
+              "clean": 7.578587532043457,
+              "noisy": 7.578587532043457,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "7": {
+              "name": "tgt_dy",
+              "clean": 9.454869270324707,
+              "noisy": 9.454869270324707,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "8": {
+              "name": "tgt_dz",
+              "clean": 5.995136260986328,
+              "noisy": 5.995136260986328,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "9": {
+              "name": "tgt_dist",
+              "clean": 13.51928997039795,
+              "noisy": 13.51928997039795,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "10": {
+              "name": "obs_dx",
+              "clean": 0.3682844936847687,
+              "noisy": 0.3682844936847687,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "11": {
+              "name": "obs_dy",
+              "clean": 0.914213240146637,
+              "noisy": 0.914213240146637,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "12": {
+              "name": "obs_dz",
+              "clean": 0.16905832290649414,
+              "noisy": 0.16905832290649414,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "13": {
+              "name": "obs_dist",
+              "clean": 5.751528739929199,
+              "noisy": 5.751528739929199,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            }
+          },
+          "active_mean_diff": 0.7037542462348938,
+          "inactive_mean_diff": 0.0
+        },
+        {
+          "timestep": 2,
+          "dims": {
+            "0": {
+              "name": "pos_x",
+              "clean": -0.49262475967407227,
+              "noisy": -0.5440694093704224,
+              "noise": -0.0514446496963501,
+              "abs_diff": 0.0514446496963501,
+              "is_active": true
+            },
+            "1": {
+              "name": "pos_y",
+              "clean": -4.176640510559082,
+              "noisy": -4.297738552093506,
+              "noise": -0.12109804153442383,
+              "abs_diff": 0.12109804153442383,
+              "is_active": true
+            },
+            "2": {
+              "name": "pos_z",
+              "clean": 1.863728404045105,
+              "noisy": 2.3143928050994873,
+              "noise": 0.4506644010543823,
+              "abs_diff": 0.4506644010543823,
+              "is_active": true
+            },
+            "3": {
+              "name": "vel_x",
+              "clean": -0.2456519603729248,
+              "noisy": -0.2456519603729248,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "4": {
+              "name": "vel_y",
+              "clean": -0.17214041948318481,
+              "noisy": -0.17214041948318481,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "5": {
+              "name": "vel_z",
+              "clean": 0.2052208036184311,
+              "noisy": 0.2052208036184311,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "6": {
+              "name": "tgt_dx",
+              "clean": 7.584728717803955,
+              "noisy": 7.584728717803955,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "7": {
+              "name": "tgt_dy",
+              "clean": 9.459172248840332,
+              "noisy": 9.459172248840332,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "8": {
+              "name": "tgt_dz",
+              "clean": 5.9900054931640625,
+              "noisy": 5.9900054931640625,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "9": {
+              "name": "tgt_dist",
+              "clean": 13.523468971252441,
+              "noisy": 13.523468971252441,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "10": {
+              "name": "obs_dx",
+              "clean": 0.3689027428627014,
+              "noisy": 0.3689027428627014,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "11": {
+              "name": "obs_dy",
+              "clean": 0.9141286015510559,
+              "noisy": 0.9141286015510559,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "12": {
+              "name": "obs_dz",
+              "clean": 0.16816557943820953,
+              "noisy": 0.16816557943820953,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "13": {
+              "name": "obs_dist",
+              "clean": 5.756861686706543,
+              "noisy": 5.756861686706543,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            }
+          },
+          "active_mean_diff": 0.20773570239543915,
+          "inactive_mean_diff": 0.0
+        },
+        {
+          "timestep": 3,
+          "dims": {
+            "0": {
+              "name": "pos_x",
+              "clean": -0.5121062397956848,
+              "noisy": -0.7842316627502441,
+              "noise": -0.2721254229545593,
+              "abs_diff": 0.2721254229545593,
+              "is_active": true
+            },
+            "1": {
+              "name": "pos_y",
+              "clean": -4.181895732879639,
+              "noisy": -4.66131067276001,
+              "noise": -0.4794149398803711,
+              "abs_diff": 0.4794149398803711,
+              "is_active": true
+            },
+            "2": {
+              "name": "pos_z",
+              "clean": 1.8820769786834717,
+              "noisy": 1.5615246295928955,
+              "noise": -0.32055234909057617,
+              "abs_diff": 0.32055234909057617,
+              "is_active": true
+            },
+            "3": {
+              "name": "vel_x",
+              "clean": -0.5336076021194458,
+              "noisy": -0.5336076021194458,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "4": {
+              "name": "vel_y",
+              "clean": -0.038067445158958435,
+              "noisy": -0.038067445158958435,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "5": {
+              "name": "vel_z",
+              "clean": 0.5287193655967712,
+              "noisy": 0.5287193655967712,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "6": {
+              "name": "tgt_dx",
+              "clean": 7.604210376739502,
+              "noisy": 7.604210376739502,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "7": {
+              "name": "tgt_dy",
+              "clean": 9.464427947998047,
+              "noisy": 9.464427947998047,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "8": {
+              "name": "tgt_dz",
+              "clean": 5.9716572761535645,
+              "noisy": 5.9716572761535645,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "9": {
+              "name": "tgt_dist",
+              "clean": 13.529970169067383,
+              "noisy": 13.529970169067383,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "10": {
+              "name": "obs_dx",
+              "clean": 0.37129390239715576,
+              "noisy": 0.37129390239715576,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "11": {
+              "name": "obs_dy",
+              "clean": 0.9136955142021179,
+              "noisy": 0.9136955142021179,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "12": {
+              "name": "obs_dz",
+              "clean": 0.16523107886314392,
+              "noisy": 0.16523107886314392,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            },
+            "13": {
+              "name": "obs_dist",
+              "clean": 5.765815734863281,
+              "noisy": 5.765815734863281,
+              "noise": 0.0,
+              "abs_diff": 0.0,
+              "is_active": false
+            }
+          },
+          "active_mean_diff": 0.3573642671108246,
+          "inactive_mean_diff": 0.0
+        }
+      ],
+      "active_dims_have_noise": true,
+      "inactive_dims_clean": true,
+      "overall_pass": true
+    },
+    "oracle_perfect": {
+      "name": "oracle_perfect_info",
+      "model_path": "D:\\task\\xchallenge\\rlproject\\rlproject-基本框架\\rlproject-swift-improved\\saved_models\\ppo_swift_3000ep_20260712_115059",
+      "num_episodes": 50,
+      "seed": 42,
+      "success_rate": 98.0,
+      "collision_rate": 2.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 474.26140660323944,
+      "reward_std": 86.80808975297973,
+      "avg_success_steps": 50.36734693877551,
+      "avg_path_length": 15.464511947631836,
+      "avg_min_obs_dist": 1.2275063327705622,
+      "pass_success": true,
+      "pass_collision": true,
+      "overall_pass": true
+    },
+    "oracle_random": {
+      "name": "oracle_random_policy",
+      "num_episodes": 50,
+      "success_rate": 2.0,
+      "collision_rate": 28.000000000000004,
+      "timeout_rate": 70.0,
+      "avg_reward": -2206.531288824724,
+      "avg_steps": 423.38
+    },
+    "oracle_astar": {
+      "name": "oracle_astar",
+      "num_samples": 50,
+      "grid_resolution": 0.5,
+      "success_count": 50,
+      "success_rate": 100.0,
+      "avg_astar_path": 15.1007237760472,
+      "min_astar_path": 8.773273924736957,
+      "max_astar_path": 20.694584903597324,
+      "avg_straight_line": 14.7654712462117,
+      "min_straight_line": 0.0,
+      "straight_line_ratio": 0.44,
+      "avg_expansions": 1047.56,
+      "path_efficiency": 102.27051696654459
+    }
+  }
+}
