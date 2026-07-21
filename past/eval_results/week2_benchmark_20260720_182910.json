@@ -1,0 +1,131 @@
+{
+  "timestamp": "20260720_182910",
+  "results": {
+    "B1": {
+      "name": "B1_reproducibility",
+      "overall_pass": false,
+      "success_rate": 94.0,
+      "collision_rate": 6.0,
+      "avg_path": 14.504128874577582
+    },
+    "B2": {
+      "name": "B2_coverage",
+      "overall_pass": true,
+      "total_rows": 25,
+      "patterns": {
+        "pos": 5,
+        "vel": 5,
+        "target": 5,
+        "obs": 5,
+        "full": 5
+      }
+    },
+    "B3": {
+      "name": "B3_noise_correctness",
+      "overall_pass": true,
+      "active_std_ok": true,
+      "inactive_clean": true,
+      "n_steps": 1000,
+      "sigma_test": 0.5,
+      "dims": {
+        "0": {
+          "name": "pos_x",
+          "std": 0.5044664740562439,
+          "mean": -0.048468027263879776
+        },
+        "1": {
+          "name": "pos_y",
+          "std": 0.48252153396606445,
+          "mean": -0.026935655623674393
+        },
+        "2": {
+          "name": "pos_z",
+          "std": 0.505966305732727,
+          "mean": -0.015603031031787395
+        },
+        "3": {
+          "name": "vel_x",
+          "std": 0.0,
+          "mean": 0.0
+        },
+        "4": {
+          "name": "vel_y",
+          "std": 0.0,
+          "mean": 0.0
+        },
+        "5": {
+          "name": "vel_z",
+          "std": 0.0,
+          "mean": 0.0
+        },
+        "6": {
+          "name": "tgt_dx",
+          "std": 0.0,
+          "mean": 0.0
+        },
+        "7": {
+          "name": "tgt_dy",
+          "std": 0.0,
+          "mean": 0.0
+        },
+        "8": {
+          "name": "tgt_dz",
+          "std": 0.0,
+          "mean": 0.0
+        },
+        "9": {
+          "name": "tgt_dist",
+          "std": 0.0,
+          "mean": 0.0
+        },
+        "10": {
+          "name": "obs_dx",
+          "std": 0.0,
+          "mean": 0.0
+        },
+        "11": {
+          "name": "obs_dy",
+          "std": 0.0,
+          "mean": 0.0
+        },
+        "12": {
+          "name": "obs_dz",
+          "std": 0.0,
+          "mean": 0.0
+        },
+        "13": {
+          "name": "obs_dist",
+          "std": 0.0,
+          "mean": 0.0
+        }
+      }
+    },
+    "B4": {
+      "name": "B4_decay_shape",
+      "overall_pass": true,
+      "below_50_patterns": [
+        "target",
+        "full"
+      ],
+      "monotonic": {
+        "pos": true,
+        "vel": true,
+        "target": true,
+        "obs": true,
+        "full": true
+      }
+    },
+    "O1": {
+      "name": "O1_upper_bound",
+      "status": "PASS (from Week 1)"
+    },
+    "O2": {
+      "name": "O2_ferede_shape",
+      "status": "PASS (qualitative match)"
+    },
+    "O3": {
+      "name": "O3_noise_oracle",
+      "overall_pass": true
+    }
+  }
+}

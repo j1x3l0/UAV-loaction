@@ -30,3 +30,8 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+
+# Excluded directories
+jxl_better_vibe_coding/
+.uploads/
+.trae-html-share-packages/

@@ -1,0 +1,967 @@
+{
+  "timestamp": "2026-07-20 11:47:26",
+  "model_path": "D:\\task\\xchallenge\\rlproject\\rlproject-基本框架\\rlproject-swift-improved\\saved_models\\ppo_swift_3000ep_20260712_115059",
+  "fast_mode": true,
+  "episodes": {
+    "A1-Pos_s=0.1": [
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 471.26692830365914,
+        "steps": 40,
+        "path_length": 16.03869654238224,
+        "min_obs_dist": 1.0521078002671231,
+        "reward_components": {
+          "r_dist": -3.8499428572108605,
+          "r_heading": 12.831000193488435,
+          "r_obs": -0.714933012108258,
+          "r_smooth": -0.13445111657783854,
+          "r_goal": 3.65,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 11.781673207591478
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 710.6292362509527,
+        "steps": 68,
+        "path_length": 28.232061132788658,
+        "min_obs_dist": 2.5235017455497144,
+        "reward_components": {
+          "r_dist": -4.2619911111714135,
+          "r_heading": 13.064145008193416,
+          "r_obs": -0.3749409338230433,
+          "r_smooth": -0.08266537127317974,
+          "r_goal": 2.105882352941176,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.45042994486695
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 450.99456903345265,
+        "steps": 56,
+        "path_length": 20.19421499222517,
+        "min_obs_dist": 0.6472804027982266,
+        "reward_components": {
+          "r_dist": -4.047711925164206,
+          "r_heading": 10.281969654900832,
+          "r_obs": -0.6311965973795457,
+          "r_smooth": -0.12815811390256776,
+          "r_goal": 2.5785714285714287,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 8.053474447025941
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 477.95548754084723,
+        "steps": 43,
+        "path_length": 17.174199648201466,
+        "min_obs_dist": 1.16715646784455,
+        "reward_components": {
+          "r_dist": -3.857078611545052,
+          "r_heading": 12.458385758060762,
+          "r_obs": -0.746508472585557,
+          "r_smooth": -0.12792687065463493,
+          "r_goal": 3.3883720930232557,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 11.115243896298773
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 431.2843998917806,
+        "steps": 43,
+        "path_length": 16.10297755151987,
+        "min_obs_dist": 0.7708077336138581,
+        "reward_components": {
+          "r_dist": -3.900062875485278,
+          "r_heading": 11.476639775880686,
+          "r_obs": -0.7920233159098156,
+          "r_smooth": -0.14305591258371986,
+          "r_goal": 3.3883720930232557,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.029869764925131
+        }
+      },
+      {
+        "success": false,
+        "collision": true,
+        "timeout": false,
+        "reward": -67.3609343742517,
+        "steps": 10,
+        "path_length": 3.6953142136335373,
+        "min_obs_dist": 0.4566144577223188,
+        "reward_components": {
+          "r_dist": -4.524703834671785,
+          "r_heading": 4.418116836072156,
+          "r_obs": -1.5277924055762404,
+          "r_smooth": -0.10171403324929998,
+          "r_goal": 0.0,
+          "r_collision": -5.0,
+          "r_timeout": 0.0,
+          "total": -6.736093437425168
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 484.6906360710043,
+        "steps": 38,
+        "path_length": 15.922450095415115,
+        "min_obs_dist": 1.3056331779543529,
+        "reward_components": {
+          "r_dist": -3.889034020464085,
+          "r_heading": 13.654933644886809,
+          "r_obs": -0.710155437631579,
+          "r_smooth": -0.14809586913313405,
+          "r_goal": 3.8473684210526313,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 12.755016738710639
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 373.3972723090021,
+        "steps": 32,
+        "path_length": 12.180643320083618,
+        "min_obs_dist": 1.300468781000668,
+        "reward_components": {
+          "r_dist": -3.6266795913578465,
+          "r_heading": 11.78777129104248,
+          "r_obs": -0.9070391480324254,
+          "r_smooth": -0.17288779199589044,
+          "r_goal": 4.5875,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 11.66866475965632
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 380.12003436897953,
+        "steps": 37,
+        "path_length": 13.43570090085268,
+        "min_obs_dist": 1.7883963149969548,
+        "reward_components": {
+          "r_dist": -3.66248115511525,
+          "r_heading": 10.882663209339757,
+          "r_obs": -0.7073455642699297,
+          "r_smooth": -0.19337610160378185,
+          "r_goal": 3.9540540540540543,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.273514442404851
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 541.5930338373694,
+        "steps": 45,
+        "path_length": 18.440700739622116,
+        "min_obs_dist": 2.12807814086987,
+        "reward_components": {
+          "r_dist": -4.013092437817775,
+          "r_heading": 13.43870478723607,
+          "r_obs": -0.5270157041401533,
+          "r_smooth": -0.09652922666993315,
+          "r_goal": 3.2333333333333334,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 12.035400751941541
+        }
+      }
+    ],
+    "A1-Pos_s=0.5": [
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 464.34234936531465,
+        "steps": 40,
+        "path_length": 49.215251833200455,
+        "min_obs_dist": 1.1148675905997272,
+        "reward_components": {
+          "r_dist": -3.8543859783826213,
+          "r_heading": 12.833540724890828,
+          "r_obs": -0.7025461074325928,
+          "r_smooth": -0.3180499049427453,
+          "r_goal": 3.65,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 11.608558734132865
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 702.5145094980487,
+        "steps": 68,
+        "path_length": 81.42138624191284,
+        "min_obs_dist": 2.5530813421154277,
+        "reward_components": {
+          "r_dist": -4.261181124630128,
+          "r_heading": 13.056429363022616,
+          "r_obs": -0.3726024419417345,
+          "r_smooth": -0.19743242147945117,
+          "r_goal": 2.105882352941176,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.331095727912482
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 435.3975864142492,
+        "steps": 56,
+        "path_length": 67.35743057727814,
+        "min_obs_dist": 0.7029795191472397,
+        "reward_components": {
+          "r_dist": -4.053119101598361,
+          "r_heading": 10.23246068231334,
+          "r_obs": -0.6281796763607754,
+          "r_smooth": -0.354776432671185,
+          "r_goal": 2.5785714285714287,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 7.774956900254447
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 472.73626585009424,
+        "steps": 43,
+        "path_length": 51.62552788853645,
+        "min_obs_dist": 1.0719851797728883,
+        "reward_components": {
+          "r_dist": -3.8579250631782567,
+          "r_heading": 12.4618436548869,
+          "r_obs": -0.7526398045811648,
+          "r_smooth": -0.24578423247412715,
+          "r_goal": 3.3883720930232557,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.993866647676608
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 423.85999938250546,
+        "steps": 43,
+        "path_length": 53.997993141412735,
+        "min_obs_dist": 0.7930016755043434,
+        "reward_components": {
+          "r_dist": -3.9050669191552543,
+          "r_heading": 11.469572775936648,
+          "r_obs": -0.7900151150108897,
+          "r_smooth": -0.3056535468285167,
+          "r_goal": 3.3883720930232557,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 9.857209287965242
+        }
+      },
+      {
+        "success": false,
+        "collision": true,
+        "timeout": false,
+        "reward": -69.31773387842294,
+        "steps": 9,
+        "path_length": 13.576440513134003,
+        "min_obs_dist": 0.4514525118358239,
+        "reward_components": {
+          "r_dist": -4.533772272653699,
+          "r_heading": 4.130401281876413,
+          "r_obs": -1.484722770873813,
+          "r_smooth": -0.25832111372922856,
+          "r_goal": 0.0,
+          "r_collision": -5.555555555555555,
+          "r_timeout": 0.0,
+          "total": -7.701970430935884
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 482.4327969844294,
+        "steps": 38,
+        "path_length": 47.78478306531906,
+        "min_obs_dist": 1.3110217580659316,
+        "reward_components": {
+          "r_dist": -3.8864727680618567,
+          "r_heading": 13.64828375247794,
+          "r_obs": -0.707322429568223,
+          "r_smooth": -0.20625705525760982,
+          "r_goal": 3.8473684210526313,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 12.69559992064288
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 370.14815967705334,
+        "steps": 32,
+        "path_length": 35.871142506599426,
+        "min_obs_dist": 1.3316667773311166,
+        "reward_components": {
+          "r_dist": -3.663458348250364,
+          "r_heading": 11.77303370950396,
+          "r_obs": -0.8961446059695373,
+          "r_smooth": -0.23380076537614514,
+          "r_goal": 4.5875,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 11.567129989907915
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 376.4129106928044,
+        "steps": 37,
+        "path_length": 43.35984706878662,
+        "min_obs_dist": 1.7673274614795402,
+        "reward_components": {
+          "r_dist": -3.664198965630116,
+          "r_heading": 10.898493504135448,
+          "r_obs": -0.7092786113780211,
+          "r_smooth": -0.3057480705650272,
+          "r_goal": 3.9540540540540543,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.173321910616336
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 540.5363306896193,
+        "steps": 45,
+        "path_length": 51.20120468735695,
+        "min_obs_dist": 2.168198045866301,
+        "reward_components": {
+          "r_dist": -4.00911687664427,
+          "r_heading": 13.468874704902866,
+          "r_obs": -0.5197784540828679,
+          "r_smooth": -0.16139424773974345,
+          "r_goal": 3.2333333333333334,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 12.01191845976932
+        }
+      }
+    ],
+    "A1-Pos_s=1.0": [
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 459.97082926586245,
+        "steps": 40,
+        "path_length": 96.22355556488037,
+        "min_obs_dist": 1.2563998686868798,
+        "reward_components": {
+          "r_dist": -3.882481180263953,
+          "r_heading": 12.842161943020216,
+          "r_obs": -0.6701819880787522,
+          "r_smooth": -0.4402280430309474,
+          "r_goal": 3.65,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 11.499270731646565
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 694.7454750112295,
+        "steps": 68,
+        "path_length": 157.87098395824432,
+        "min_obs_dist": 2.6219592892162615,
+        "reward_components": {
+          "r_dist": -4.258449547880296,
+          "r_heading": 13.06314281806558,
+          "r_obs": -0.36754603176507333,
+          "r_smooth": -0.3261843706080093,
+          "r_goal": 2.105882352941176,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.216845220753378
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 426.64268803600646,
+        "steps": 57,
+        "path_length": 133.7598301768303,
+        "min_obs_dist": 0.8109150804245278,
+        "reward_components": {
+          "r_dist": -4.0014310702692315,
+          "r_heading": 10.093893123920788,
+          "r_obs": -0.6251928765956805,
+          "r_smooth": -0.5138886851961153,
+          "r_goal": 2.531578947368421,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 7.484959439228182
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 467.77921909558154,
+        "steps": 43,
+        "path_length": 100.39661419391632,
+        "min_obs_dist": 1.308728278292568,
+        "reward_components": {
+          "r_dist": -3.883433433201089,
+          "r_heading": 12.475252053783585,
+          "r_obs": -0.7164737204294521,
+          "r_smooth": -0.38513050258137976,
+          "r_goal": 3.3883720930232557,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.87858649059492
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 413.09050099573,
+        "steps": 43,
+        "path_length": 106.50732088088989,
+        "min_obs_dist": 0.7492423008144649,
+        "reward_components": {
+          "r_dist": -3.8960908016902773,
+          "r_heading": 11.412853354063019,
+          "r_obs": -0.8154904737036336,
+          "r_smooth": -0.48288833458236485,
+          "r_goal": 3.3883720930232557,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 9.60675583711
+        }
+      },
+      {
+        "success": false,
+        "collision": true,
+        "timeout": false,
+        "reward": -69.3730652554843,
+        "steps": 9,
+        "path_length": 26.919821619987488,
+        "min_obs_dist": 0.4505906019519055,
+        "reward_components": {
+          "r_dist": -4.5335615916031475,
+          "r_heading": 4.134778049466086,
+          "r_obs": -1.4859265463536278,
+          "r_smooth": -0.26785271767423385,
+          "r_goal": 0.0,
+          "r_collision": -5.555555555555555,
+          "r_timeout": 0.0,
+          "total": -7.708118361720478
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 478.0085830573614,
+        "steps": 38,
+        "path_length": 93.06364637613297,
+        "min_obs_dist": 1.4160963845764072,
+        "reward_components": {
+          "r_dist": -3.904638703551251,
+          "r_heading": 13.645180722450394,
+          "r_obs": -0.6874150804311737,
+          "r_smooth": -0.3213221211689846,
+          "r_goal": 3.8473684210526313,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 12.579173238351617
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 354.9781189050815,
+        "steps": 32,
+        "path_length": 69.19974571466446,
+        "min_obs_dist": 1.1668982277261981,
+        "reward_components": {
+          "r_dist": -3.7344112441438764,
+          "r_heading": 11.577151209421682,
+          "r_obs": -0.9178228855212148,
+          "r_smooth": -0.4193508639727952,
+          "r_goal": 4.5875,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 11.093066215783796
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 372.7537050100028,
+        "steps": 37,
+        "path_length": 84.65868455171585,
+        "min_obs_dist": 1.7712730880045382,
+        "reward_components": {
+          "r_dist": -3.6650683519938103,
+          "r_heading": 10.888565320046558,
+          "r_obs": -0.7078272060469094,
+          "r_smooth": -0.39529935633008545,
+          "r_goal": 3.9540540540540543,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.074424459729807
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 537.1186294964475,
+        "steps": 45,
+        "path_length": 98.42504751682281,
+        "min_obs_dist": 2.2069222898943277,
+        "reward_components": {
+          "r_dist": -4.008786892644253,
+          "r_heading": 13.462739328511718,
+          "r_obs": -0.5137359682714476,
+          "r_smooth": -0.2375802565638474,
+          "r_goal": 3.2333333333333334,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 11.9359695443655
+        }
+      }
+    ],
+    "A1-Pos_s=2.0": [
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 448.20825270381033,
+        "steps": 41,
+        "path_length": 194.42349338531494,
+        "min_obs_dist": 1.3295815509518523,
+        "reward_components": {
+          "r_dist": -3.9529345792221724,
+          "r_heading": 12.54258544428532,
+          "r_obs": -0.6389805346086139,
+          "r_smooth": -0.577298313288427,
+          "r_goal": 3.5585365853658537,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.931908602531962
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 689.244451913341,
+        "steps": 68,
+        "path_length": 313.00893354415894,
+        "min_obs_dist": 2.787983634689896,
+        "reward_components": {
+          "r_dist": -4.252116038733369,
+          "r_heading": 13.081981902653771,
+          "r_obs": -0.3578565676386269,
+          "r_smooth": -0.441943826967934,
+          "r_goal": 2.105882352941176,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.135947822255018
+        }
+      },
+      {
+        "success": false,
+        "collision": true,
+        "timeout": false,
+        "reward": 155.57417509161135,
+        "steps": 45,
+        "path_length": 212.3595893383026,
+        "min_obs_dist": 0.48479694436363174,
+        "reward_components": {
+          "r_dist": -4.472990581051814,
+          "r_heading": 10.249158811225564,
+          "r_obs": -0.5283835917733107,
+          "r_smooth": -0.679469636364633,
+          "r_goal": 0.0,
+          "r_collision": -1.1111111111111112,
+          "r_timeout": 0.0,
+          "total": 3.457203890924698
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 452.4303668996366,
+        "steps": 44,
+        "path_length": 202.58147501945496,
+        "min_obs_dist": 1.4606369634991285,
+        "reward_components": {
+          "r_dist": -3.861485771215196,
+          "r_heading": 12.130360794037,
+          "r_obs": -0.6729885558943782,
+          "r_smooth": -0.6224690373902294,
+          "r_goal": 3.309090909090909,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.282508338628105
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 405.18713102433287,
+        "steps": 44,
+        "path_length": 216.01355385780334,
+        "min_obs_dist": 0.6296979489521055,
+        "reward_components": {
+          "r_dist": -3.809249540593652,
+          "r_heading": 11.186850351180603,
+          "r_obs": -0.8636685672800389,
+          "r_smooth": -0.6142247200266204,
+          "r_goal": 3.309090909090909,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 9.2087984323712
+        }
+      },
+      {
+        "success": false,
+        "collision": true,
+        "timeout": false,
+        "reward": -69.05423032852491,
+        "steps": 8,
+        "path_length": 51.08212757110596,
+        "min_obs_dist": 0.49913530222665936,
+        "reward_components": {
+          "r_dist": -4.5402876505887635,
+          "r_heading": 4.003983802665543,
+          "r_obs": -1.427743547569038,
+          "r_smooth": -0.41773139557335526,
+          "r_goal": 0.0,
+          "r_collision": -6.25,
+          "r_timeout": 0.0,
+          "total": -8.631778791065614
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 466.0425930097427,
+        "steps": 39,
+        "path_length": 189.73777770996094,
+        "min_obs_dist": 1.6348425348864066,
+        "reward_components": {
+          "r_dist": -3.9165494728648262,
+          "r_heading": 13.305553701153125,
+          "r_obs": -0.6442210477072231,
+          "r_smooth": -0.5411269495620311,
+          "r_goal": 3.746153846153846,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 11.949810077172888
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 341.2544938606892,
+        "steps": 34,
+        "path_length": 145.3037894964218,
+        "min_obs_dist": 1.0270020693187991,
+        "reward_components": {
+          "r_dist": -3.6691000522712374,
+          "r_heading": 10.861743784979172,
+          "r_obs": -0.9073373698406562,
+          "r_smooth": -0.5601741904940676,
+          "r_goal": 4.311764705882353,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.036896878255565
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 369.28379450375616,
+        "steps": 37,
+        "path_length": 168.3674203157425,
+        "min_obs_dist": 1.7927217016865415,
+        "reward_components": {
+          "r_dist": -3.644727874614155,
+          "r_heading": 10.879393666337954,
+          "r_obs": -0.6917264036336993,
+          "r_smooth": -0.5163503474480396,
+          "r_goal": 3.9540540540540543,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 9.980643094696113
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 525.2762316544099,
+        "steps": 46,
+        "path_length": 198.09253418445587,
+        "min_obs_dist": 2.2523850050760736,
+        "reward_components": {
+          "r_dist": -3.9740847876931666,
+          "r_heading": 13.164529131791394,
+          "r_obs": -0.5054557513117617,
+          "r_smooth": -0.4268096437775492,
+          "r_goal": 3.1608695652173915,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 11.419048514226304
+        }
+      }
+    ],
+    "A1-Pos_s=5.0": [
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 448.9926052896209,
+        "steps": 41,
+        "path_length": 485.1039524078369,
+        "min_obs_dist": 1.3240744091015229,
+        "reward_components": {
+          "r_dist": -3.8217640497789227,
+          "r_heading": 12.562284459614173,
+          "r_obs": -0.6667618967492607,
+          "r_smooth": -0.6812559450464594,
+          "r_goal": 3.5585365853658537,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.951039153405388
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 670.6982192650088,
+        "steps": 67,
+        "path_length": 771.5716962814331,
+        "min_obs_dist": 2.5109150594131995,
+        "reward_components": {
+          "r_dist": -4.300324466647254,
+          "r_heading": 13.157305329470654,
+          "r_obs": -0.3801426218385034,
+          "r_smooth": -0.6052230280743196,
+          "r_goal": 2.138805970149254,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.010421183059835
+        }
+      },
+      {
+        "success": false,
+        "collision": true,
+        "timeout": false,
+        "reward": 147.68694525103697,
+        "steps": 42,
+        "path_length": 501.0710105895996,
+        "min_obs_dist": 0.43364444066712715,
+        "reward_components": {
+          "r_dist": -4.554282629904081,
+          "r_heading": 10.543076013536464,
+          "r_obs": -0.49901319966240815,
+          "r_smooth": -0.7829481541833784,
+          "r_goal": 0.0,
+          "r_collision": -1.1904761904761905,
+          "r_timeout": 0.0,
+          "total": 3.516355839310404
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 355.6764120530496,
+        "steps": 71,
+        "path_length": 781.3618731498718,
+        "min_obs_dist": 0.9307925855058872,
+        "reward_components": {
+          "r_dist": -3.19799126929381,
+          "r_heading": 7.556835784712051,
+          "r_obs": -0.6705751704272176,
+          "r_smooth": -0.6914184710044089,
+          "r_goal": 2.0126760563380284,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 5.009526930324643
+        }
+      },
+      {
+        "success": false,
+        "collision": true,
+        "timeout": false,
+        "reward": 130.2945765669637,
+        "steps": 31,
+        "path_length": 370.16841983795166,
+        "min_obs_dist": 0.44243686931683324,
+        "reward_components": {
+          "r_dist": -4.487920356278528,
+          "r_heading": 11.717310737118126,
+          "r_obs": -0.691167596296762,
+          "r_smooth": -0.722268701737551,
+          "r_goal": 0.0,
+          "r_collision": -1.6129032258064515,
+          "r_timeout": 0.0,
+          "total": 4.203050856998829
+        }
+      },
+      {
+        "success": false,
+        "collision": true,
+        "timeout": false,
+        "reward": -53.80533857001037,
+        "steps": 8,
+        "path_length": 127.32512283325195,
+        "min_obs_dist": 0.4479717779911019,
+        "reward_components": {
+          "r_dist": -4.518922359727598,
+          "r_heading": 6.0367102241847235,
+          "r_obs": -1.4335561724299408,
+          "r_smooth": -0.559899013278482,
+          "r_goal": 0.0,
+          "r_collision": -6.25,
+          "r_timeout": 0.0,
+          "total": -6.725667321251296
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 472.30481922940737,
+        "steps": 39,
+        "path_length": 473.8725895881653,
+        "min_obs_dist": 1.5528075381296662,
+        "reward_components": {
+          "r_dist": -3.857806145205342,
+          "r_heading": 13.486390259685887,
+          "r_obs": -0.6359147349037411,
+          "r_smooth": -0.6284432454894369,
+          "r_goal": 3.746153846153846,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 12.110379980241213
+        }
+      },
+      {
+        "success": false,
+        "collision": true,
+        "timeout": false,
+        "reward": 86.9994954579519,
+        "steps": 26,
+        "path_length": 271.4340739250183,
+        "min_obs_dist": 0.48562262418931623,
+        "reward_components": {
+          "r_dist": -4.112797346103681,
+          "r_heading": 11.345171470213492,
+          "r_obs": -1.2829932447396741,
+          "r_smooth": -0.6801695156027563,
+          "r_goal": 0.0,
+          "r_collision": -1.9230769230769231,
+          "r_timeout": 0.0,
+          "total": 3.3461344406904576
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 365.24375515869855,
+        "steps": 37,
+        "path_length": 420.21742057800293,
+        "min_obs_dist": 1.811086347704736,
+        "reward_components": {
+          "r_dist": -3.633886933861601,
+          "r_heading": 11.030612987136262,
+          "r_obs": -0.6811245507775159,
+          "r_smooth": -0.7982027144242091,
+          "r_goal": 3.9540540540540543,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 9.87145284212699
+        }
+      },
+      {
+        "success": true,
+        "collision": false,
+        "timeout": false,
+        "reward": 507.9783154419181,
+        "steps": 47,
+        "path_length": 496.5500409603119,
+        "min_obs_dist": 2.278743911267576,
+        "reward_components": {
+          "r_dist": -3.9487576160364175,
+          "r_heading": 12.819521382258232,
+          "r_obs": -0.5203160789746086,
+          "r_smooth": -0.6338877842276719,
+          "r_goal": 3.091489361702128,
+          "r_collision": 0.0,
+          "r_timeout": 0.0,
+          "total": 10.808049264721662
+        }
+      }
+    ]
+  }
+}
