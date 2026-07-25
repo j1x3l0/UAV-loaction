@@ -11,8 +11,10 @@ WHY 这个设计:
 风险: 3DGS渲染是瓶颈 → 正式版需多env并行 + GPU加速
 
 用法:
-  python scripts/train_visual.py --episodes 20             # 冒烟测试
-  python scripts/train_visual.py --episodes 3000 --envs 8  # 正式训练
+  python scripts/train_visual.py --episodes 20             # 冒烟测试 (mock)
+  python scripts/train_visual.py --episodes 3000 --envs 8  # mock 训练
+  python scripts/train_visual.py --episodes 3000 --envs 8 \
+      --renderer gsplat --ply data/gs_data/ply_exports/gate_mid_new_gs.ply  # 真实3DGS
   python scripts/train_visual.py --episodes 3000 --degradation rand  # V3-Rand
 """
 
@@ -22,6 +24,10 @@ import os, sys, time, argparse
 from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# 项目根 (rlproject-swift-improved 的上一级), 用于解析 data/ 下的相对路径
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO_ROOT = os.path.dirname(PROJECT_ROOT)
 
 from envs.visual_drone_env import VisualDroneEnv
 from core.visual_ppo_agent import VisualPPO
@@ -65,9 +71,33 @@ def evaluate_model(agent, env, eval_episodes=50):
     }
 
 
-def make_env(degradation_config=None):
+def resolve_ply_path(ply_arg):
+    """
+    解析 .ply 路径: 支持绝对路径、cwd 相对路径、或 repo data/ 下的相对路径。
+    WHY: 文档命令 `--ply data/gs_data/...` 是相对 repo 根的, 但训练从
+         rlproject-swift-improved/ 启动, 直接相对 cwd 会找不到文件。
+    """
+    if os.path.exists(ply_arg):
+        return ply_arg
+    alt = os.path.join(REPO_ROOT, ply_arg)
+    if os.path.exists(alt):
+        return alt
+    # 最后尝试只看文件名 (data/gs_data/ply_exports/<name>)
+    alt2 = os.path.join(REPO_ROOT, 'data', 'gs_data', 'ply_exports',
+                        os.path.basename(ply_arg))
+    if os.path.exists(alt2):
+        return alt2
+    raise FileNotFoundError(
+        f"ply not found: {ply_arg} (tried cwd-relative, repo-relative, ply_exports)")
+
+
+def make_env(degradation_config=None, renderer='mock', ply_path=None):
     """环境工厂"""
-    cfg = {}
+    cfg = {'renderer': renderer}
+    if renderer == 'gsplat':
+        if not ply_path:
+            raise ValueError("--renderer gsplat requires --ply <path to .ply>")
+        cfg['ply_path'] = resolve_ply_path(ply_path)
     if degradation_config and degradation_config != 'clean':
         # 简化退化配置 (Phase 0冒烟测试用)
         if degradation_config == 'rand':
@@ -85,10 +115,12 @@ def train_visual(config):
     eval_episodes = config.get('eval_episodes', 20)
 
     degradation = config.get('degradation', 'clean')
+    renderer = config.get('renderer', 'mock')
+    ply_path = config.get('ply_path')
 
     # 创建环境
-    envs = [make_env(degradation) for _ in range(num_envs)]
-    eval_env = make_env('clean')
+    envs = [make_env(degradation, renderer, ply_path) for _ in range(num_envs)]
+    eval_env = make_env('clean', renderer, ply_path)
 
     # 创建PPO (per-env rollout 需要调整num_envs)
     ppo = VisualPPO(
@@ -111,7 +143,8 @@ def train_visual(config):
     best_sr = 0.0
 
     logger.info(f"Training: {max_episodes}ep × {num_envs}envs × "
-                f"{rollout_steps}steps, degradation={degradation}")
+                f"{rollout_steps}steps, degradation={degradation}, "
+                f"renderer={renderer}")
 
     for episode in range(max_episodes):
         # Rollout
@@ -180,6 +213,10 @@ def main():
     parser.add_argument('--degradation', type=str, default='clean',
                        choices=['clean', 'rand'])
     parser.add_argument('--rollout-steps', type=int, default=256)
+    parser.add_argument('--renderer', type=str, default='mock',
+                       choices=['mock', 'gsplat'])
+    parser.add_argument('--ply', type=str, default=None,
+                       help='3DGS .ply 路径 (--renderer gsplat 时必填)')
     args = parser.parse_args()
 
     config = {
@@ -188,6 +225,8 @@ def main():
         'lr': args.lr,
         'degradation': args.degradation,
         'rollout_steps': args.rollout_steps,
+        'renderer': args.renderer,
+        'ply_path': args.ply,
         'minibatch_size': 32,
         'epochs': 5,
         'eval_interval': max(5, args.episodes // 10),

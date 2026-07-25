@@ -1,0 +1,42 @@
+# ── OS / 编辑器临时文件 ──
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── 工具缓存 ──
+.cache/
+.opencode/
+.claude/.cache/
+__pycache__/
+*.pyc
+
+# ── 日志 / 临时输出 ──
+*.log
+tmp/
+*.tmp
+
+# ── 可执行/构建产物(若项目未来引入代码) ──
+node_modules/
+dist/
+build/
+.next/
+out/
+*.egg-info/
+
+# ── 密钥 / 环境变量 ──
+.env
+.env.*
+*.pem
+*.key
+secrets.json
+
+# ── 不要_ignore_版本化的桶文件;
+#    knowledge-map.md / understanding-gate.md / RULES.md / CLAUDE.md 是必须追踪的活文档 ──

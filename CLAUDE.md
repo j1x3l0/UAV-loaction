@@ -120,6 +120,8 @@ python eval_baseline.py                   # 评估已保存模型
 | `@microworld-builder` | 生成交互式训练场脚本 | 复杂模块需要深度理解 |
 | `@understanding-reviewer` | 4 层理解审查 | PR Review 时 |
 | `@understanding-gate` | 合并前理解门槛检查 | 合并前最后一步 |
+| `@output-reviewer` | AI 输出 5 层终审 (完整性/事实/逻辑/边界/格式) | 交付重要输出前 |
+| `@lesson-capturer` | 总结教训 → 写入教训库 | 一轮开发结束 |
 
 ### 提示词长度原则
 

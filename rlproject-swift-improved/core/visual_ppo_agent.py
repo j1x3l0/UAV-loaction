@@ -87,7 +87,9 @@ class VisualActorCritic(nn.Module):
         )
 
         # 可学习 log_std
-        self.log_std = nn.Parameter(torch.zeros(action_dim))
+        # WHY init=-0.5 (std≈0.6): 原始std=1.0在视觉观测下entropy(4.26)太高,
+        # 100ep内entropy纹丝不动。从std=0.6开始,entropy≈3.5,降低随机碰撞概率。
+        self.log_std = nn.Parameter(torch.ones(action_dim) * (-0.5))
 
         self._init_weights()
 
@@ -149,7 +151,15 @@ class VisualPPO:
     def __init__(self, vec_dim=6, action_dim=3, action_max=1.0,
                  lr=3e-4, gamma=0.99, gae_lambda=0.95, clip_eps=0.2,
                  epochs=10, minibatch_size=64, hidden_dim=128,
-                 use_adaptive_entropy=True, num_envs=8):
+                 use_adaptive_entropy=True, num_envs=8,
+                 reward_scale=0.1):
+        """
+        Args:
+            reward_scale: 奖励缩放因子。原始reward量级[-10, 100],
+                          256步returns ~[-2500, 100]。Critic初始输出~0-1,
+                          不做缩放会导致MSE loss ~10⁶, 梯度淹没actor信号。
+                          缩放后returns ~[-25, 1], 与critic初始化匹配。
+        """
         self.action_dim = action_dim
         self.action_max = action_max
         self.gamma = gamma
@@ -158,6 +168,7 @@ class VisualPPO:
         self.epochs = epochs
         self.minibatch_size = minibatch_size
         self.num_envs = num_envs
+        self.reward_scale = reward_scale
 
         self.model = VisualActorCritic(
             vec_dim=vec_dim, hidden_dim=hidden_dim, action_dim=action_dim
@@ -166,8 +177,11 @@ class VisualPPO:
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
 
         if use_adaptive_entropy:
+            # WHY higher initial + lr: 视觉观测下policy收敛慢, entropy从max(4.26)
+            # 降到target(-3)需强entropy penalty。v1的0.01/3e-4在向量环境下够了,
+            # 但视觉版100ep entropy纹丝不动 → initial×10 + lr×10
             self.entropy_coeff = AdaptiveEntropyCoeff(
-                initial_coeff=0.01, target_entropy=-action_dim, lr=lr)
+                initial_coeff=0.1, target_entropy=-action_dim, lr=lr * 10)
         else:
             self.entropy_coeff = None
             self.fixed_entropy_coeff = 0.01
@@ -212,7 +226,8 @@ class VisualPPO:
         if not hasattr(self, 'memory'):
             self.memory = []
         self.memory.append({'state': state, 'action': action,
-                           'reward': reward, 'next_state': next_state,
+                           'reward': reward * self.reward_scale,
+                           'next_state': next_state,
                            'done': done, 'log_prob': log_prob,
                            'value': value, 'entropy': entropy})
 

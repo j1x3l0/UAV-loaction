@@ -18,6 +18,12 @@ from gymnasium.utils import seeding
 from typing import Dict, Any, Tuple, Optional
 import logging
 
+from envs.degradation_utils import (
+    apply_gaussian_sparsification,
+    apply_degradation_pipeline,
+)
+from envs.gs_renderer import GSplatRenderer
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -106,51 +112,6 @@ class MockGSRenderer:
         return depth, rgb
 
 
-# ─── 退化工具 ───────────────────────────────────────────────────
-# 位置: VisualDroneEnv 的辅助函数
-# WHY: 5条退化轴的可控参数化——V2实验的直接操作对象
-# 边界: 只修改渲染输入/输出，不修改环境物理
-
-def apply_gaussian_sparsification(renderer: MockGSRenderer,
-                                   keep_ratio: float) -> MockGSRenderer:
-    """高斯球稀疏化: 随机删除障碍物来模拟 (mock实现)"""
-    n_keep = max(1, int(len(renderer.obstacles) * keep_ratio))
-    rng = np.random.RandomState(42)
-    idx = rng.choice(len(renderer.obstacles), n_keep, replace=False)
-    new_renderer = MockGSRenderer(renderer.width, renderer.height)
-    new_renderer.obstacles = renderer.obstacles[idx].copy()
-    return new_renderer
-
-
-def apply_resolution_downscale(depth: np.ndarray,
-                                target_res: int) -> np.ndarray:
-    """分辨率降低: 降采样后上采样回原尺寸"""
-    from PIL import Image
-    h, w = depth.shape[:2]
-    img = Image.fromarray((depth[..., 0] * 255 / 20.0).astype(np.uint8))
-    img_small = img.resize((target_res, target_res), Image.BILINEAR)
-    img_back = img_small.resize((w, h), Image.BILINEAR)
-    result = np.array(img_back, dtype=np.float32)[..., np.newaxis] / 255 * 20.0
-    return result
-
-
-def apply_lighting_offset(rgb: np.ndarray, ev_offset: float) -> np.ndarray:
-    """光照偏移: 对RGB做EV调整 (只影响RGB不影响深度)"""
-    return rgb * (2.0 ** ev_offset)
-
-
-def apply_perlin_depth_noise(depth: np.ndarray,
-                              sigma: float, scale: int = 4) -> np.ndarray:
-    """深度噪声: 简单空间相关噪声 (简化版Perlin)"""
-    h, w = depth.shape[:2]
-    # 用低频正弦波模拟空间相关噪声
-    xs, ys = np.mgrid[0:h, 0:w] / scale
-    noise = (np.sin(xs * 1.7) * np.cos(ys * 2.3) +
-             np.sin(xs * 0.7 + ys * 1.1) * 0.5)
-    noise = noise / noise.std() * sigma
-    return np.clip(depth + noise.reshape(h, w, 1), 0.1, 20.0)
-
-
 # ─── 视觉无人机环境 ─────────────────────────────────────────────
 
 class VisualDroneEnv(gym.Env):
@@ -183,6 +144,13 @@ class VisualDroneEnv(gym.Env):
         renderer_type = self.config.get('renderer', 'mock')
         if renderer_type == 'mock':
             self.renderer = MockGSRenderer(width=64, height=64)
+            self._base_obstacles_for_render = self.renderer.obstacles.copy()
+        elif renderer_type == 'gsplat':
+            ply_path = self.config.get('ply_path')
+            if ply_path is None:
+                raise ValueError("gsplat renderer requires 'ply_path' in config")
+            self.renderer = GSplatRenderer(ply_path, width=64, height=64)
+            self._base_obstacles_for_render = np.empty((0, 4))
         else:
             raise ValueError(f"Unsupported renderer: {renderer_type}")
 
@@ -220,14 +188,34 @@ class VisualDroneEnv(gym.Env):
         pos = self.state[:3]
         vel = self.state[3:6]
 
-        # 1. 渲染深度图
         camera_pos = pos.copy()
-        depth, rgb = self.renderer.render(camera_pos)
+        is_mock = isinstance(self.renderer, MockGSRenderer)
 
-        # 2. 应用退化
-        depth = self._apply_degradation(depth, rgb)
+        if is_mock:
+            # Mock: 高斯稀疏化修改障碍物 → 渲染 → 退化
+            if 'gaussian' in self.deg_config:
+                keep_ratio = self.deg_config['gaussian'] / 100.0
+                active_obstacles = apply_gaussian_sparsification(
+                    self._base_obstacles_for_render, keep_ratio)
+            else:
+                active_obstacles = self._base_obstacles_for_render
 
-        # 3. 向量状态
+            saved_obstacles = self.renderer.obstacles
+            self.renderer.obstacles = active_obstacles
+            depth, rgb = self.renderer.render(camera_pos)
+            self.renderer.obstacles = saved_obstacles
+
+            post_config = {k: v for k, v in self.deg_config.items()
+                           if k != 'gaussian'}
+            depth, rgb, _ = apply_degradation_pipeline(
+                depth, rgb, active_obstacles, post_config)
+        else:
+            # Real GS: 直接渲染 → 后处理退化
+            depth, rgb = self.renderer.render(camera_pos)
+            depth, rgb, _ = apply_degradation_pipeline(
+                depth, rgb, np.empty((0, 4)), self.deg_config)
+
+        # 向量状态
         target_dir = self.target_pos - pos
         vec = np.array([
             vel[0], vel[1], vel[2],
@@ -235,19 +223,6 @@ class VisualDroneEnv(gym.Env):
         ], dtype=np.float32)
 
         return {'depth': depth.astype(np.float32), 'vec': vec}
-
-    def _apply_degradation(self, depth: np.ndarray,
-                            rgb: np.ndarray) -> np.ndarray:
-        """按degradation_config应用退化"""
-        if not self.deg_config:
-            return depth
-
-        if 'resolution' in self.deg_config:
-            depth = apply_resolution_downscale(depth, self.deg_config['resolution'])
-        if 'depth_noise' in self.deg_config:
-            depth = apply_perlin_depth_noise(depth, self.deg_config['depth_noise'])
-
-        return depth
 
     # ── 物理仿真 (复用v1) ──
     def _get_min_obstacle_distance(self, pos: np.ndarray) -> float:

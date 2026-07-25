@@ -99,7 +99,7 @@ def main():
     print("\n--- 5. Degradation evaluation ---")
     total += 3
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from envs.visual_drone_env import apply_resolution_downscale, apply_perlin_depth_noise
+    from envs.degradation_utils import apply_resolution_downscale, apply_perlin_depth_noise
 
     depth = np.random.rand(64, 64, 1).astype(np.float32) * 10
     d1 = apply_resolution_downscale(depth, 16)

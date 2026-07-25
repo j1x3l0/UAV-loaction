@@ -10,10 +10,8 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
-from envs.visual_drone_env import (
-    VisualDroneEnv, MockGSRenderer,
-    apply_resolution_downscale, apply_perlin_depth_noise,
-)
+from envs.visual_drone_env import VisualDroneEnv, MockGSRenderer
+from envs.degradation_utils import apply_resolution_downscale, apply_perlin_depth_noise
 
 # ── MockRenderer 测试 ──
 

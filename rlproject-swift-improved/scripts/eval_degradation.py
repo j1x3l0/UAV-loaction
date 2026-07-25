@@ -19,8 +19,9 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from envs.visual_drone_env import (
-    VisualDroneEnv,
+from envs.visual_drone_env import VisualDroneEnv
+from envs.degradation_utils import (
+    DEGRADATION_AXES,
     apply_resolution_downscale,
     apply_perlin_depth_noise,
 )
@@ -29,43 +30,6 @@ import logging
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-
-# ─── 退化轴定义 ──────────────────────────────────────────────────
-# WHY 集中定义: 所有退化轴在这里统一声明，eval和绘图脚本共用
-
-DEGRADATION_AXES = {
-    'gaussian': {
-        'name': '高斯球稀疏化',
-        'levels': [100, 50, 25, 10, 5],
-        'unit': '%',
-        'description': '按重要性保留的高斯球比例',
-    },
-    'resolution': {
-        'name': '渲染分辨率',
-        'levels': [64, 32, 16, 8, 4],
-        'unit': 'px',
-        'description': '深度图降采样分辨率（上采样回64×64）',
-    },
-    'depth_noise': {
-        'name': '深度噪声',
-        'levels': [0.0, 0.01, 0.05, 0.1, 0.2],
-        'unit': 'σ',
-        'description': '空间相关Perlin噪声标准差',
-    },
-    'lighting': {
-        'name': '光照偏移',
-        'levels': [0, 1, 2, 3, 4],
-        'unit': 'EV',
-        'description': 'RGB曝光偏移（EV档）',
-    },
-    'viewpoint': {
-        'name': '视角覆盖',
-        'levels': [360, 270, 180, 90, 45],
-        'unit': '°',
-        'description': '允许的相机朝向角度范围',
-    },
-}
 
 
 def make_degraded_env(axis, level, base_config=None):
@@ -82,10 +46,8 @@ def make_degraded_env(axis, level, base_config=None):
     config = base_config.copy() if base_config else {}
     deg = config.get('degradation', {})
 
-    if axis == 'resolution':
-        deg['resolution'] = level
-    elif axis == 'depth_noise':
-        deg['depth_noise'] = level
+    # 将退化水平写入配置 (5轴全覆盖)
+    deg[axis] = level
 
     config['degradation'] = deg
     return VisualDroneEnv(config=config)
