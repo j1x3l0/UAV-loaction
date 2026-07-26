@@ -24,7 +24,6 @@ from envs.degradation_utils import (
 )
 from envs.gs_renderer import GSplatRenderer
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -52,17 +51,23 @@ class MockGSRenderer:
             ])
 
     def render(self, camera_pos: np.ndarray,
-               camera_quat: np.ndarray = None) -> Tuple[np.ndarray, np.ndarray]:
+               camera_quat: np.ndarray = None,
+               obstacles: np.ndarray = None) -> Tuple[np.ndarray, np.ndarray]:
         """
         从相机位姿渲染合成深度图
 
         Args:
             camera_pos: (3,) 相机世界坐标
             camera_quat: (4,) 四元数 [x,y,z,w] (暂用简化朝向)
+            obstacles:  (N,4) 障碍物数组 [x,y,z,radius],
+                        为 None 时使用 self.obstacles (默认场景)
         Returns:
             depth: (H, W, 1) 深度图, 范围 [0, max_depth]
             rgb: (H, W, 3) 占位RGB (全零)
         """
+        if obstacles is None:
+            obstacles = self.obstacles
+
         H, W = self.height, self.width
         depth = np.full((H, W, 1), self.max_depth, dtype=np.float32)
 
@@ -89,7 +94,7 @@ class MockGSRenderer:
         ], axis=-1)  # (H, W, 3)
 
         # 对每个障碍物做射线-球体求交
-        for obs in self.obstacles:
+        for obs in obstacles:
             ox, oy, oz, orad = obs
             oc = np.array([ox, oy, oz])
             # 射线-球体求交: |(cam - oc) + t*dir|² = r²
@@ -159,6 +164,7 @@ class VisualDroneEnv(gym.Env):
 
         # ── 退化配置 ──
         self.deg_config = self.config.get('degradation', {})
+        self.ablation_config = self.config.get('ablation', {})
 
         # ── 障碍物 (与v1一致) ──
         self.obstacles = np.array([
@@ -196,6 +202,7 @@ class VisualDroneEnv(gym.Env):
 
         if is_mock:
             # Mock: 高斯稀疏化修改障碍物 → 渲染 → 退化
+            # P2-1 修复: 传 obstacles 参数而非修改 renderer 状态 (避免竞态)
             if 'gaussian' in self.deg_config:
                 keep_ratio = self.deg_config['gaussian'] / 100.0
                 active_obstacles = apply_gaussian_sparsification(
@@ -203,10 +210,8 @@ class VisualDroneEnv(gym.Env):
             else:
                 active_obstacles = self._base_obstacles_for_render
 
-            saved_obstacles = self.renderer.obstacles
-            self.renderer.obstacles = active_obstacles
-            depth, rgb = self.renderer.render(camera_pos)
-            self.renderer.obstacles = saved_obstacles
+            depth, rgb = self.renderer.render(camera_pos,
+                                              obstacles=active_obstacles)
 
             post_config = {k: v for k, v in self.deg_config.items()
                            if k != 'gaussian'}
@@ -220,8 +225,13 @@ class VisualDroneEnv(gym.Env):
             depth, rgb, _ = apply_degradation_pipeline(
                 depth, rgb, np.empty((0, 4)), post_config)
 
+        if self.ablation_config.get('const_depth', False):
+            depth = np.full_like(depth, 5.0)
+
         # 向量状态
         target_dir = self.target_pos - pos
+        if self.ablation_config.get('no_target_dir', False):
+            target_dir = np.zeros(3, dtype=np.float32)
         vec = np.array([
             vel[0], vel[1], vel[2],
             target_dir[0], target_dir[1], target_dir[2]
