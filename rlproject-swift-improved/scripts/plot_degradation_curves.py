@@ -20,19 +20,19 @@ plt.rcParams.update({
 })
 
 AXIS_COLORS = {
-    'gaussian':    '#E74C3C',  # 红
-    'resolution':  '#2980B9',  # 蓝
-    'depth_noise': '#27AE60',  # 绿
-    'lighting':    '#F39C12',  # 橙
-    'viewpoint':   '#8E44AD',  # 紫
+    'gaussian':           '#E74C3C',  # 红
+    'resolution':         '#2980B9',  # 蓝
+    'depth_noise':        '#27AE60',  # 绿
+    'lighting':           '#F39C12',  # 橙
+    'viewpoint_uncertainty': '#8E44AD',  # 紫
 }
 
 AXIS_LABELS = {
-    'gaussian':    'Gaussian Count (%)',
-    'resolution':  'Render Resolution (px)',
-    'depth_noise': 'Depth Noise (sigma)',
-    'lighting':    'Lighting Offset (EV)',
-    'viewpoint':   'Viewpoint Coverage (deg)',
+    'gaussian':           'Gaussian Count (%)',
+    'resolution':         'Render Resolution (px)',
+    'depth_noise':        'Depth Noise (sigma)',
+    'lighting':           'Lighting Offset (EV)',
+    'viewpoint_uncertainty': 'Viewpoint Uncertainty (deg)',
 }
 
 
@@ -83,7 +83,7 @@ def plot_single_axis(ax, axis_name, results, add_critical_point=True):
 
 def plot_all_axes(results, output_path, title=None):
     """绘制所有退化轴的全景图"""
-    axes_names = ['gaussian', 'resolution', 'depth_noise', 'lighting', 'viewpoint']
+    axes_names = ['gaussian', 'resolution', 'depth_noise', 'lighting', 'viewpoint_uncertainty']
     n = len(axes_names)
 
     fig, axes = plt.subplots(1, n, figsize=(n * 3.5, 3.5), sharey=True)
@@ -102,7 +102,7 @@ def plot_all_axes(results, output_path, title=None):
 
 def plot_critical_points(results, output_path):
     """绘制临界点汇总图"""
-    axes_names = ['gaussian', 'resolution', 'depth_noise', 'lighting', 'viewpoint']
+    axes_names = ['gaussian', 'resolution', 'depth_noise', 'lighting', 'viewpoint_uncertainty']
     critical = {}
     for axis_name in axes_names:
         axis_data = sorted(
@@ -139,7 +139,7 @@ def plot_critical_points(results, output_path):
 
 def plot_summary_table(results, output_path):
     """生成退化轴汇总表格图"""
-    axes_names = ['gaussian', 'resolution', 'depth_noise', 'lighting', 'viewpoint']
+    axes_names = ['gaussian', 'resolution', 'depth_noise', 'lighting', 'viewpoint_uncertainty']
     fig, ax = plt.subplots(figsize=(8, 3))
     ax.axis('off')
 

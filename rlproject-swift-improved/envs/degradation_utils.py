@@ -15,7 +15,7 @@ WHY 集中定义:
   2. resolution   — 渲染分辨率降低
   3. depth_noise  — 深度图空间相关噪声
   4. lighting     — RGB光照偏移 (EV档)
-  5. viewpoint    — 视角覆盖限制
+  5. viewpoint_uncertainty — 视角不确定性
 """
 
 import numpy as np
@@ -28,33 +28,33 @@ from typing import Dict, Any, Optional, Tuple
 DEGRADATION_AXES = {
     'gaussian': {
         'name': '高斯球稀疏化',
-        'levels': [100, 50, 25, 10, 5],
+        'levels': [100, 50, 20, 5, 2],
         'unit': '%',
-        'description': '按重要性保留的高斯球比例 (mock: obstacle保留比例)',
+        'description': '按opacity×体积重要性保留的高斯球比例 (v2: 加强2%临界点，评估opacity-only/随机/投影视觉贡献)',
     },
     'resolution': {
         'name': '渲染分辨率',
-        'levels': [64, 32, 16, 8, 4],
+        'levels': [64, 32, 16, 8, 2],
         'unit': 'px',
-        'description': '深度图降采样分辨率（上采样回64×64）',
+        'description': '深度图降采样分辨率（上采样回64×64），分别支持nearest/bilinear插值；深度保留float避免uint8量化',
     },
     'depth_noise': {
         'name': '深度噪声',
-        'levels': [0.0, 0.01, 0.05, 0.1, 0.2],
+        'levels': [0.0, 0.1, 0.25, 0.5, 1.0],
         'unit': 'σ',
-        'description': '空间相关Perlin噪声标准差',
+        'description': '空间相关噪声标准差 (v2: 扩大范围，加入距离相关、结构性空洞、局部偏置/尺度漂移、flying pixels)',
     },
     'lighting': {
         'name': '光照偏移',
         'levels': [0, 1, 2, 3, 4],
         'unit': 'EV',
-        'description': 'RGB曝光偏移（EV档），影响深度渲染的间接光照',
+        'description': 'RGB曝光偏移（EV档），depth-only策略下保留为负对照',
     },
-    'viewpoint': {
-        'name': '视角覆盖',
+    'viewpoint_uncertainty': {
+        'name': '视角不确定性',
         'levels': [360, 270, 180, 90, 45],
         'unit': '°',
-        'description': '允许的相机朝向角度范围（360=全向, 越小越受限）',
+        'description': '训练视角覆盖不足导致的重建不确定性 (联合评估: SR + 超时率 + 平均奖励，因主表现为超时增加)',
     },
 }
 
@@ -86,29 +86,40 @@ def apply_gaussian_sparsification(obstacles: np.ndarray,
 
 
 def apply_resolution_downscale(depth: np.ndarray,
-                                target_res: int) -> np.ndarray:
+                                target_res: int,
+                                interpolation: str = 'bilinear') -> np.ndarray:
     """
-    分辨率降低: 降采样后上采样回原尺寸
+    分辨率降低: 降采样后上采样回原尺寸 (v2: 支持插值方式选择)
+
+    v2改进: 支持 nearest/bilinear 两种插值；深度保留 float 避免 uint8 量化
 
     Args:
         depth: (H, W, 1) 深度图
-        target_res: 目标分辨率 (如 64→32→16→8→4)
+        target_res: 目标分辨率 (如 64→32→16→8→2)
+        interpolation: 'nearest' 或 'bilinear'
     Returns:
         (H, W, 1) 模糊后的深度图 (尺寸不变)
     """
     from PIL import Image
 
     h, w = depth.shape[:2]
-    # 深度值 → 灰度图
     depth_max = 20.0
+    
+    # 深度值 → 灰度图 (保留float精度，不用uint8)
     img = Image.fromarray(
-        (np.clip(depth[..., 0], 0, depth_max) / depth_max * 255).astype(np.uint8)
+        (np.clip(depth[..., 0], 0, depth_max) / depth_max * 65535).astype(np.uint16)
     )
+    
+    # 选择插值方式
+    pil_interp = Image.NEAREST if interpolation.lower() == 'nearest' else Image.BILINEAR
+    
     # 降采样 → 上采样
-    img_small = img.resize((target_res, target_res), Image.BILINEAR)
-    img_back = img_small.resize((w, h), Image.BILINEAR)
-    result = np.array(img_back, dtype=np.float32)[..., np.newaxis] / 255.0 * depth_max
-    return result
+    img_small = img.resize((target_res, target_res), pil_interp)
+    img_back = img_small.resize((w, h), pil_interp)
+    
+    # 转回浮点深度
+    result = np.array(img_back, dtype=np.float32) / 65535.0 * depth_max
+    return result[..., np.newaxis]
 
 
 def apply_lighting_offset(rgb: np.ndarray, ev_offset: float) -> np.ndarray:
@@ -129,17 +140,21 @@ def apply_lighting_offset(rgb: np.ndarray, ev_offset: float) -> np.ndarray:
 
 def apply_perlin_depth_noise(depth: np.ndarray,
                               sigma: float,
-                              scale: int = 4) -> np.ndarray:
+                              scale: int = 4,
+                              seed: int = 42) -> np.ndarray:
     """
-    深度噪声: 空间相关噪声 (简化版Perlin模拟)
+    深度噪声: 空间相关噪声 (v2增强版)
 
     WHY 空间相关: 独立像素噪声过强且不现实；空间相关噪声更接近
                   真实3DGS渲染的几何误差分布
 
+    v2增强: 多频叠加 + 距离相关衰减 + 结构性空洞 + 局部偏置/尺度漂移
+
     Args:
         depth: (H, W, 1) 深度图
-        sigma: 噪声标准差
+        sigma: 噪声标准差 (0~1.0m)
         scale: 噪声空间频率 (越小越粗糙)
+        seed: 随机种子 (用于结构性空洞生成)
     Returns:
         (H, W, 1) 加噪深度图
     """
@@ -147,13 +162,54 @@ def apply_perlin_depth_noise(depth: np.ndarray,
         return depth
 
     h, w = depth.shape[:2]
+    rng = np.random.RandomState(seed)
+    
+    # 1. 多频Perlin-like噪声基础
     xs, ys = np.mgrid[0:h, 0:w] / scale
-    # 多频叠加模拟Perlin-like噪声
-    noise = (np.sin(xs * 1.7) * np.cos(ys * 2.3) +
-             np.sin(xs * 0.7 + ys * 1.1) * 0.5 +
-             np.cos(xs * 2.9 - ys * 0.8) * 0.3)
-    noise = noise / noise.std() * sigma
-    return np.clip(depth + noise.reshape(h, w, 1), 0.1, 20.0)
+    base_noise = (np.sin(xs * 1.7) * np.cos(ys * 2.3) +
+                  np.sin(xs * 0.7 + ys * 1.1) * 0.5 +
+                  np.cos(xs * 2.9 - ys * 0.8) * 0.3)
+    base_noise = base_noise / base_noise.std()
+    
+    # 2. 距离相关衰减 (远处噪声更大 — 模拟深度不确定性随距离增加)
+    cx, cy = w / 2, h / 2
+    distance_field = np.sqrt((xs * scale - cx)**2 + (ys * scale - cy)**2) / np.sqrt(cx**2 + cy**2)
+    distance_modulation = 0.5 + 0.5 * distance_field  # [0.5, 1.0]
+    
+    # 3. 结构性空洞 (局部深度缺失，模拟GS重建失败的区域)
+    n_holes = max(1, int(sigma * 5))  # sigma越大空洞越多
+    hole_mask = np.ones((h, w), dtype=np.float32)
+    for _ in range(n_holes):
+        hole_cx = rng.randint(h // 4, 3 * h // 4)
+        hole_cy = rng.randint(w // 4, 3 * w // 4)
+        hole_rad = int(5 + sigma * 10)  # 半径 5~15 像素
+        yy, xx = np.ogrid[:h, :w]
+        hole_dist = np.sqrt((yy - hole_cx)**2 + (xx - hole_cy)**2)
+        hole_mask[hole_dist < hole_rad] *= (1 - sigma * 0.3)  # 强度与sigma相关
+    
+    # 4. 局部尺度漂移 (某些区域整体偏置，不仅是噪声)
+    local_bias = np.zeros((h, w), dtype=np.float32)
+    n_bias = max(1, int(sigma * 3))
+    for _ in range(n_bias):
+        bias_cx = rng.randint(h // 6, 5 * h // 6)
+        bias_cy = rng.randint(w // 6, 5 * w // 6)
+        bias_rad = int(10 + sigma * 15)
+        yy, xx = np.ogrid[:h, :w]
+        bias_dist = np.sqrt((yy - bias_cx)**2 + (xx - bias_cy)**2)
+        bias_strength = sigma * 0.2 * np.exp(-(bias_dist ** 2) / (bias_rad ** 2))
+        local_bias += bias_strength
+    
+    # 5. 边缘flying pixels (深度突跳，高频成分)
+    edge_noise = rng.randn(h // 4, w // 4) * sigma * 0.15
+    edge_noise_large = np.kron(edge_noise, np.ones((4, 4)))[:h, :w]
+    
+    # 组合所有噪声源
+    total_noise = (base_noise * distance_modulation * hole_mask + 
+                   local_bias + 
+                   edge_noise_large)
+    total_noise = total_noise / (total_noise.std() + 1e-7) * sigma
+    
+    return np.clip(depth + total_noise.reshape(h, w, 1), 0.1, 20.0)
 
 
 def apply_viewpoint_restriction(depth: np.ndarray,
@@ -250,9 +306,9 @@ def apply_degradation_pipeline(depth: np.ndarray,
         degraded_rgb = apply_lighting_offset(degraded_rgb, deg_config['lighting'])
 
     # 5. 视角覆盖
-    if 'viewpoint' in deg_config:
+    if 'viewpoint_uncertainty' in deg_config:
         degraded_depth = apply_viewpoint_restriction(
-            degraded_depth, deg_config['viewpoint'], seed)
+            degraded_depth, deg_config['viewpoint_uncertainty'], seed)
 
     return degraded_depth, degraded_rgb, degraded_obstacles
 
@@ -276,7 +332,7 @@ if __name__ == "__main__":
         'resolution': 16,
         'depth_noise': 0.05,
         'lighting': 2,
-        'viewpoint': 180,
+        'viewpoint_uncertainty': 180,
     }
     dd, dr, do = apply_degradation_pipeline(depth, rgb, obstacles, full_config)
     print(f"gaussian: {len(obstacles)}→{len(do)} obstacles")
