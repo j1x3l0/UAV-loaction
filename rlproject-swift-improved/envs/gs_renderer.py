@@ -39,6 +39,7 @@ class GSplatRenderer:
             self._load_ply(ply_path)
 
         self._device = 'cuda' if self._has_gpu() else 'cpu'
+        self._gaussian_keep_percent = 100.0
         if self._device == 'cpu':
             logger.warning("No GPU detected — using CPU fallback (slow, dev only)")
         else:
@@ -47,14 +48,28 @@ class GSplatRenderer:
             self._cache_gpu_tensors()
             logger.info(f"GPU rendering ready: {len(self._means):,} Gaussians")
 
+    def set_gaussian_keep_percent(self, keep_percent: float) -> None:
+        """按 opacity×体积重要性保留固定的 top-k Gaussians。"""
+        keep_percent = float(np.clip(keep_percent, 0.01, 100.0))
+        n_keep = max(1, int(len(self._means) * keep_percent / 100.0))
+        importance = self._opacities * np.prod(self._scales, axis=1)
+        idx = np.argpartition(importance, -n_keep)[-n_keep:]
+        self._active_indices = np.sort(idx)
+        self._gaussian_keep_percent = keep_percent
+        if self._device == 'cuda':
+            self._cache_gpu_tensors()
+        logger.info("Gaussian sparsification: %.1f%% (%d/%d)",
+                    keep_percent, n_keep, len(self._means))
+
     def _cache_gpu_tensors(self):
         """预上传 Gaussian 参数到 GPU (仅 __init__ 调用一次)"""
         import torch
-        self._t_means = torch.from_numpy(self._means).cuda()
-        self._t_quats = torch.from_numpy(self._quats).cuda()
-        self._t_scales = torch.from_numpy(self._scales).cuda()
-        self._t_opacities = torch.from_numpy(self._opacities).cuda()
-        self._t_colors = torch.from_numpy(self._colors).cuda()
+        idx = getattr(self, '_active_indices', slice(None))
+        self._t_means = torch.from_numpy(self._means[idx]).cuda()
+        self._t_quats = torch.from_numpy(self._quats[idx]).cuda()
+        self._t_scales = torch.from_numpy(self._scales[idx]).cuda()
+        self._t_opacities = torch.from_numpy(self._opacities[idx]).cuda()
+        self._t_colors = torch.from_numpy(self._colors[idx]).cuda()
 
     @staticmethod
     def _has_gpu() -> bool:
@@ -77,11 +92,22 @@ class GSplatRenderer:
                          axis=-1).astype(np.float32)
         # gsplat 要求 quats 归一化 (wxyz); 训练保存的四元数可能有轻微漂移
         quats /= np.linalg.norm(quats, axis=-1, keepdims=True) + 1e-8
-        scales = np.stack([vert['scale_0'], vert['scale_1'], vert['scale_2']],
-                          axis=-1).astype(np.float32)
-        opacities = np.array(vert['opacity']).astype(np.float32)
-        colors = np.stack([vert['f_dc_0'], vert['f_dc_1'], vert['f_dc_2']],
-                          axis=-1).astype(np.float32)
+        # Standard 3DGS PLY files store log-scales and opacity logits.
+        # gsplat.rasterization expects positive scales and opacities in [0, 1].
+        log_scales = np.stack(
+            [vert['scale_0'], vert['scale_1'], vert['scale_2']], axis=-1
+        ).astype(np.float32)
+        scales = np.exp(log_scales)
+
+        opacity_logits = np.array(vert['opacity']).astype(np.float32)
+        opacities = 1.0 / (1.0 + np.exp(-opacity_logits))
+
+        # f_dc_* is the degree-0 spherical-harmonics coefficient. Convert it
+        # to RGB because colors shaped (N, 3) are interpreted as direct colors.
+        sh0 = np.stack(
+            [vert['f_dc_0'], vert['f_dc_1'], vert['f_dc_2']], axis=-1
+        ).astype(np.float32)
+        colors = np.clip(0.5 + 0.28209479177387814 * sh0, 0.0, 1.0)
 
         return means, quats, scales, opacities, colors
 
