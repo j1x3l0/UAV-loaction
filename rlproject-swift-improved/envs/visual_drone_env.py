@@ -159,6 +159,13 @@ class VisualDroneEnv(gym.Env):
 
         # ── 退化配置 ──
         self.deg_config = self.config.get('degradation', {})
+        
+        # ── 消融配置（用于诊断模型是否真的依赖视觉/目标方向）──
+        # P0 消融：如果消融后 SR 仍高，说明模型未学到真正的视觉特征
+        self.ablation_config = self.config.get('ablation', {})
+        # ablation_config 选项:
+        #   'const_depth': True  → depth 置常数 (5.0m)
+        #   'no_target_dir': True → target_direction 置零，仅保留 velocity
 
         # ── 障碍物 (与v1一致) ──
         self.obstacles = np.array([
@@ -220,8 +227,17 @@ class VisualDroneEnv(gym.Env):
             depth, rgb, _ = apply_degradation_pipeline(
                 depth, rgb, np.empty((0, 4)), post_config)
 
+        # 【P0 消融】常数深度：depth 置常数（诊断是否依赖视觉）
+        if self.ablation_config.get('const_depth', False):
+            depth = np.full_like(depth, 5.0)  # 全 5.0m，模型需要从 velocity+target 推断
+        
         # 向量状态
         target_dir = self.target_pos - pos
+        
+        # 【P0 消融】无目标方向：去除 target_direction，仅保留 velocity（诊断是否依赖完美目标）
+        if self.ablation_config.get('no_target_dir', False):
+            target_dir = np.zeros(3)  # 模型只有 velocity 信息
+        
         vec = np.array([
             vel[0], vel[1], vel[2],
             target_dir[0], target_dir[1], target_dir[2]
