@@ -150,6 +150,9 @@ class VisualDroneEnv(gym.Env):
             if ply_path is None:
                 raise ValueError("gsplat renderer requires 'ply_path' in config")
             self.renderer = GSplatRenderer(ply_path, width=64, height=64)
+            gaussian_level = self.config.get('degradation', {}).get('gaussian')
+            if gaussian_level is not None:
+                self.renderer.set_gaussian_keep_percent(gaussian_level)
             self._base_obstacles_for_render = np.empty((0, 4))
         else:
             raise ValueError(f"Unsupported renderer: {renderer_type}")
@@ -212,8 +215,10 @@ class VisualDroneEnv(gym.Env):
         else:
             # Real GS: 直接渲染 → 后处理退化
             depth, rgb = self.renderer.render(camera_pos)
+            post_config = {k: v for k, v in self.deg_config.items()
+                           if k != 'gaussian'}
             depth, rgb, _ = apply_degradation_pipeline(
-                depth, rgb, np.empty((0, 4)), self.deg_config)
+                depth, rgb, np.empty((0, 4)), post_config)
 
         # 向量状态
         target_dir = self.target_pos - pos
