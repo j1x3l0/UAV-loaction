@@ -14,29 +14,56 @@ logger.info(f"Using device: {DEVICE}")
 
 
 class AdaptiveEntropyCoeff:
-    """自适应熵正则化系数，根据策略熵动态调整探索强度（创新改进）"""
+    """自适应熵正则化系数，根据策略熵动态调整探索强度（P0修复版）
+    
+    P0修复：
+    - 目标改为正值 (2.0-3.0)，不再是负的 -action_dim
+    - 加 log_alpha 上下界 [-9.2, -1.6]（对应 alpha ≈ 1e-4 ~ 0.2）
+    - 防止 log_alpha 单调爆炸
+    """
 
-    def __init__(self, initial_coeff=0.01, target_entropy=None, lr=3e-4):
-        self.target_entropy = target_entropy  # 通常设为 -action_dim
+    def __init__(self, initial_coeff=0.01, target_entropy=None, lr=3e-4, action_dim=3):
+        # P0修复：目标改为正熵值而不是负数
+        if target_entropy is None:
+            self.target_entropy = 2.5  # 经验值，不再用 -action_dim
+        else:
+            self.target_entropy = max(0.5, target_entropy)  # 确保为正
+        
         self.log_alpha = torch.zeros(1, requires_grad=True, device=DEVICE)
         self.log_alpha.data.fill_(np.log(initial_coeff))
         self.optimizer = torch.optim.Adam([self.log_alpha], lr=lr)
         self.initial_coeff = initial_coeff
+        
+        # P0修复：加上下界防止爆炸
+        self.log_alpha_min = np.log(1e-4)    # alpha_min ≈ 1e-4
+        self.log_alpha_max = np.log(0.2)     # alpha_max ≈ 0.2
+        
+        self.update_count = 0  # 用于监控
 
     def get_coeff(self):
-        return self.log_alpha.exp().item()
+        return torch.clamp(self.log_alpha, self.log_alpha_min, self.log_alpha_max).exp().item()
 
     def update(self, entropy):
-        """根据当前策略熵更新 alpha"""
+        """根据当前策略熵更新 alpha
+        
+        P0修复：确保 entropy 和 target_entropy 都是正数，loss 有界
+        """
         if self.target_entropy is None:
             return
 
-        alpha = self.log_alpha.exp()
+        alpha = torch.clamp(self.log_alpha, self.log_alpha_min, self.log_alpha_max).exp()
+        # P0修复：entropy 是正数，target_entropy 也是正数，loss 有界
         loss = -(self.log_alpha * (entropy.detach() - self.target_entropy)).mean()
 
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+        
+        # P0修复：手动裁剪 log_alpha，防止梯度突破上下界
+        with torch.no_grad():
+            self.log_alpha.data.clamp_(self.log_alpha_min, self.log_alpha_max)
+        
+        self.update_count += 1
 
 
 class ActorCritic(nn.Module):
@@ -131,13 +158,13 @@ class PPO:
 
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
 
-        # 自适应熵系数（创新改进）
+        # 自适应熵系数（P0修复版）
         if use_adaptive_entropy:
-            self.target_entropy = -action_dim
             self.entropy_coeff = AdaptiveEntropyCoeff(
                 initial_coeff=0.01,
-                target_entropy=self.target_entropy,
-                lr=lr
+                target_entropy=2.5,  # P0修复：改为正值
+                lr=lr,
+                action_dim=action_dim
             )
         else:
             self.entropy_coeff = None
@@ -159,11 +186,11 @@ class PPO:
 
     def compute_gae(self, rewards, values, dones, next_value):
         """
-        计算广义优势估计 (GAE) - 关键改进二
+        计算广义优势估计 (GAE) - P0修复版
         参数:
             rewards: list of rewards, length T
             values: list of value predictions, length T
-            dones: list of done flags, length T
+            dones: list of done flags, length T (1 if episode terminated, 0 otherwise)
             next_value: value prediction for next state (after last step)
         返回:
             advantages: GAE 优势估计, length T
@@ -176,9 +203,11 @@ class PPO:
         # 从后向前计算 GAE
         for t in reversed(range(T)):
             if t == T - 1:
+                # 最后一步：使用传入的 next_value（P0修复：明确获取正确的 next_value）
                 next_non_terminal = 1.0 - dones[t]
                 next_val = next_value
             else:
+                # 中间步骤：使用下一步的 value
                 next_non_terminal = 1.0 - dones[t]
                 next_val = values[t + 1]
 
@@ -198,7 +227,13 @@ class PPO:
         observation: np.ndarray,
         deterministic: bool = False
     ) -> Tuple[np.ndarray, float, float]:
-        """选择动作并返回动作、对数概率、价值、熵"""
+        """选择动作并返回动作、对数概率、价值、熵（P0修复版）
+        
+        P0修复：使用 tanh-squashed Gaussian，加入 Jacobian 修正
+        - 采样 pre_tanh_action ~ N(mean, std)
+        - action = tanh(pre_tanh_action)
+        - log_prob 加上 tanh Jacobian 修正项
+        """
         state_tensor = torch.tensor(observation, dtype=torch.float32).unsqueeze(0).to(DEVICE)
 
         with torch.no_grad():
@@ -206,12 +241,20 @@ class PPO:
             dist = Normal(mean, std)
 
             if deterministic:
-                action_tensor = mean
+                pre_tanh_action_tensor = mean
             else:
-                action_tensor = dist.sample()
+                pre_tanh_action_tensor = dist.sample()
 
-            action_tensor = torch.clamp(action_tensor, -self.action_max, self.action_max)
-            log_prob_tensor = dist.log_prob(action_tensor).sum(dim=-1)
+            # P0修复：tanh-squashed action
+            action_tensor = torch.tanh(pre_tanh_action_tensor) * self.action_max
+            
+            # P0修复：计算 tanh Jacobian 修正
+            # log_prob(tanh(x)) = log_prob(x) - log_det_jacobian
+            # log_det_jacobian = sum(log(1 - tanh(x)^2))
+            log_prob_tensor = dist.log_prob(pre_tanh_action_tensor).sum(dim=-1)
+            tanh_jacobian = torch.log(1 - action_tensor.pow(2) / (self.action_max ** 2) + 1e-6).sum(dim=-1)
+            log_prob_tensor = log_prob_tensor - tanh_jacobian
+            
             entropy = dist.entropy().sum(dim=-1)
 
         action = action_tensor.squeeze(0).cpu().numpy()
@@ -271,6 +314,7 @@ class PPO:
         dones = np.array([t['done'] for t in self.memory], dtype=np.float32)
         old_log_probs = np.array([t['log_prob'] for t in self.memory], dtype=np.float32)
         values = np.array([t['value'] for t in self.memory], dtype=np.float32)
+        next_states = np.array([t['next_state'] for t in self.memory], dtype=np.float32)  # P0修复：获取 next_state
 
         total_samples = len(states)
         rollout_steps = total_samples // self.num_envs
@@ -280,6 +324,7 @@ class PPO:
         rewards_reshaped = rewards.reshape(rollout_steps, self.num_envs).T  # (num_envs, rollout_steps)
         values_reshaped = values.reshape(rollout_steps, self.num_envs).T
         dones_reshaped = dones.reshape(rollout_steps, self.num_envs).T
+        next_states_reshaped = next_states.reshape(rollout_steps, self.num_envs).T  # P0修复：reshape next_states
 
         # Compute GAE per environment
         all_advantages = []
@@ -289,9 +334,9 @@ class PPO:
             env_values = values_reshaped[env_idx]
             env_dones = dones_reshaped[env_idx]
 
-            # Get next_value for this environment's last state
-            last_state_idx = (rollout_steps - 1) * self.num_envs + env_idx
-            next_state_tensor = torch.tensor(states[last_state_idx], dtype=torch.float32).unsqueeze(0).to(DEVICE)
+            # P0修复：使用 next_state（最后一步的 next_state）来计算 next_value
+            last_next_state_idx = (rollout_steps - 1) * self.num_envs + env_idx
+            next_state_tensor = torch.tensor(next_states[last_next_state_idx], dtype=torch.float32).unsqueeze(0).to(DEVICE)
             with torch.no_grad():
                 _, _, next_value = self.model(next_state_tensor)
             next_value = next_value.cpu().item()
@@ -339,7 +384,13 @@ class PPO:
 
                 mean, std, value = self.model(batch_states)
                 dist = Normal(mean, std)
-                current_log_probs = dist.log_prob(batch_actions).sum(dim=-1)
+                
+                # P0修复：计算 tanh-squashed action 的 log_prob（添加 Jacobian 修正）
+                pre_tanh_action = torch.atanh(torch.clamp(batch_actions / self.action_max, -0.999, 0.999))
+                log_prob_pre_tanh = dist.log_prob(pre_tanh_action).sum(dim=-1)
+                tanh_jacobian = torch.log(1 - (batch_actions / self.action_max).pow(2) + 1e-6).sum(dim=-1)
+                current_log_probs = log_prob_pre_tanh - tanh_jacobian
+                
                 entropy = dist.entropy().sum(dim=-1)
 
                 # PPO-Clip 损失

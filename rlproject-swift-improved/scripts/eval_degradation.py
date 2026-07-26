@@ -37,7 +37,7 @@ def make_degraded_env(axis, level, base_config=None):
     创建带特定退化配置的环境
 
     Args:
-        axis: 退化轴名称 ('gaussian'|'resolution'|'depth_noise'|'lighting'|'viewpoint')
+        axis: 退化轴名称 ('gaussian'|'resolution'|'depth_noise'|'lighting'|'viewpoint_uncertainty')
         level: 退化水平 (对应DEGRADATION_AXES中的levels)
         base_config: 基础环境配置
     Returns:
@@ -177,7 +177,7 @@ def main():
                        help='模型路径 (.pth)')
     parser.add_argument('--axis', type=str, default='all',
                        help='退化轴: all | gaussian | resolution | '
-                            'depth_noise | lighting | viewpoint')
+                            'depth_noise | lighting | viewpoint_uncertainty')
     parser.add_argument('--levels', type=str, default=None,
                        help='自定义退化水平, 逗号分隔 (覆盖默认)')
     parser.add_argument('--episodes', type=int, default=50,

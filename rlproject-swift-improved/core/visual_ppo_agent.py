@@ -120,26 +120,49 @@ class VisualActorCritic(nn.Module):
 
 
 # ── 自适应熵系数 ─────────────────────────────────────────────────
-# 复用v1实现
+# P0修复版：目标改为正值，加上下界
 
 class AdaptiveEntropyCoeff:
-    def __init__(self, initial_coeff=0.01, target_entropy=None, lr=3e-4):
-        self.target_entropy = target_entropy
+    """自适应熵系数（P0修复版）
+    
+    P0修复：
+    - 目标改为正值 (2.0-3.0)，不再是负的 -action_dim
+    - 加 log_alpha 上下界 [-9.2, -1.6]（对应 alpha ≈ 1e-4 ~ 0.2）
+    """
+    
+    def __init__(self, initial_coeff=0.01, target_entropy=None, lr=3e-4, action_dim=3):
+        # P0修复：目标改为正熵值
+        if target_entropy is None:
+            self.target_entropy = 2.5
+        else:
+            self.target_entropy = max(0.5, target_entropy)
+        
         self.log_alpha = torch.zeros(1, requires_grad=True, device=DEVICE)
         self.log_alpha.data.fill_(np.log(initial_coeff))
         self.optimizer = torch.optim.Adam([self.log_alpha], lr=lr)
+        
+        # P0修复：上下界
+        self.log_alpha_min = np.log(1e-4)
+        self.log_alpha_max = np.log(0.2)
+        self.update_count = 0
 
     def get_coeff(self):
-        return self.log_alpha.exp().item()
+        return torch.clamp(self.log_alpha, self.log_alpha_min, self.log_alpha_max).exp().item()
 
     def update(self, entropy):
         if self.target_entropy is None:
             return
-        alpha = self.log_alpha.exp()
+        alpha = torch.clamp(self.log_alpha, self.log_alpha_min, self.log_alpha_max).exp()
         loss = -(self.log_alpha * (entropy.detach() - self.target_entropy)).mean()
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+        
+        # P0修复：手动裁剪
+        with torch.no_grad():
+            self.log_alpha.data.clamp_(self.log_alpha_min, self.log_alpha_max)
+        
+        self.update_count += 1
 
 
 # ── Visual PPO ──────────────────────────────────────────────────
@@ -177,11 +200,12 @@ class VisualPPO:
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
 
         if use_adaptive_entropy:
-            # WHY higher initial + lr: 视觉观测下policy收敛慢, entropy从max(4.26)
-            # 降到target(-3)需强entropy penalty。v1的0.01/3e-4在向量环境下够了,
-            # 但视觉版100ep entropy纹丝不动 → initial×10 + lr×10
+            # P0修复：改为正值 target_entropy，加上下界防止发散
             self.entropy_coeff = AdaptiveEntropyCoeff(
-                initial_coeff=0.1, target_entropy=-action_dim, lr=lr * 10)
+                initial_coeff=0.1, 
+                target_entropy=2.5,  # P0修复：改为正值
+                lr=lr * 10,
+                action_dim=action_dim)
         else:
             self.entropy_coeff = None
             self.fixed_entropy_coeff = 0.01
@@ -196,7 +220,10 @@ class VisualPPO:
 
     def get_action(self, observation: Dict, deterministic=False
                    ) -> Tuple[np.ndarray, float, float, float]:
-        """observation = {'depth': (64,64,1), 'vec': (6,)}"""
+        """observation = {'depth': (64,64,1), 'vec': (6,)}
+        
+        P0修复：使用 tanh-squashed Gaussian
+        """
         depth = torch.tensor(observation['depth'], dtype=torch.float32
                             ).unsqueeze(0).to(DEVICE)  # (1,64,64,1) → (1,1,64,64)
         depth = depth.permute(0, 3, 1, 2)              # NHWC → NCHW
@@ -206,9 +233,16 @@ class VisualPPO:
         with torch.no_grad():
             mean, std, value = self.model(depth, vec)
             dist = Normal(mean, std)
-            action_tensor = mean if deterministic else dist.sample()
-            action_tensor = torch.clamp(action_tensor, -self.action_max, self.action_max)
-            log_prob = dist.log_prob(action_tensor).sum(dim=-1)
+            
+            # P0修复：tanh-squashed action
+            pre_tanh_action = mean if deterministic else dist.sample()
+            action_tensor = torch.tanh(pre_tanh_action) * self.action_max
+            
+            # P0修复：计算 tanh Jacobian 修正
+            log_prob = dist.log_prob(pre_tanh_action).sum(dim=-1)
+            tanh_jacobian = torch.log(1 - (action_tensor / self.action_max).pow(2) + 1e-6).sum(dim=-1)
+            log_prob = log_prob - tanh_jacobian
+            
             entropy = dist.entropy().sum(dim=-1)
 
         return (action_tensor.squeeze(0).cpu().numpy(),
@@ -261,6 +295,8 @@ class VisualPPO:
         old_log_probs = np.array([t['log_prob'] for t in self.memory],
                                   dtype=np.float32)
         values = np.array([t['value'] for t in self.memory], dtype=np.float32)
+        next_states_depth = np.stack([t['next_state']['depth'] for t in self.memory])  # P0修复
+        next_states_vec = np.stack([t['next_state']['vec'] for t in self.memory])      # P0修复
 
         total_samples = len(states_depth)
         rollout_steps = total_samples // self.num_envs
@@ -271,11 +307,12 @@ class VisualPPO:
         dones_2d = dones.reshape(rollout_steps, self.num_envs).T
         all_adv, all_ret = [], []
         for env_idx in range(self.num_envs):
+            # P0修复：使用 next_state 而不是 state
             lidx = (rollout_steps - 1) * self.num_envs + env_idx
-            d_t = torch.tensor(states_depth[lidx], dtype=torch.float32
+            d_t = torch.tensor(next_states_depth[lidx], dtype=torch.float32
                               ).unsqueeze(0).to(DEVICE)
             d_t = d_t.permute(0, 3, 1, 2)
-            v_t = torch.tensor(states_vec[lidx], dtype=torch.float32
+            v_t = torch.tensor(next_states_vec[lidx], dtype=torch.float32
                               ).unsqueeze(0).to(DEVICE)
             with torch.no_grad():
                 _, _, nv = self.model(d_t, v_t)
@@ -310,7 +347,13 @@ class VisualPPO:
 
                 mean, std, value = self.model(s_d[bi], s_v[bi])
                 dist = Normal(mean, std)
-                clp = dist.log_prob(a_t[bi]).sum(dim=-1)
+                
+                # P0修复：tanh-squashed action 的 log_prob（加 Jacobian 修正）
+                pre_tanh_action = torch.atanh(torch.clamp(a_t[bi] / self.action_max, -0.999, 0.999))
+                log_prob_pre_tanh = dist.log_prob(pre_tanh_action).sum(dim=-1)
+                tanh_jacobian = torch.log(1 - (a_t[bi] / self.action_max).pow(2) + 1e-6).sum(dim=-1)
+                clp = log_prob_pre_tanh - tanh_jacobian
+                
                 ent = dist.entropy().sum(dim=-1)
 
                 ratio = torch.exp(clp - olp[bi])
