@@ -53,7 +53,7 @@ def make_degraded_env(axis, level, base_config=None):
     return VisualDroneEnv(config=config)
 
 
-def evaluate_single_config(agent, env, num_episodes=50):
+def evaluate_single_config(agent, env, num_episodes=50, base_seed=20260726):
     """
     在单个退化配置下评估模型
 
@@ -65,7 +65,9 @@ def evaluate_single_config(agent, env, num_episodes=50):
     rewards = []; steps_list = []
 
     for ep in range(num_episodes):
-        obs, _ = env.reset()
+        # Common random numbers: every degradation level sees exactly the
+        # same start/target sequence, so differences are caused by degradation.
+        obs, _ = env.reset(seed=base_seed + ep)
         ep_reward = 0.0; ep_steps = 0
 
         while True:
@@ -99,7 +101,7 @@ def evaluate_single_config(agent, env, num_episodes=50):
 
 
 def run_degradation_axis(agent, axis_name, levels, episodes_per_level=50,
-                          base_config=None):
+                          base_config=None, base_seed=20260726):
     """
     测量单条退化轴的完整衰减曲线
 
@@ -113,7 +115,8 @@ def run_degradation_axis(agent, axis_name, levels, episodes_per_level=50,
     results = []
     for level in levels:
         env = make_degraded_env(axis_name, level, base_config)
-        metrics = evaluate_single_config(agent, env, episodes_per_level)
+        metrics = evaluate_single_config(
+            agent, env, episodes_per_level, base_seed=base_seed)
         record = {
             'axis': axis_name,
             'axis_name': axis_info['name'],
@@ -181,6 +184,8 @@ def main():
                        help='每水平评估episode数')
     parser.add_argument('--output', type=str, default='eval_results',
                        help='输出目录')
+    parser.add_argument('--seed', type=int, default=20260726,
+                        help='各档共享的首个 episode seed')
     parser.add_argument('--renderer', choices=['mock', 'gsplat'],
                         default='mock')
     parser.add_argument('--ply', type=str, default=None,
@@ -219,7 +224,8 @@ def main():
         axis_results = run_degradation_axis(
             agent, axis_name, levels,
             episodes_per_level=args.episodes,
-            base_config=base_config)
+            base_config=base_config,
+            base_seed=args.seed)
         all_results.extend(axis_results)
 
     # 保存
