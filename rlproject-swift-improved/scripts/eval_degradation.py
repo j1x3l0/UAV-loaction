@@ -44,7 +44,7 @@ def make_degraded_env(axis, level, base_config=None):
         VisualDroneEnv 实例
     """
     config = base_config.copy() if base_config else {}
-    deg = config.get('degradation', {})
+    deg = dict(config.get('degradation', {}))
 
     # 将退化水平写入配置 (5轴全覆盖)
     deg[axis] = level
@@ -181,7 +181,17 @@ def main():
                        help='每水平评估episode数')
     parser.add_argument('--output', type=str, default='eval_results',
                        help='输出目录')
+    parser.add_argument('--renderer', choices=['mock', 'gsplat'],
+                        default='mock')
+    parser.add_argument('--ply', type=str, default=None,
+                        help='真实 3DGS PLY 路径')
     args = parser.parse_args()
+    if args.renderer == 'gsplat':
+        if not args.ply or not os.path.isfile(args.ply):
+            raise FileNotFoundError("--renderer gsplat requires an existing --ply")
+    base_config = {'renderer': args.renderer}
+    if args.ply:
+        base_config['ply_path'] = args.ply
 
     # 加载模型
     logger.info(f"Loading model: {args.model}")
@@ -208,7 +218,8 @@ def main():
 
         axis_results = run_degradation_axis(
             agent, axis_name, levels,
-            episodes_per_level=args.episodes)
+            episodes_per_level=args.episodes,
+            base_config=base_config)
         all_results.extend(axis_results)
 
     # 保存
