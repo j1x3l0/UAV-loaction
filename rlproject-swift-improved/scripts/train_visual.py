@@ -31,6 +31,7 @@ REPO_ROOT = os.path.dirname(PROJECT_ROOT)
 
 from envs.visual_drone_env import VisualDroneEnv
 from core.visual_ppo_agent import VisualPPO
+from utils.metrics import wilson_confidence_interval
 import logging
 
 logging.basicConfig(level=logging.INFO,
@@ -44,30 +45,50 @@ def format_time(s):
     return f"{s//3600:.0f}h{(s%3600)//60:.0f}m"
 
 
-def evaluate_model(agent, env, eval_episodes=50):
-    """评估: 成功率/碰撞率/平均奖励/平均步数"""
+def evaluate_model(agent, env, eval_episodes=100, base_seed=None):
+    """评估: 成功率/碰撞率/平均奖励/平均步数 (Fix: ≥100ep 稳定评估)"""
     successes = collisions = timeouts = 0
     rewards_list = []
-    for _ in range(eval_episodes):
-        obs, _ = env.reset()
+    episodes_detail = []  # per-episode 记录 (Fix 4)
+    for ep_idx in range(eval_episodes):
+        eval_seed = None if base_seed is None else base_seed + ep_idx
+        obs, _ = env.reset(seed=eval_seed)
         ep_reward = 0.0
         while True:
             action = agent.select_action(obs, deterministic=True)
             obs, reward, terminated, truncated, info = env.step(action)
             ep_reward += reward
             if terminated or truncated:
-                if info.get('reached_target'): successes += 1
-                elif info.get('collision'): collisions += 1
-                else: timeouts += 1
+                if info.get('reached_target'):
+                    successes += 1
+                    result_type = 'success'
+                elif info.get('collision'):
+                    collisions += 1
+                    result_type = 'collision'
+                else:
+                    timeouts += 1
+                    result_type = 'timeout'
                 break
         rewards_list.append(ep_reward)
+        episodes_detail.append({
+            'episode': ep_idx,
+            'result': result_type,
+            'reward': float(ep_reward),
+        })
+
+    n = max(eval_episodes, 1)
+    sr = successes / n
+    sr_ci_low, sr_ci_high = wilson_confidence_interval(sr, n)
 
     return {
-        'success_rate': successes / eval_episodes * 100,
-        'collision_rate': collisions / eval_episodes * 100,
-        'timeout_rate': timeouts / eval_episodes * 100,
+        'success_rate': sr * 100,
+        'sr_ci_low': sr_ci_low,
+        'sr_ci_high': sr_ci_high,
+        'collision_rate': collisions / n * 100,
+        'timeout_rate': timeouts / n * 100,
         'avg_reward': np.mean(rewards_list),
         'reward_std': np.std(rewards_list),
+        'episodes_detail': episodes_detail,
     }
 
 
@@ -113,6 +134,13 @@ def train_visual(config):
     max_episodes = config.get('max_episodes', 3000)
     eval_interval = config.get('eval_interval', 50)
     eval_episodes = config.get('eval_episodes', 20)
+    seed = config.get('seed', 0)
+    model_out = config.get('model_out', 'saved_models/visual_ppo_best.pth')
+
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
 
     degradation = config.get('degradation', 'clean')
     renderer = config.get('renderer', 'mock')
@@ -137,7 +165,8 @@ def train_visual(config):
     )
 
     # 重置环境
-    observations = [env.reset()[0] for env in envs]
+    observations = [env.reset(seed=seed + i)[0]
+                    for i, env in enumerate(envs)]
     step_count = 0
     start_time = time.time()
     best_sr = 0.0
@@ -151,18 +180,16 @@ def train_visual(config):
         for step in range(rollout_steps):
             step_count += num_envs
 
-            actions = []; log_probs = []; values = []; entropies = []
-            for i in range(num_envs):
-                a, lp, v, ent = ppo.get_action(observations[i])
-                actions.append(a); log_probs.append(lp)
-                values.append(v); entropies.append(ent)
+            # 批量推理: 单次 CNN forward 处理所有环境 (P1-1 修复)
+            actions, log_probs, values, entropies = \
+                ppo.get_actions_batch(observations)
 
             for i in range(num_envs):
                 next_obs, reward, terminated, truncated, info = envs[i].step(actions[i])
                 done = terminated or truncated
                 ppo.store_transition(observations[i], actions[i], reward,
-                                     next_obs, done, log_probs[i], values[i],
-                                     entropies[i])
+                                     next_obs, done, float(log_probs[i]),
+                                     float(values[i]), float(entropies[i]))
                 observations[i] = next_obs
                 if done:
                     observations[i], _ = envs[i].reset()
@@ -190,13 +217,15 @@ def train_visual(config):
 
         # 评估
         if episode % eval_interval == 0 or episode == max_episodes - 1:
-            eval_result = evaluate_model(ppo, eval_env, eval_episodes)
-            logger.info(f"  Eval: SR={eval_result['success_rate']:.1f}% | "
+            eval_result = evaluate_model(
+                ppo, eval_env, eval_episodes, base_seed=seed + 100_000)
+            logger.info(f"  Eval: SR={eval_result['success_rate']:.1f}% "
+                        f"(95%CI {eval_result['sr_ci_low']:.1f}–{eval_result['sr_ci_high']:.1f}) | "
                         f"CR={eval_result['collision_rate']:.1f}% | "
                         f"avgR={eval_result['avg_reward']:.2f}")
             if eval_result['success_rate'] > best_sr:
                 best_sr = eval_result['success_rate']
-                ppo.save_model(f"saved_models/visual_ppo_best.pth")
+                ppo.save_model(model_out)
                 logger.info(f"  New best model (SR={best_sr:.1f}%)")
 
     elapsed = time.time() - start_time
@@ -217,6 +246,9 @@ def main():
                        choices=['mock', 'gsplat'])
     parser.add_argument('--ply', type=str, default=None,
                        help='3DGS .ply 路径 (--renderer gsplat 时必填)')
+    parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument('--model-out', type=str,
+                        default='saved_models/visual_ppo_best.pth')
     args = parser.parse_args()
 
     config = {
@@ -230,7 +262,9 @@ def main():
         'minibatch_size': 32,
         'epochs': 5,
         'eval_interval': max(5, args.episodes // 10),
-        'eval_episodes': 20,
+        'eval_episodes': 100,  # Fix 4: ≥100ep 稳定评估 (was 20)
+        'seed': args.seed,
+        'model_out': args.model_out,
     }
 
     result = train_visual(config)
