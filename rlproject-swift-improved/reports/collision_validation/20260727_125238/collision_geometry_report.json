@@ -1,0 +1,71 @@
+{
+  "timestamp": "2026-07-27T12:52:38.851623",
+  "n_samples": 256,
+  "mismatch_ratio_pct": 86.328125,
+  "mean_mismatch_m": 6.055013694413958,
+  "max_mismatch_m": 18.214582324593863,
+  "phantom_collisions": 2,
+  "missed_collisions": 5,
+  "collision_geometry_details": {
+    "n_spheres": 3,
+    "spheres": [
+      {
+        "x": 2.0,
+        "y": 2.0,
+        "z": 3.0,
+        "radius": 1.0
+      },
+      {
+        "x": 6.0,
+        "y": 3.0,
+        "z": 5.0,
+        "radius": 1.0
+      },
+      {
+        "x": 3.0,
+        "y": 7.0,
+        "z": 4.0,
+        "radius": 1.0
+      }
+    ],
+    "drone_radius": 0.5,
+    "collision_threshold": 0.5,
+    "render_obstacles": [
+      {
+        "x": 5.0,
+        "y": 0.0,
+        "z": 3.0,
+        "radius": 1.5
+      },
+      {
+        "x": 8.0,
+        "y": 2.0,
+        "z": 4.0,
+        "radius": 1.2
+      },
+      {
+        "x": 3.0,
+        "y": -2.0,
+        "z": 2.5,
+        "radius": 1.0
+      }
+    ],
+    "render_to_collision_offset": [
+      3.605551275463989,
+      2.449489742783178,
+      4.153311931459037
+    ],
+    "render_collision_aligned": false,
+    "depth_stats": {
+      "mean_min_depth": 8.993770495732749,
+      "min_depth_5pct": 1.8801080764714053,
+      "min_depth_95pct": 14.562165453544791
+    },
+    "mismatch_percentiles": {
+      "p50": 3.350782425840957,
+      "p90": 15.186435633482997,
+      "p95": 16.288029593561856
+    }
+  },
+  "gsplat_alignment": null
+}

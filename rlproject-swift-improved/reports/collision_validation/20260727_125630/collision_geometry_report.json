@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-07-27T12:56:30.581004",
+  "n_samples": 256,
+  "mismatch_ratio_pct": 55.078125,
+  "mean_mismatch_m": 6.33403292353251,
+  "max_mismatch_m": 19.77846214773323,
+  "phantom_collisions": 1,
+  "missed_collisions": 1,
+  "collision_geometry_details": {
+    "n_spheres": 3,
+    "spheres": [
+      {
+        "x": 2.0,
+        "y": 2.0,
+        "z": 3.0,
+        "radius": 1.0
+      },
+      {
+        "x": 6.0,
+        "y": 3.0,
+        "z": 5.0,
+        "radius": 1.0
+      },
+      {
+        "x": 3.0,
+        "y": 7.0,
+        "z": 4.0,
+        "radius": 1.0
+      }
+    ],
+    "drone_radius": 0.5,
+    "collision_threshold": 0.5,
+    "render_obstacles": [
+      {
+        "x": 
