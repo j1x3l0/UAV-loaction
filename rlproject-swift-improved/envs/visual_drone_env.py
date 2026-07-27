@@ -145,11 +145,28 @@ class VisualDroneEnv(gym.Env):
         self.max_velocity = 5.0
         self.dt = 0.05
 
+        # ── 障碍物 (与v1一致, 必须在渲染器初始化之前定义) ──
+        self.obstacles = np.array([
+            [2.0, 2.0, 3.0],
+            [6.0, 3.0, 5.0],
+            [3.0, 7.0, 4.0]
+        ])
+        self.obstacle_radius = 1.0
+        self.collision_threshold = 0.5
+
         # ── 渲染器 ──
         renderer_type = self.config.get('renderer', 'mock')
+
+        # 构建用于渲染的障碍物数组 [x, y, z, radius] — 与碰撞几何一致
+        # FIX 2026-07-27: 之前取了 renderer.obstacles (不同的位置) 导致深度图与碰撞检测不匹配
+        # 现在从 self.obstacles + self.obstacle_radius 构建, 确保视觉=碰撞几何
+        self._base_obstacles_for_render = np.column_stack([
+            self.obstacles,
+            np.full(len(self.obstacles), self.obstacle_radius)
+        ]).astype(np.float32)
+
         if renderer_type == 'mock':
             self.renderer = MockGSRenderer(width=64, height=64)
-            self._base_obstacles_for_render = self.renderer.obstacles.copy()
         elif renderer_type == 'gsplat':
             ply_path = self.config.get('ply_path')
             if ply_path is None:
@@ -158,22 +175,12 @@ class VisualDroneEnv(gym.Env):
             gaussian_level = self.config.get('degradation', {}).get('gaussian')
             if gaussian_level is not None:
                 self.renderer.set_gaussian_keep_percent(gaussian_level)
-            self._base_obstacles_for_render = np.empty((0, 4))
         else:
             raise ValueError(f"Unsupported renderer: {renderer_type}")
 
         # ── 退化配置 ──
         self.deg_config = self.config.get('degradation', {})
         self.ablation_config = self.config.get('ablation', {})
-
-        # ── 障碍物 (与v1一致) ──
-        self.obstacles = np.array([
-            [2.0, 2.0, 3.0],
-            [6.0, 3.0, 5.0],
-            [3.0, 7.0, 4.0]
-        ])
-        self.obstacle_radius = 1.0
-        self.collision_threshold = 0.5
 
         # ── 观测/动作空间 ──
         self.observation_space = spaces.Dict({
@@ -286,10 +293,24 @@ class VisualDroneEnv(gym.Env):
                 boundary_hit = True
 
         # 碰撞检测
+        # FIX 2026-07-27: 根据渲染器类型使用不同的碰撞检测策略
+        # - Mock: 球体碰撞 (与深度图渲染的障碍物位置一致)
+        # - Real GS: 深度图碰撞 (使用实际场景几何, 而非硬编码球体)
         collision = False
-        for obs_pos in self.obstacles:
-            if np.linalg.norm(new_pos - obs_pos) <= self.collision_threshold + self.obstacle_radius:
-                collision = True; break
+        if isinstance(self.renderer, MockGSRenderer):
+            # 球体碰撞检测 — 障碍物位置与 _base_obstacles_for_render 一致
+            for obs_pos in self.obstacles:
+                if np.linalg.norm(new_pos - obs_pos) <= self.collision_threshold + self.obstacle_radius:
+                    collision = True; break
+        elif isinstance(self.renderer, GSplatRenderer):
+            # 深度图碰撞 — 使用真实3DGS场景几何
+            # 渲染当前位姿的深度图, 取最小值检查是否太近
+            depth_check, _ = self.renderer.render(new_pos)
+            depth_min = float(depth_check[:, :, 0].min())
+            # 深度 < 0.8m = 障碍物表面距相机中心不足0.8m
+            # 加上无人机半径0.5m → 相当于碰撞
+            if depth_min <= self.collision_threshold + 0.3:  # ~0.8m threshold
+                collision = True
 
         target_dist = np.linalg.norm(new_pos - self.target_pos)
         reached = target_dist <= self.target_threshold

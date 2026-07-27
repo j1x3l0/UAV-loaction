@@ -1,0 +1,45 @@
+{
+  "baseline": {
+    "success_rate": 10.0,
+    "collision_rate": 63.33333333333333,
+    "timeout_rate": 26.666666666666668,
+    "avg_reward": -746.6746594492894,
+    "reward_std": 789.6431576076064,
+    "episodes": 30
+  },
+  "const_depth": {
+    "success_rate": 3.3333333333333335,
+    "collision_rate": 43.333333333333336,
+    "timeout_rate": 53.333333333333336,
+    "avg_reward": -879.358707561498,
+    "reward_std": 786.497032051155,
+    "episodes": 30
+  },
+  "no_target_dir": {
+    "success_rate": 0.0,
+    "collision_rate": 26.666666666666668,
+    "timeout_rate": 73.33333333333333,
+    "avg_reward": -2079.3942927240323,
+    "reward_std": 878.7938855412774,
+    "episodes": 30
+  },
+  "both": {
+    "success_rate": 0.0,
+    "collision_rate": 43.333333333333336,
+    "timeout_rate": 56.666666666666664,
+    "avg_reward": -1122.4097570722183,
+    "reward_std": 878.1606680657361,
+    "episodes": 30
+  },
+  "analysis": {
+    "const_depth_delta": -6.666666666666666,
+    "no_target_dir_delta": -10.0,
+    "both_delta": -10.0
+  },
+  "metadata": {
+    "renderer": "mock",
+    "ply": null,
+    "seed": 20260726,
+    "timestamp": "2026-07-27T13:00:28.559950"
+  }
+}
