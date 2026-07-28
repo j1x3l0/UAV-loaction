@@ -57,6 +57,27 @@ def get_scale_curriculum_stage(progress):
     return active[1], active[2]
 
 
+def get_checkpoint_paths(clean_best_path):
+    """Derive explicit robust-best and final paths without breaking callers."""
+    root, extension = os.path.splitext(clean_best_path)
+    if not extension:
+        extension = '.pth'
+    variant_root = root[:-5] if root.endswith('_best') else root
+    return {
+        'clean_best': clean_best_path,
+        'robust_best': f'{variant_root}_robust_best{extension}',
+        'final': f'{variant_root}_final{extension}',
+    }
+
+
+def robust_validation_score(scale_results):
+    """Lexicographic score: protect the worst scale, then maximize the mean."""
+    success_rates = [result['success_rate'] for result in scale_results]
+    if not success_rates:
+        raise ValueError("scale_results must not be empty")
+    return min(success_rates), float(np.mean(success_rates))
+
+
 def format_time(s):
     if s < 60: return f"{s:.0f}s"
     if s < 3600: return f"{s//60:.0f}m{s%60:.0f}s"
@@ -158,6 +179,19 @@ def make_env(degradation_config=None, renderer='mock', ply_path=None):
     return VisualDroneEnv(config=cfg)
 
 
+def make_fixed_depth_scale_env(renderer, ply_path, depth_scale):
+    """Create a validation environment with one fixed depth calibration."""
+    cfg = {
+        'renderer': renderer,
+        'degradation': {'depth_scale': depth_scale},
+    }
+    if renderer == 'gsplat':
+        if not ply_path:
+            raise ValueError("--renderer gsplat requires --ply <path to .ply>")
+        cfg['ply_path'] = resolve_ply_path(ply_path)
+    return VisualDroneEnv(config=cfg)
+
+
 def train_visual(config):
     """视觉PPO训练主循环"""
     num_envs = config.get('num_envs', 2)
@@ -167,6 +201,7 @@ def train_visual(config):
     eval_episodes = config.get('eval_episodes', 20)
     seed = config.get('seed', 0)
     model_out = config.get('model_out', 'saved_models/visual_ppo_best.pth')
+    checkpoint_paths = get_checkpoint_paths(model_out)
 
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -180,6 +215,12 @@ def train_visual(config):
     # 创建环境
     envs = [make_env(degradation, renderer, ply_path) for _ in range(num_envs)]
     eval_env = make_env('clean', renderer, ply_path)
+    robust_eval_envs = None
+    if degradation == 'scale_curriculum':
+        robust_eval_envs = [
+            make_fixed_depth_scale_env(renderer, ply_path, scale)
+            for scale in DEPTH_SCALE_LEVELS
+        ]
 
     # 创建PPO (per-env rollout 需要调整num_envs)
     ppo = VisualPPO(
@@ -200,7 +241,10 @@ def train_visual(config):
                     for i, env in enumerate(envs)]
     step_count = 0
     start_time = time.time()
-    best_sr = 0.0
+    # Start below the valid SR range so even a 0%-SR smoke run produces a
+    # loadable clean-best checkpoint.
+    best_sr = -1.0
+    best_robust_score = (-1.0, -1.0)
     active_curriculum_stage = None
 
     logger.info(f"Training: {max_episodes}ep × {num_envs}envs × "
@@ -284,13 +328,46 @@ def train_visual(config):
                         f"avgR={eval_result['avg_reward']:.2f}")
             if eval_result['success_rate'] > best_sr:
                 best_sr = eval_result['success_rate']
-                ppo.save_model(model_out)
+                ppo.save_model(checkpoint_paths['clean_best'])
                 logger.info(f"  New best model (SR={best_sr:.1f}%)")
 
+            if robust_eval_envs is not None:
+                robust_results = [
+                    evaluate_model(
+                        ppo, robust_env,
+                        config.get('robust_eval_episodes', 20),
+                        base_seed=seed + 200_000)
+                    for robust_env in robust_eval_envs
+                ]
+                robust_score = robust_validation_score(robust_results)
+                scale_summary = ', '.join(
+                    f'{scale:g}x={result["success_rate"]:.1f}%'
+                    for scale, result in zip(
+                        DEPTH_SCALE_LEVELS, robust_results))
+                logger.info(
+                    f"  Robust eval: {scale_summary} | "
+                    f"min={robust_score[0]:.1f}% "
+                    f"mean={robust_score[1]:.1f}%")
+                if robust_score > best_robust_score:
+                    best_robust_score = robust_score
+                    ppo.save_model(checkpoint_paths['robust_best'])
+                    logger.info(
+                        f"  New robust-best model "
+                        f"(min={robust_score[0]:.1f}%, "
+                        f"mean={robust_score[1]:.1f}%)")
+
     elapsed = time.time() - start_time
+    ppo.save_model(checkpoint_paths['final'])
+    logger.info(f"Final checkpoint saved: {checkpoint_paths['final']}")
     logger.info(f"Training done | time={format_time(elapsed)} | "
                 f"best_SR={best_sr:.1f}% | steps={step_count}")
-    return {'best_success_rate': best_sr, 'time': elapsed}
+    return {
+        'best_success_rate': best_sr,
+        'best_robust_min_success_rate': best_robust_score[0],
+        'best_robust_mean_success_rate': best_robust_score[1],
+        'checkpoint_paths': checkpoint_paths,
+        'time': elapsed,
+    }
 
 
 def main():
@@ -309,6 +386,10 @@ def main():
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--model-out', type=str,
                         default='saved_models/visual_ppo_best.pth')
+    parser.add_argument('--robust-eval-episodes', type=int, default=20,
+                        help='curriculum每个尺度的checkpoint选择评估数')
+    parser.add_argument('--eval-episodes', type=int, default=100,
+                        help='clean checkpoint评估episode数')
     args = parser.parse_args()
 
     config = {
@@ -322,9 +403,10 @@ def main():
         'minibatch_size': 32,
         'epochs': 5,
         'eval_interval': max(5, args.episodes // 10),
-        'eval_episodes': 100,  # Fix 4: ≥100ep 稳定评估 (was 20)
+        'eval_episodes': args.eval_episodes,
         'seed': args.seed,
         'model_out': args.model_out,
+        'robust_eval_episodes': args.robust_eval_episodes,
     }
 
     result = train_visual(config)
