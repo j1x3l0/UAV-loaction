@@ -184,6 +184,21 @@ class VisualDroneEnv(gym.Env):
             'randomize_depth_scale', False)
         self.depth_scale_levels = self.config.get(
             'depth_scale_levels', [1.0, 0.75, 0.5, 0.25, 0.1])
+        self.depth_scale_probabilities = self.config.get(
+            'depth_scale_probabilities')
+        if self.depth_scale_probabilities is not None:
+            probabilities = np.asarray(
+                self.depth_scale_probabilities, dtype=np.float64)
+            if probabilities.shape != (len(self.depth_scale_levels),):
+                raise ValueError(
+                    "depth_scale_probabilities must match "
+                    "depth_scale_levels")
+            if np.any(probabilities < 0) or not np.isclose(
+                    probabilities.sum(), 1.0):
+                raise ValueError(
+                    "depth_scale_probabilities must be non-negative "
+                    "and sum to 1")
+            self.depth_scale_probabilities = probabilities
         self.ablation_config = self.config.get('ablation', {})
 
         # ── 观测/动作空间 ──
@@ -269,7 +284,9 @@ class VisualDroneEnv(gym.Env):
             self.deg_config = {
                 **self.deg_config,
                 'depth_scale': float(
-                    self.np_random.choice(self.depth_scale_levels)),
+                    self.np_random.choice(
+                        self.depth_scale_levels,
+                        p=self.depth_scale_probabilities)),
             }
 
         start_min = self.boundary_min + 1.0
@@ -282,7 +299,10 @@ class VisualDroneEnv(gym.Env):
         self.step_count = 0
         self._prev_action = None
 
-        return self._get_observation(), {'target_pos': self.target_pos}
+        return self._get_observation(), {
+            'target_pos': self.target_pos,
+            'depth_scale': self.deg_config.get('depth_scale', 1.0),
+        }
 
     def step(self, action: np.ndarray) -> Tuple[Dict, float, bool, bool, Dict]:
         thrust = np.clip(action, -1.0, 1.0) * self.max_thrust

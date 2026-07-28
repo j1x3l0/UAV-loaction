@@ -126,6 +126,12 @@ def make_env(degradation_config=None, renderer='mock', ply_path=None):
         elif degradation_config == 'scale_rand':
             cfg['randomize_depth_scale'] = True
             cfg['depth_scale_levels'] = [1.0, 0.75, 0.5, 0.25, 0.1]
+        elif degradation_config == 'scale_weighted':
+            # V3 follow-up: concentrate training on the unstable 0.5x
+            # transition while retaining clean and extreme-scale exposure.
+            cfg['randomize_depth_scale'] = True
+            cfg['depth_scale_levels'] = [1.0, 0.75, 0.5, 0.25, 0.1]
+            cfg['depth_scale_probabilities'] = [0.2, 0.2, 0.4, 0.1, 0.1]
     return VisualDroneEnv(config=cfg)
 
 
@@ -243,7 +249,8 @@ def main():
     parser.add_argument('--envs', type=int, default=2)
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--degradation', type=str, default='clean',
-                       choices=['clean', 'rand', 'scale_rand'])
+                       choices=['clean', 'rand', 'scale_rand',
+                                'scale_weighted'])
     parser.add_argument('--rollout-steps', type=int, default=256)
     parser.add_argument('--renderer', type=str, default='mock',
                        choices=['mock', 'gsplat'])

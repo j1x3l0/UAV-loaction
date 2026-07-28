@@ -167,6 +167,41 @@ def test_env_degradation_config():
     assert not np.isnan(obs['depth']).any()
     print(f"  ✓ degradation config: depth range [{obs['depth'].min():.1f}, {obs['depth'].max():.1f}]")
 
+def test_weighted_depth_scale_sampling():
+    """加权尺度按episode采样，并且相同seed可复现"""
+    config = {
+        'randomize_depth_scale': True,
+        'depth_scale_levels': [1.0, 0.75, 0.5, 0.25, 0.1],
+        'depth_scale_probabilities': [0.2, 0.2, 0.4, 0.1, 0.1],
+    }
+    env1 = VisualDroneEnv(config=config)
+    env2 = VisualDroneEnv(config=config)
+    _, info1 = env1.reset(seed=20260728)
+    _, info2 = env2.reset(seed=20260728)
+    assert info1['depth_scale'] == info2['depth_scale']
+    assert info1['depth_scale'] in config['depth_scale_levels']
+
+    sampled = []
+    for seed in range(2000):
+        _, info = env1.reset(seed=seed)
+        sampled.append(info['depth_scale'])
+    transition_fraction = np.mean(np.asarray(sampled) == 0.5)
+    assert 0.35 < transition_fraction < 0.45, transition_fraction
+    print(f"  ✓ weighted depth scale: 0.5x={transition_fraction:.1%}")
+
+def test_invalid_depth_scale_probabilities():
+    """非法尺度概率应在环境创建时立即失败"""
+    try:
+        VisualDroneEnv(config={
+            'randomize_depth_scale': True,
+            'depth_scale_levels': [1.0, 0.5],
+            'depth_scale_probabilities': [0.5],
+        })
+    except ValueError:
+        print("  ✓ invalid depth scale probabilities rejected")
+        return
+    raise AssertionError("invalid depth scale probabilities were accepted")
+
 def test_env_reward_components():
     """7个reward组件都在info中"""
     env = VisualDroneEnv()
@@ -197,6 +232,9 @@ def run_all_tests():
         ("env max steps", test_env_max_steps),
         ("env deterministic", test_env_deterministic),
         ("env degradation config", test_env_degradation_config),
+        ("weighted depth scale sampling", test_weighted_depth_scale_sampling),
+        ("invalid depth scale probabilities",
+         test_invalid_depth_scale_probabilities),
         ("env reward components", test_env_reward_components),
     ]
 
