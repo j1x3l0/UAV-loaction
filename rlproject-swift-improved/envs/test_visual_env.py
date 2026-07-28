@@ -187,6 +187,12 @@ def test_weighted_depth_scale_sampling():
         sampled.append(info['depth_scale'])
     transition_fraction = np.mean(np.asarray(sampled) == 0.5)
     assert 0.35 < transition_fraction < 0.45, transition_fraction
+    assert env1.depth_scale_sample_counts.sum() == 2001
+    env1.reset_depth_scale_sample_counts()
+    assert env1.depth_scale_sample_counts.sum() == 0
+    env1.set_depth_scale_probabilities([0.35, 0.25, 0.2, 0.1, 0.1])
+    assert np.allclose(
+        env1.depth_scale_probabilities, [0.35, 0.25, 0.2, 0.1, 0.1])
     print(f"  ✓ weighted depth scale: 0.5x={transition_fraction:.1%}")
 
 def test_invalid_depth_scale_probabilities():

@@ -184,21 +184,11 @@ class VisualDroneEnv(gym.Env):
             'randomize_depth_scale', False)
         self.depth_scale_levels = self.config.get(
             'depth_scale_levels', [1.0, 0.75, 0.5, 0.25, 0.1])
-        self.depth_scale_probabilities = self.config.get(
-            'depth_scale_probabilities')
-        if self.depth_scale_probabilities is not None:
-            probabilities = np.asarray(
-                self.depth_scale_probabilities, dtype=np.float64)
-            if probabilities.shape != (len(self.depth_scale_levels),):
-                raise ValueError(
-                    "depth_scale_probabilities must match "
-                    "depth_scale_levels")
-            if np.any(probabilities < 0) or not np.isclose(
-                    probabilities.sum(), 1.0):
-                raise ValueError(
-                    "depth_scale_probabilities must be non-negative "
-                    "and sum to 1")
-            self.depth_scale_probabilities = probabilities
+        self.depth_scale_probabilities = None
+        self.set_depth_scale_probabilities(
+            self.config.get('depth_scale_probabilities'))
+        self.depth_scale_sample_counts = np.zeros(
+            len(self.depth_scale_levels), dtype=np.int64)
         self.ablation_config = self.config.get('ablation', {})
 
         # ── 观测/动作空间 ──
@@ -217,6 +207,24 @@ class VisualDroneEnv(gym.Env):
         self.max_steps = 500
         self.target_threshold = 0.5
         self._prev_action = None
+
+    def set_depth_scale_probabilities(self, probabilities):
+        """Validate and update per-episode scale sampling probabilities."""
+        if probabilities is None:
+            self.depth_scale_probabilities = None
+            return
+        probabilities = np.asarray(probabilities, dtype=np.float64)
+        if probabilities.shape != (len(self.depth_scale_levels),):
+            raise ValueError(
+                "depth_scale_probabilities must match depth_scale_levels")
+        if np.any(probabilities < 0) or not np.isclose(
+                probabilities.sum(), 1.0):
+            raise ValueError(
+                "depth_scale_probabilities must be non-negative and sum to 1")
+        self.depth_scale_probabilities = probabilities.copy()
+
+    def reset_depth_scale_sample_counts(self):
+        self.depth_scale_sample_counts.fill(0)
 
     # ── 观测构建 ──
     def _get_observation(self) -> Dict[str, np.ndarray]:
@@ -281,12 +289,14 @@ class VisualDroneEnv(gym.Env):
         if self.randomize_depth_scale:
             # Sample once per episode so the policy cannot memorize a fixed
             # calibration while each trajectory remains internally coherent.
+            sampled_index = int(self.np_random.choice(
+                len(self.depth_scale_levels),
+                p=self.depth_scale_probabilities))
+            self.depth_scale_sample_counts[sampled_index] += 1
             self.deg_config = {
                 **self.deg_config,
                 'depth_scale': float(
-                    self.np_random.choice(
-                        self.depth_scale_levels,
-                        p=self.depth_scale_probabilities)),
+                    self.depth_scale_levels[sampled_index]),
             }
 
         start_min = self.boundary_min + 1.0

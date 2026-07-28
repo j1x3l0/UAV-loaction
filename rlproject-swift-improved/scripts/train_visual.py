@@ -38,6 +38,24 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+DEPTH_SCALE_LEVELS = [1.0, 0.75, 0.5, 0.25, 0.1]
+SCALE_CURRICULUM = (
+    (0.0, 'foundation', [0.35, 0.25, 0.20, 0.10, 0.10]),
+    (0.3, 'transition', [0.25, 0.20, 0.30, 0.15, 0.10]),
+    (0.7, 'robustness', [0.25, 0.15, 0.25, 0.20, 0.15]),
+)
+
+
+def get_scale_curriculum_stage(progress):
+    """Return the active curriculum name and probabilities."""
+    if not 0.0 <= progress <= 1.0:
+        raise ValueError("curriculum progress must be in [0, 1]")
+    active = SCALE_CURRICULUM[0]
+    for stage in SCALE_CURRICULUM:
+        if progress >= stage[0]:
+            active = stage
+    return active[1], active[2]
+
 
 def format_time(s):
     if s < 60: return f"{s:.0f}s"
@@ -125,13 +143,18 @@ def make_env(degradation_config=None, renderer='mock', ply_path=None):
             cfg['degradation'] = {'resolution': max(16, int(64 * level / 100))}
         elif degradation_config == 'scale_rand':
             cfg['randomize_depth_scale'] = True
-            cfg['depth_scale_levels'] = [1.0, 0.75, 0.5, 0.25, 0.1]
+            cfg['depth_scale_levels'] = DEPTH_SCALE_LEVELS
         elif degradation_config == 'scale_weighted':
             # V3 follow-up: concentrate training on the unstable 0.5x
             # transition while retaining clean and extreme-scale exposure.
             cfg['randomize_depth_scale'] = True
-            cfg['depth_scale_levels'] = [1.0, 0.75, 0.5, 0.25, 0.1]
+            cfg['depth_scale_levels'] = DEPTH_SCALE_LEVELS
             cfg['depth_scale_probabilities'] = [0.2, 0.2, 0.4, 0.1, 0.1]
+        elif degradation_config == 'scale_curriculum':
+            cfg['randomize_depth_scale'] = True
+            cfg['depth_scale_levels'] = DEPTH_SCALE_LEVELS
+            _, cfg['depth_scale_probabilities'] = \
+                get_scale_curriculum_stage(0.0)
     return VisualDroneEnv(config=cfg)
 
 
@@ -178,12 +201,27 @@ def train_visual(config):
     step_count = 0
     start_time = time.time()
     best_sr = 0.0
+    active_curriculum_stage = None
 
     logger.info(f"Training: {max_episodes}ep × {num_envs}envs × "
                 f"{rollout_steps}steps, degradation={degradation}, "
                 f"renderer={renderer}")
 
     for episode in range(max_episodes):
+        if degradation == 'scale_curriculum':
+            curriculum_progress = episode / max_episodes
+            stage_name, probabilities = get_scale_curriculum_stage(
+                curriculum_progress)
+            if stage_name != active_curriculum_stage:
+                active_curriculum_stage = stage_name
+                for env in envs:
+                    env.set_depth_scale_probabilities(probabilities)
+                    env.reset_depth_scale_sample_counts()
+                logger.info(
+                    f"Curriculum stage={stage_name} "
+                    f"progress={curriculum_progress:.1%} "
+                    f"probabilities={probabilities}")
+
         # Rollout
         for step in range(rollout_steps):
             step_count += num_envs
@@ -223,6 +261,18 @@ def train_visual(config):
                         f"entropy: {result['entropy']:.2f} | "
                         f"alpha: {result['entropy_coeff']:.5f} | "
                         f"lr: {ppo.current_lr:.2e} | eta: {eta}")
+            if degradation == 'scale_curriculum':
+                sample_counts = np.sum(
+                    [env.depth_scale_sample_counts for env in envs], axis=0)
+                sample_total = int(sample_counts.sum())
+                frequencies = (
+                    sample_counts / sample_total
+                    if sample_total else np.zeros_like(
+                        sample_counts, dtype=np.float64))
+                logger.info(
+                    f"  Scale samples ({active_curriculum_stage}, "
+                    f"n={sample_total}): "
+                    f"{dict(zip(DEPTH_SCALE_LEVELS, frequencies.round(3)))}")
 
         # 评估
         if episode % eval_interval == 0 or episode == max_episodes - 1:
@@ -250,7 +300,7 @@ def main():
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--degradation', type=str, default='clean',
                        choices=['clean', 'rand', 'scale_rand',
-                                'scale_weighted'])
+                                'scale_weighted', 'scale_curriculum'])
     parser.add_argument('--rollout-steps', type=int, default=256)
     parser.add_argument('--renderer', type=str, default='mock',
                        choices=['mock', 'gsplat'])
