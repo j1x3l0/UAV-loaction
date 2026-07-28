@@ -1,0 +1,171 @@
+{
+  "axes_definition": {
+    "gaussian": {
+      "name": "\u9ad8\u65af\u7403\u7a00\u758f\u5316",
+      "levels": [
+        100,
+        50,
+        20,
+        5,
+        2
+      ],
+      "unit": "%"
+    },
+    "resolution": {
+      "name": "\u6e32\u67d3\u5206\u8fa8\u7387",
+      "levels": [
+        64,
+        32,
+        16,
+        8,
+        2
+      ],
+      "unit": "px"
+    },
+    "depth_noise": {
+      "name": "\u6df1\u5ea6\u566a\u58f0",
+      "levels": [
+        0.0,
+        0.1,
+        0.25,
+        0.5,
+        1.0
+      ],
+      "unit": "\u03c3"
+    },
+    "lighting": {
+      "name": "\u5149\u7167\u504f\u79fb",
+      "levels": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "unit": "EV"
+    },
+    "viewpoint_uncertainty": {
+      "name": "\u89c6\u89d2\u4e0d\u786e\u5b9a\u6027",
+      "levels": [
+        360,
+        270,
+        180,
+        90,
+        45
+      ],
+      "unit": "\u00b0"
+    },
+    "depth_failure": {
+      "name": "\u6df1\u5ea6\u5927\u9762\u79ef\u5931\u6548",
+      "levels": [
+        0,
+        25,
+        50,
+        75,
+        90
+      ],
+      "unit": "%"
+    },
+    "occlusion": {
+      "name": "\u76f8\u673a\u906e\u6321",
+      "levels": [
+        0,
+        25,
+        50,
+        75,
+        90
+      ],
+      "unit": "%"
+    },
+    "depth_scale": {
+      "name": "\u6df1\u5ea6\u5c3a\u5ea6\u504f\u5dee",
+      "levels": [
+        1.0,
+        0.75,
+        0.5,
+        0.25,
+        0.1
+      ],
+      "unit": "\u00d7"
+    },
+    "combined": {
+      "name": "\u7ec4\u5408\u9000\u5316",
+      "levels": [
+        0.0,
+        0.25,
+        0.5,
+        0.75,
+        1.0
+      ],
+      "unit": "severity"
+    }
+  },
+  "results": [
+    {
+      "axis": "depth_scale",
+      "axis_name": "\u6df1\u5ea6\u5c3a\u5ea6\u504f\u5dee",
+      "level": 1.0,
+      "unit": "\u00d7",
+      "success_rate": 81.5,
+      "collision_rate": 13.0,
+      "timeout_rate": 5.5,
+      "avg_reward": 308.69945402490407,
+      "reward_std": 278.1826037240239,
+      "avg_steps": 81.0122699386503,
+      "episodes": 200
+    },
+    {
+      "axis": "depth_scale",
+      "axis_name": "\u6df1\u5ea6\u5c3a\u5ea6\u504f\u5dee",
+      "level": 0.75,
+      "unit": "\u00d7",
+      "success_rate": 77.0,
+      "collision_rate": 20.0,
+      "timeout_rate": 3.0,
+      "avg_reward": 344.19517048616166,
+      "reward_std": 216.4817392731513,
+      "avg_steps": 69.74675324675324,
+      "episodes": 200
+    },
+    {
+      "axis": "depth_scale",
+      "axis_name": "\u6df1\u5ea6\u5c3a\u5ea6\u504f\u5dee",
+      "level": 0.5,
+      "unit": "\u00d7",
+      "success_rate": 64.0,
+      "collision_rate": 30.5,
+      "timeout_rate": 5.5,
+      "avg_reward": 289.62491812719145,
+      "reward_std": 256.6497431211668,
+      "avg_steps": 77.6875,
+      "episodes": 200
+    },
+    {
+      "axis": "depth_scale",
+      "axis_name": "\u6df1\u5ea6\u5c3a\u5ea6\u504f\u5dee",
+      "level": 0.25,
+      "unit": "\u00d7",
+      "success_rate": 32.5,
+      "collision_rate": 35.5,
+      "timeout_rate": 32.0,
+      "avg_reward": 69.49542189558696,
+      "reward_std": 363.45362616816476,
+      "avg_steps": 68.26153846153846,
+      "episodes": 200
+    },
+    {
+      "axis": "depth_scale",
+      "axis_name": "\u6df1\u5ea6\u5c3a\u5ea6\u504f\u5dee",
+      "level": 0.1,
+      "unit": "\u00d7",
+      "success_rate": 31.0,
+      "collision_rate": 40.5,
+      "timeout_rate": 28.499999999999996,
+      "avg_reward": 54.083120953746445,
+      "reward_std": 362.9782903895636,
+      "avg_steps": 65.79032258064517,
+      "episodes": 200
+    }
+  ],
+  "timestamp": "20260728_084234"
+}
