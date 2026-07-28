@@ -1,0 +1,81 @@
+{
+  "renderer": "gsplat",
+  "ply": "/root/data/gs_data/ply_exports/gate_mid_new_gs.ply",
+  "seed": 20260728,
+  "results": {
+    "gaussian": {
+      "baseline_level": {
+        "level": 100,
+        "mean_abs_depth_delta": 0.0,
+        "max_abs_depth_delta": 0.0,
+        "changed_pixel_fraction": 0.0
+      },
+      "extreme_level": {
+        "level": 2,
+        "mean_abs_depth_delta": 3.025397130923011,
+        "max_abs_depth_delta": 19.888609282672405,
+        "changed_pixel_fraction": 1.0
+      }
+    },
+    "resolution": {
+      "baseline_level": {
+        "level": 64,
+        "mean_abs_depth_delta": 0.0,
+        "max_abs_depth_delta": 0.0,
+        "changed_pixel_fraction": 0.0
+      },
+      "extreme_level": {
+        "level": 2,
+        "mean_abs_depth_delta": 0.0182356769710168,
+        "max_abs_depth_delta": 0.16295486688613892,
+        "changed_pixel_fraction": 1.0
+      }
+    },
+    "depth_noise": {
+      "baseline_level": {
+        "level": 0.0,
+        "mean_abs_depth_delta": 0.0,
+        "max_abs_depth_delta": 0.0,
+        "changed_pixel_fraction": 0.0
+      },
+      "extreme_level": {
+        "level": 1.0,
+        "mean_abs_depth_delta": 0.5879895454800135,
+        "max_abs_depth_delta": 3.416025459766388,
+        "changed_pixel_fraction": 1.0
+      }
+    },
+    "lighting": {
+      "baseline_level": {
+        "level": 0,
+        "mean_abs_depth_delta": 0.0,
+        "max_abs_depth_delta": 0.0,
+        "changed_pixel_fraction": 0.0
+      },
+      "extreme_level": {
+        "level": 4,
+        "mean_abs_depth_delta": 0.0,
+        "max_abs_depth_delta": 0.0,
+        "changed_pixel_fraction": 0.0
+      }
+    },
+    "viewpoint_uncertainty": {
+      "baseline_level": {
+        "level": 360,
+        "mean_abs_depth_delta": 0.0,
+        "max_abs_depth_delta": 0.0,
+        "changed_pixel_fraction": 0.0
+      },
+      "extreme_level": {
+        "level": 45,
+        "mean_abs_depth_delta": 0.5224981854062207,
+        "max_abs_depth_delta": 4.135966807603836,
+        "changed_pixel_fraction": 0.99951171875
+      }
+    }
+  },
+  "expected_negative_control": {
+    "axis": "lighting",
+    "reason": "The policy observation contains depth and vector state, not RGB."
+  }
+}

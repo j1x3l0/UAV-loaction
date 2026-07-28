@@ -120,10 +120,12 @@ def make_env(degradation_config=None, renderer='mock', ply_path=None):
             raise ValueError("--renderer gsplat requires --ply <path to .ply>")
         cfg['ply_path'] = resolve_ply_path(ply_path)
     if degradation_config and degradation_config != 'clean':
-        # 简化退化配置 (Phase 0冒烟测试用)
         if degradation_config == 'rand':
             level = np.random.choice([100, 50, 25, 10, 5])
             cfg['degradation'] = {'resolution': max(16, int(64 * level / 100))}
+        elif degradation_config == 'scale_rand':
+            cfg['randomize_depth_scale'] = True
+            cfg['depth_scale_levels'] = [1.0, 0.75, 0.5, 0.25, 0.1]
     return VisualDroneEnv(config=cfg)
 
 
@@ -213,6 +215,7 @@ def train_visual(config):
                         f"actor: {result['actor_loss']:.3f} | "
                         f"critic: {result['critic_loss']:.3f} | "
                         f"entropy: {result['entropy']:.2f} | "
+                        f"alpha: {result['entropy_coeff']:.5f} | "
                         f"lr: {ppo.current_lr:.2e} | eta: {eta}")
 
         # 评估
@@ -240,7 +243,7 @@ def main():
     parser.add_argument('--envs', type=int, default=2)
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--degradation', type=str, default='clean',
-                       choices=['clean', 'rand'])
+                       choices=['clean', 'rand', 'scale_rand'])
     parser.add_argument('--rollout-steps', type=int, default=256)
     parser.add_argument('--renderer', type=str, default='mock',
                        choices=['mock', 'gsplat'])

@@ -87,9 +87,10 @@ class VisualActorCritic(nn.Module):
         )
 
         # 可学习 log_std
-        # WHY init=-0.5 (std≈0.6): 原始std=1.0在视觉观测下entropy(4.26)太高,
-        # 100ep内entropy纹丝不动。从std=0.6开始,entropy≈3.5,降低随机碰撞概率。
+        # init=-0.5 gives std≈0.61 and total 3-D entropy≈2.76.
         self.log_std = nn.Parameter(torch.ones(action_dim) * (-0.5))
+        self.log_std_min = float(np.log(1e-3))
+        self.log_std_max = 0.0
 
         self._init_weights()
 
@@ -113,10 +114,18 @@ class VisualActorCritic(nn.Module):
         shared = self.shared(combined)              # (B, 128)
 
         mean = torch.tanh(self.actor(shared))       # (B, 3) ∈ (-1,1)
-        std = torch.clamp(self.log_std.exp(), 1e-3, 1.0)
+        # log_std itself is constrained after optimizer.step(). Avoid clamping
+        # exp(log_std) here: once log_std crossed 0, torch.clamp produced zero
+        # gradient and permanently pinned std=1 / entropy=4.26.
+        std = self.log_std.exp()
         value = self.critic(shared).squeeze(-1)     # (B,)
 
         return mean, std, value
+
+    def clamp_log_std_(self):
+        """Keep the parameter in range without creating a zero-gradient forward path."""
+        with torch.no_grad():
+            self.log_std.clamp_(self.log_std_min, self.log_std_max)
 
 
 # ── 自适应熵系数 ─────────────────────────────────────────────────
@@ -152,8 +161,9 @@ class AdaptiveEntropyCoeff:
     def update(self, entropy):
         if self.target_entropy is None:
             return
-        alpha = torch.clamp(self.log_alpha, self.log_alpha_min, self.log_alpha_max).exp()
-        loss = -(self.log_alpha * (entropy.detach() - self.target_entropy)).mean()
+        # 梯度下降下必须使用正号：entropy > target 时 log_alpha 减小，
+        # entropy < target 时 log_alpha 增大。
+        loss = (self.log_alpha * (entropy.detach() - self.target_entropy)).mean()
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
@@ -202,7 +212,7 @@ class VisualPPO:
         if use_adaptive_entropy:
             # P0修复：改为正值 target_entropy，加上下界防止发散
             self.entropy_coeff = AdaptiveEntropyCoeff(
-                initial_coeff=0.1, 
+                initial_coeff=0.01,
                 target_entropy=2.5,  # P0修复：改为正值
                 lr=lr * 10,
                 action_dim=action_dim)
@@ -254,6 +264,36 @@ class VisualPPO:
                       ) -> np.ndarray:
         action, _, _, _ = self.get_action(observation, deterministic)
         return action
+
+    def get_actions_batch(self, observations: List[Dict],
+                          deterministic: bool = False
+                          ) -> Tuple[np.ndarray, np.ndarray,
+                                     np.ndarray, np.ndarray]:
+        """Select actions for multiple environments with one CNN forward pass."""
+        depth_batch = np.stack([obs['depth'] for obs in observations])
+        vec_batch = np.stack([obs['vec'] for obs in observations])
+        depth = torch.tensor(depth_batch, dtype=torch.float32, device=DEVICE)
+        depth = depth.permute(0, 3, 1, 2)
+        vec = torch.tensor(vec_batch, dtype=torch.float32, device=DEVICE)
+
+        with torch.no_grad():
+            mean, std, value = self.model(depth, vec)
+            dist = Normal(mean, std)
+            pre_tanh_action = mean if deterministic else dist.sample()
+            action = torch.tanh(pre_tanh_action) * self.action_max
+            log_prob = dist.log_prob(pre_tanh_action).sum(dim=-1)
+            tanh_jacobian = torch.log(
+                1 - (action / self.action_max).pow(2) + 1e-6
+            ).sum(dim=-1)
+            log_prob = log_prob - tanh_jacobian
+            entropy = dist.entropy().sum(dim=-1)
+
+        return (
+            action.cpu().numpy(),
+            log_prob.cpu().numpy(),
+            value.cpu().numpy(),
+            entropy.cpu().numpy(),
+        )
 
     def store_transition(self, state, action, reward, next_state,
                          done, log_prob=0.0, value=0.0, entropy=0.0):
@@ -370,6 +410,7 @@ class VisualPPO:
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5)
                 self.optimizer.step()
+                self.model.clamp_log_std_()
 
                 total_loss += loss.item()
                 total_aloss += actor_loss.item()

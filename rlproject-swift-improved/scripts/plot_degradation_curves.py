@@ -25,6 +25,10 @@ AXIS_COLORS = {
     'depth_noise':        '#27AE60',  # 绿
     'lighting':           '#F39C12',  # 橙
     'viewpoint_uncertainty': '#8E44AD',  # 紫
+    'depth_failure':       '#C0392B',
+    'occlusion':           '#7F8C8D',
+    'depth_scale':         '#16A085',
+    'combined':            '#2C3E50',
 }
 
 AXIS_LABELS = {
@@ -33,7 +37,16 @@ AXIS_LABELS = {
     'depth_noise':        'Depth Noise (sigma)',
     'lighting':           'Lighting Offset (EV)',
     'viewpoint_uncertainty': 'Viewpoint Uncertainty (deg)',
+    'depth_failure':       'Depth Failure (%)',
+    'occlusion':           'Occlusion (%)',
+    'depth_scale':         'Depth Scale',
+    'combined':            'Combined Severity',
 }
+
+
+def present_axes(results):
+    """Return axes in first-occurrence order for the selected evaluation suite."""
+    return list(dict.fromkeys(row['axis'] for row in results))
 
 
 def load_results(json_path):
@@ -83,10 +96,11 @@ def plot_single_axis(ax, axis_name, results, add_critical_point=True):
 
 def plot_all_axes(results, output_path, title=None):
     """绘制所有退化轴的全景图"""
-    axes_names = ['gaussian', 'resolution', 'depth_noise', 'lighting', 'viewpoint_uncertainty']
+    axes_names = present_axes(results)
     n = len(axes_names)
 
     fig, axes = plt.subplots(1, n, figsize=(n * 3.5, 3.5), sharey=True)
+    axes = np.atleast_1d(axes)
 
     for i, axis_name in enumerate(axes_names):
         plot_single_axis(axes[i], axis_name, results)
@@ -102,7 +116,7 @@ def plot_all_axes(results, output_path, title=None):
 
 def plot_critical_points(results, output_path):
     """绘制临界点汇总图"""
-    axes_names = ['gaussian', 'resolution', 'depth_noise', 'lighting', 'viewpoint_uncertainty']
+    axes_names = present_axes(results)
     critical = {}
     for axis_name in axes_names:
         axis_data = sorted(
@@ -139,7 +153,7 @@ def plot_critical_points(results, output_path):
 
 def plot_summary_table(results, output_path):
     """生成退化轴汇总表格图"""
-    axes_names = ['gaussian', 'resolution', 'depth_noise', 'lighting', 'viewpoint_uncertainty']
+    axes_names = present_axes(results)
     fig, ax = plt.subplots(figsize=(8, 3))
     ax.axis('off')
 

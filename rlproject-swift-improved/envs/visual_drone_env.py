@@ -145,11 +145,27 @@ class VisualDroneEnv(gym.Env):
         self.max_velocity = 5.0
         self.dt = 0.05
 
+        # Collision geometry. Mock rendering must use these exact spheres;
+        # otherwise the policy sees obstacles at different positions from
+        # those used by collision detection.
+        self.obstacles = np.array([
+            [2.0, 2.0, 3.0],
+            [6.0, 3.0, 5.0],
+            [3.0, 7.0, 4.0],
+        ])
+        self.obstacle_radius = 1.0
+        self.collision_threshold = 0.5
+        collision_render_obstacles = np.column_stack([
+            self.obstacles,
+            np.full(len(self.obstacles), self.obstacle_radius),
+        ]).astype(np.float32)
+
         # ── 渲染器 ──
         renderer_type = self.config.get('renderer', 'mock')
         if renderer_type == 'mock':
-            self.renderer = MockGSRenderer(width=64, height=64)
-            self._base_obstacles_for_render = self.renderer.obstacles.copy()
+            self.renderer = MockGSRenderer(
+                width=64, height=64, obstacles=collision_render_obstacles)
+            self._base_obstacles_for_render = collision_render_obstacles.copy()
         elif renderer_type == 'gsplat':
             ply_path = self.config.get('ply_path')
             if ply_path is None:
@@ -164,16 +180,11 @@ class VisualDroneEnv(gym.Env):
 
         # ── 退化配置 ──
         self.deg_config = self.config.get('degradation', {})
+        self.randomize_depth_scale = self.config.get(
+            'randomize_depth_scale', False)
+        self.depth_scale_levels = self.config.get(
+            'depth_scale_levels', [1.0, 0.75, 0.5, 0.25, 0.1])
         self.ablation_config = self.config.get('ablation', {})
-
-        # ── 障碍物 (与v1一致) ──
-        self.obstacles = np.array([
-            [2.0, 2.0, 3.0],
-            [6.0, 3.0, 5.0],
-            [3.0, 7.0, 4.0]
-        ])
-        self.obstacle_radius = 1.0
-        self.collision_threshold = 0.5
 
         # ── 观测/动作空间 ──
         self.observation_space = spaces.Dict({
@@ -251,7 +262,15 @@ class VisualDroneEnv(gym.Env):
     def reset(self, seed: int = None,
               options: Dict[str, Any] = None) -> Tuple[Dict, Dict]:
         super().reset(seed=seed)
-        self.np_random, _ = seeding.np_random(seed)
+
+        if self.randomize_depth_scale:
+            # Sample once per episode so the policy cannot memorize a fixed
+            # calibration while each trajectory remains internally coherent.
+            self.deg_config = {
+                **self.deg_config,
+                'depth_scale': float(
+                    self.np_random.choice(self.depth_scale_levels)),
+            }
 
         start_min = self.boundary_min + 1.0
         start_max = np.array([2.0, 2.0, 2.0])

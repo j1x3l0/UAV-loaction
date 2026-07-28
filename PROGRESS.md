@@ -1,6 +1,6 @@
 # v2 进度日志
 
-> 更新：随时 | 基于：MASTER_PLAN.md | 当前日期：2026-07-25
+> 更新：随时 | 基于：MASTER_PLAN.md | 当前日期：2026-07-27
 
 ---
 
@@ -9,9 +9,9 @@
 | Phase | 步骤 | 状态 | 完成日期 |
 |-------|------|------|---------|
 | **Phase 0** | 代码构建 | ✅ 已完成 | 2026-07-25 |
-| **Phase V1** | Baseline 训练 | ⬜ 就绪(待GPU服务器) | — |
-| **Phase V2** | 衰减曲线 | ⬜ 未开始 | — |
-| **Phase V3** | 鲁棒训练+对比+消融 | ⬜ 未开始 | — |
+| **Phase V1** | Baseline 训练 | ✅ 已完成（3 seeds） | 2026-07-27 |
+| **Phase V2** | 衰减曲线 | ✅ 扩展结构退化后找到明确相变 | 2026-07-27 |
+| **Phase V3** | 鲁棒训练+对比+消融 | 🔵 V3-Rand-Scale训练完成，待五档鲁棒评估 | — |
 | **Phase V3b** | 消融实验 | ⬜ 未开始 | — |
 | **Phase V3c** | 跨场景泛化 | ⬜ 未开始 | — |
 | **Phase V4** | 论文 | ⬜ 未开始 | — |
@@ -63,7 +63,7 @@
 | 训练管线改造 | ✅ | 2026-07-25 补齐 --renderer/--ply CLI + ply 路径解析 |
 | 100ep 冒烟测试 | ✅ | mock + 真实GS(CPU) 全链路跑通；saved_models/visual_ppo_best.pth |
 
-**Gate G2**：100ep loss下降，SR>0% 🔵 部分 (管线联通已验证；SR>0% 待 Phase V1 完整训练确认)
+**Gate G2**：100ep loss下降，SR>0% ✅（Phase V1 三种子训练及独立评估已确认）
 
 ### Step 0.5：eval_degradation.py
 
@@ -79,17 +79,32 @@
 
 | 项目 | 值 |
 |------|-----|
-| **状态** | ⬜ 就绪待跑 |
-| **场景** | gate_mid (data/gs_data/ply_exports/gate_mid_new_gs.ply, 368,965 Gaussians) |
-| **训练量** | 3000ep × 8 envs |
+| **状态** | ✅ 已完成（以 3×500 多种子替代单次 3000ep） |
+| **场景** | gate_mid (`gate_mid_new_gs.ply`，服务器实载 265,631 Gaussians) |
+| **训练量** | 500ep × 8 envs × 3 seeds |
 | **GPU** | GPU0 |
-| **开始时间** | — |
-| **结束时间** | — |
-| **最终成功率** | — |
-| **模型路径** | — |
+| **开始时间** | 2026-07-27 05:25（服务器时间） |
+| **结束时间** | 2026-07-27 06:14（最晚模型写入时间） |
+| **训练末次平均成功率** | 80.0%（seed 0/1/2：80% / 83% / 77%） |
+| **独立 clean 成功率** | 82.7%（496/600，Wilson 95% CI 79.4–85.5%） |
+| **模型路径** | 服务器：`saved_models/b0_logstd_fixed_alpha001_3x500_20260727_052519/` |
 
-**启动前检查清单**：① 服务器上先跑 `python envs/gs_renderer.py` 验证 GPU 路径 + benchmark fps → ② 100ep 冒烟确认 SR>0% → ③ 再启动 3000ep 正式训练。
-启动命令：`python scripts/train_visual.py --episodes 3000 --envs 8 --renderer gsplat --ply data/gs_data/ply_exports/gate_mid_new_gs.ply`
+训练后的策略熵为 2.40–2.65（目标 2.5），确认 `log_std` 不再锁死在
+`std=1 / entropy=4.26`。
+
+### Step 1.1a：高熵基线与修复版独立 clean 对比
+
+评估设置：真实 gsplat、相同的 200 个独立 episode seeds（base seed
+`20260728`）、确定性策略；每组 3 个训练种子，共 1,200 episodes。
+
+| 组别 | seed0 SR | seed1 SR | seed2 SR | 汇总 SR | 汇总 CR | 平均奖励 |
+|------|---------:|---------:|---------:|--------:|--------:|---------:|
+| 高熵基线（entropy=4.26） | 89.5% | 79.5% | 78.5% | 82.5%（495/600，95% CI 79.3–85.3%） | 17.5% | 405.02 |
+| 修复版（目标 entropy=2.5） | 83.5% | 82.5% | 82.0% | 82.7%（496/600，95% CI 79.4–85.5%） | 17.3% | 408.32 |
+
+配对结果：426 个 episode 两组均成功，35 个均失败，高熵独有成功 69
+个，修复版独有成功 70 个。两组 clean 成功率实质持平（差
+`+0.17 pp`），但修复版跨 seed 波动更小，且消除了不可训练的方差上限锁死。
 
 ### Step 1.2：V1-Baseline-multi
 
@@ -113,7 +128,7 @@
 | **GPU** | GPU2 |
 | **结果** | — |
 
-**Gate G3**：V1-Baseline SR > 80% ⬜
+**Gate G3**：V1-Baseline SR > 80% ✅（独立 clean：82.7%，600 episodes）
 
 ---
 
@@ -123,23 +138,47 @@
 
 | 退化轴 | 状态 | 数据路径 | 临界点(σ_c) | 曲线形状 |
 |--------|------|---------|------------|---------|
-| 高斯球稀疏化 | ⬜ | — | — | — |
-| 分辨率降低 | ⬜ | — | — | — |
-| 视角覆盖 | ⬜ | — | — | — |
-| 光照偏移 | ⬜ | — | — | — |
-| 深度噪声 | ⬜ | — | — | — |
+| 高斯球稀疏化 | ✅ | `reports/phase_v2_formal_5x5x50_20260727_082212/` | >2%（未跌破50%） | 近似平坦 |
+| 分辨率降低 | ✅ | 同上 | <2px（未跌破50%） | 极端档下降 6 pp |
+| 视角覆盖 | ✅ | 同上 | <45°（未跌破50%） | 极端档下降 2 pp |
+| 光照偏移 | ✅ 负对照 | 同上 | N/A | 完全平坦，符合 depth-only 预期 |
+| 深度噪声 | ✅ | 同上 | >1.0σ（未跌破50%） | 近似平坦 |
 | 组合退化 | ⬜ | — | — | — |
 
-**Gate G4**：至少1轴出现 >80%→<20% 突变 ⬜
+**Gate G4**：至少1轴出现 >80%→<20% 突变 ✅。扩展结构退化后，
+深度尺度从 1.0× 的 83.5%（200ep）降至 0.25× 的 13.5%
+（Wilson 95% CI 9.4–18.9%）；50% 与20% 的离散临界档均为 0.25×，
+相变区间位于 0.5×–0.25×。
+
+正式设置：修复版 seed0 最佳模型、真实 gsplat、5轴×5档×50 episodes，
+各档使用相同 base seed `20260728`，总计 1,250 episodes。
+
+真实GS输入消融（seed2 高熵最佳模型，200 episodes/config）：
+
+| 配置 | SR | CR | Timeout | 结论 |
+|------|---:|---:|--------:|------|
+| baseline | 82.0% | 18.0% | 0.0% | clean 参考 |
+| const depth | 71.0% | 14.5% | 14.5% | 深度视觉贡献约 11 pp |
+| no target direction | 0.0% | 15.5% | 84.5% | 目标方向是任务必要输入 |
+| both | 0.0% | 1.0% | 99.0% | 两类输入同时移除后任务不可解 |
 
 ### 分析产出
 
 | 产出 | 状态 | 路径 |
 |------|------|------|
-| 主图1：5条衰减曲线 | ⬜ | — |
-| 附表1：临界点汇总 | ⬜ | — |
+| 主图1：5条衰减曲线 | ✅ | `reports/phase_v2_formal_5x5x50_20260727_082212/degradation_20260727_082215_all_axes.png` |
+| 附表1：临界点汇总 | ✅ | `reports/phase_v2_formal_5x5x50_20260727_082212/critical_analysis.json` |
 | 主图2：相变热力图 | ⬜ | — |
-| 致命轴排序 | ⬜ | — |
+| 致命轴排序 | ✅（当前范围） | 分辨率（−6 pp）> 视角覆盖（−2 pp）> Gaussian/深度噪声/光照（0 pp） |
+
+扩展结构退化确认：
+
+| 退化轴 | 正常档 SR | 极端/关键档 SR | 结论 |
+|--------|----------:|---------------:|------|
+| 深度大面积失效 | 68% | 90%失效：68% | 非致命；出现4%超时 |
+| 底部相机遮挡 | 68% | 75%遮挡：84% | 非有效负向退化，固定遮挡反而提供提示 |
+| 深度尺度偏差 | 83.5%（200ep） | 0.25×：13.5%（200ep） | **最致命轴，明确相变** |
+| 组合退化 | 68% | severity 0.5/0.75：54% | 有下降但未过50%，且1.0档非单调 |
 
 ---
 
@@ -149,11 +188,24 @@
 
 | 实验 | 状态 | 场景 | 开始 | 结束 | 模型路径 |
 |------|------|------|------|------|---------|
-| V3-Rand | ⬜ | garden+room0 | — | — | — |
+| V3-Rand-Scale | ✅ 训练完成 | gate_mid | 2026-07-27 10:17 | 2026-07-27 | 服务器 `saved_models/v3_scale_rand_3x500_20260727_101721/` |
 | V3-Fixed | ⬜ | garden+room0 | — | — | — |
 | V3-Curric | ⬜ | garden+room0 | — | — | — |
 | V3-DDRL | ⬜ | gate_mid | — | — | — |
 | V3-BC | ⬜ | garden+room0 | — | — | — |
+
+V3-Rand-Scale 训练摘要（clean 评估）：
+
+| Seed | 最终 SR | 训练中最佳 SR | 最终 entropy | 备注 |
+|-----:|--------:|--------------:|--------------:|------|
+| 0 | 70% | 87% | 2.68 | 中后期出现明显波动 |
+| 1 | 75% | 80% | 2.67 | 中后期出现明显波动 |
+| 2 | 82% | 84% | 2.43 | 相对稳定 |
+| 平均 | 75.7% | 83.7% | 2.59 | 最佳 checkpoint 已保留 |
+
+均匀采样 `1.0/0.75/0.5/0.25/0.1×` 会造成 clean 性能波动。下一验收步骤是
+对三个最佳 checkpoint 做相同 seeds 的五档独立评估；若极端档改善但 clean
+退化，则转向课程式采样或降低 `0.25/0.1×` 的采样概率。
 
 ### 对比分析
 
@@ -213,7 +265,8 @@
 
 | 日期 | GPU0 | GPU1 | GPU2 | 备注 |
 |------|------|------|------|------|
-| | | | | |
+| 2026-07-26 | 3×500 高熵基线 | 其他任务占用 | — | run `b0_entropy_sign_fixed_3x500_20260726_191516` |
+| 2026-07-27 | 3×500 熵修复版 + 6×200 clean 评估 | 其他任务占用 | — | 训练与评估均完成，GPU0 已释放 |
 
 ---
 
@@ -223,6 +276,13 @@
 
 | 日期 | Phase | 问题 | 严重度 | 状态 | 解决方案 |
 |------|-------|------|--------|------|---------|
+| 2026-07-27 | V1 | `std=clamp(exp(log_std), max=1)` 在 `log_std>0` 后产生零梯度，策略熵永久锁死 4.26 | 🔴 高 | ✅ 已修 | forward 使用 `exp(log_std)`，每次 optimizer step 后直接约束参数；初始 alpha 由 0.1 降至 0.01；3 项回归测试通过 |
+| 2026-07-27 | V2 | Pillow 对 uint16 (`I;16`) 深度图执行 bilinear resize 报 `ValueError: image has wrong mode` | 🔴 阻断 | ✅ 已修 | 分辨率退化改用 float32 Pillow `F` mode，试跑和正式评估通过 |
+| 2026-07-27 | V2 | 五轴预设极端档未使 SR 跌破 50%/20%，无法定位相变临界点 | 🟡 中 | ⚠️ 待扩展 | 扩展极端档并加入组合/遮挡/深度失效退化后复测，再决定 V3 |
+| 2026-07-27 | V2 | 组合退化 severity=1.0 的 SR 高于0.5/0.75档，曲线非单调 | 🟡 中 | ✅ 已识别 | 不用组合轴确定临界点；采用单变量深度尺度200ep确认实验 |
+| 2026-07-27 | V3 | 均匀极端尺度随机化导致 clean SR 大幅波动（单次评估最低2%） | 🟡 中 | 🔵 待评估 | 保留最佳 checkpoint；完成五档鲁棒评估后决定课程式/加权采样 |
+| 2026-07-27 | V1 | canonical `train_visual.py` 依赖缺失的 `utils.metrics`，且调用缺失的 `get_actions_batch` | 🔴 阻断 | ✅ 已修 | 补齐 Wilson CI 工具和批量 CNN 推理接口，服务器真实GS训练验证 |
+| 2026-07-26 | V1 | 自适应熵更新 loss 符号反向，高熵时 alpha 反而增大 | 🔴 高 | ✅ 已修 | 使用 `loss = log_alpha * (entropy - target_entropy)` 并添加方向回归测试 |
 | 2026-07-25 | 0 | train_visual.py 无 --renderer/--ply 参数，文档中的 Phase V1 命令会报 unrecognized arguments；且 make_env 不传渲染器配置 → 静默回退 mock | 🔴 阻断 | ✅ 已修 | 补 CLI + make_env 透传 + resolve_ply_path (cwd/repo/ply_exports 三级解析)，全链路实测通过 |
 | 2026-07-25 | 0 | gs_renderer GPU 路径未验证：gsplat 1.5.3 rasterization 返回 (colors, alphas, info) 而非 dict，outputs['rgb'] 会 TypeError；且每帧重复上传 ~20MB 高斯参数 | 🔴 高 | ✅ 已修 (待GPU验证) | 按 1.5.3 API 重写：RGB+ED + alpha 掩码空洞置 max_depth + __init__ 缓存 GPU 张量 + quats 归一化 |
 | 2026-07-25 | 0 | venv312 未装 torch；实际训练用系统 Python 3.14 (torch 2.13.0+cpu, gsplat 1.5.3) | 🟡 低 | ✅ 已记录 | 服务器需装 CUDA 版 torch + gsplat |
@@ -236,6 +296,8 @@
 
 | 日期 | 原计划 | 实际决策 | 原因 |
 |------|--------|---------|------|
+| 2026-07-27 | 单种子 3000ep 后进入 V2 | 先用 3×500 多种子建立可重复 baseline，并以 6×200 独立 clean 评估过 Gate G3 | 多种子和独立评估比训练中单次 20/100 episodes 更可靠；可先发现并修复熵锁死 |
+| 2026-07-27 | 将高熵训练视为熵修复实验 | 归档为高熵基线，另跑 `initial_alpha=0.01` + 可训练 `log_std` 修复版 | 符号虽正确，但硬 clamp 仍把熵锁死在 4.26 |
 | 2026-07-25 | 下载 GRaD-Nav / Mip-NeRF360 场景训练 V1 (D1) | 用已有 4 个 nerfstudio ckpt (gate_mid ×2, gate_left, gate_right) 提取 .ply | 数据已在本地且与目标应用场景(穿越门)直接相关；省去下载+训练 3DGS 的 1-2 天 |
 | 2026-07-25 | V1-Baseline-S1 场景 = Mip-NeRF360 garden | 改为 gate_mid_new (368,965 Gaussians) | 与 v1 子课题A 及 GRaD-Nav 对比实验的场景一致性 |
 | 2026-07-24 | nerfstudio pipeline 渲染 | extract_ply.py + gsplat 直接渲染 .ply | nerfstudio 安装失败(PyAV)；gsplat 渲染不依赖 nerfstudio 运行时 |
@@ -258,6 +320,14 @@
 
 | 类别 | 路径 | 说明 |
 |------|------|------|
+| 高熵基线 | `reports/high_entropy_baseline_3x500_20260726_191516/` | 3×500 完整日志、最佳模型、README |
+| 熵对比 clean 评估 | `reports/entropy_clean_6x200_20260727_081142/` | 6 模型×200 episodes 的 JSON、CSV、日志 |
+| Phase V2 试跑 | `reports/phase_v2_smoke_5x5x10_20260727_082037/` | 5轴×5档×10 episodes + 真实渲染变化验证 |
+| Phase V2 正式评估 | `reports/phase_v2_formal_5x5x50_20260727_082212/` | 5轴×5档×50 episodes、CSV/JSON、曲线、临界点分析 |
+| Phase V2 结构退化 | `reports/phase_v2_structural_formal_4x5x50_20260727_083353/` | 深度失效、遮挡、尺度偏差、组合退化 |
+| 深度尺度确认 | `reports/phase_v2_depth_scale_confirm_5x200_20260727_100845/` | 每档200 episodes；确认0.25×同时跌破50%/20% |
+| 真实GS输入消融 | `reports/ablation_seed2_500ep/ablation_20260726_191216.json` | baseline / const-depth / no-target / both |
+| 原始 3×500 基线 | `reports/b0_fixed_3x500_20260726_122223/` | 早期三种子日志与最佳模型 |
 | 3DGS 场景 | data/gs_data/ply_exports/ (4 × .ply, 16.7~23.9 MB) | gate_mid ×2, gate_left, gate_right；由 nerfstudio ckpt 提取 |
 | 碰撞点云 | data/point_cloud/ (6 × .ply) | 碰撞检测用 |
 | Replica | data/replica/ (18 场景 mesh+texture) | 待 3DGS 训练 (Phase V3c 候选) |

@@ -176,8 +176,7 @@ def main():
     parser.add_argument('--model', type=str, required=True,
                        help='模型路径 (.pth)')
     parser.add_argument('--axis', type=str, default='all',
-                       help='退化轴: all | gaussian | resolution | '
-                            'depth_noise | lighting | viewpoint_uncertainty')
+                       help='退化轴: all | original | structural | 单个轴名')
     parser.add_argument('--levels', type=str, default=None,
                        help='自定义退化水平, 逗号分隔 (覆盖默认)')
     parser.add_argument('--episodes', type=int, default=50,
@@ -205,6 +204,15 @@ def main():
     # 确定退化轴
     if args.axis == 'all':
         axes_to_run = list(DEGRADATION_AXES.keys())
+    elif args.axis == 'original':
+        axes_to_run = [
+            'gaussian', 'resolution', 'depth_noise', 'lighting',
+            'viewpoint_uncertainty',
+        ]
+    elif args.axis == 'structural':
+        axes_to_run = [
+            'depth_failure', 'occlusion', 'depth_scale', 'combined',
+        ]
     else:
         if args.axis not in DEGRADATION_AXES:
             raise ValueError(f"Unknown axis: {args.axis}. "

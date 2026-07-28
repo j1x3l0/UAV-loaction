@@ -1,0 +1,45 @@
+{
+  "baseline": {
+    "success_rate": 82.0,
+    "collision_rate": 18.0,
+    "timeout_rate": 0.0,
+    "avg_reward": 410.904484144037,
+    "reward_std": 153.44918747560948,
+    "episodes": 200
+  },
+  "const_depth": {
+    "success_rate": 71.0,
+    "collision_rate": 14.499999999999998,
+    "timeout_rate": 14.499999999999998,
+    "avg_reward": 295.1476905696119,
+    "reward_std": 326.8474956839314,
+    "episodes": 200
+  },
+  "no_target_dir": {
+    "success_rate": 0.0,
+    "collision_rate": 15.5,
+    "timeout_rate": 84.5,
+    "avg_reward": -2304.876694330736,
+    "reward_std": 489.0636091497193,
+    "episodes": 200
+  },
+  "both": {
+    "success_rate": 0.0,
+    "collision_rate": 1.0,
+    "timeout_rate": 99.0,
+    "avg_reward": -2597.582920335952,
+    "reward_std": 284.25419375187727,
+    "episodes": 200
+  },
+  "analysis": {
+    "const_depth_delta": -11.0,
+    "no_target_dir_delta": -82.0,
+    "both_delta": -82.0
+  },
+  "metadata": {
+    "renderer": "gsplat",
+    "ply": "/root/data/gs_data/ply_exports/gate_mid_new_gs.ply",
+    "seed": 20260726,
+    "timestamp": "2026-07-26T19:12:16.055720"
+  }
+}

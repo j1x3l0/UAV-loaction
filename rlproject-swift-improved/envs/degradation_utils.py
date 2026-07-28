@@ -56,6 +56,30 @@ DEGRADATION_AXES = {
         'unit': '°',
         'description': '训练视角覆盖不足导致的重建不确定性 (联合评估: SR + 超时率 + 平均奖励，因主表现为超时增加)',
     },
+    'depth_failure': {
+        'name': '深度大面积失效',
+        'levels': [0, 25, 50, 75, 90],
+        'unit': '%',
+        'description': '固定空间块中的深度像素失效并返回最大量程',
+    },
+    'occlusion': {
+        'name': '相机遮挡',
+        'levels': [0, 25, 50, 75, 90],
+        'unit': '%',
+        'description': '从图像边缘向中心扩张的近距离前景遮挡',
+    },
+    'depth_scale': {
+        'name': '深度尺度偏差',
+        'levels': [1.0, 0.75, 0.5, 0.25, 0.1],
+        'unit': '×',
+        'description': '系统性深度尺度低估',
+    },
+    'combined': {
+        'name': '组合退化',
+        'levels': [0.0, 0.25, 0.5, 0.75, 1.0],
+        'unit': 'severity',
+        'description': '联合分辨率、深度噪声、深度失效、尺度偏差和视角不确定性',
+    },
 }
 
 
@@ -103,12 +127,9 @@ def apply_resolution_downscale(depth: np.ndarray,
     from PIL import Image
 
     h, w = depth.shape[:2]
-    depth_max = 20.0
-    
-    # 深度值 → 灰度图 (保留float精度，不用uint8)
-    img = Image.fromarray(
-        (np.clip(depth[..., 0], 0, depth_max) / depth_max * 65535).astype(np.uint16)
-    )
+    # Pillow does not support bilinear resize for uint16 ``I;16`` images.
+    # Mode ``F`` preserves float depth and supports both interpolation modes.
+    img = Image.fromarray(depth[..., 0].astype(np.float32), mode='F')
     
     # 选择插值方式
     pil_interp = Image.NEAREST if interpolation.lower() == 'nearest' else Image.BILINEAR
@@ -117,8 +138,7 @@ def apply_resolution_downscale(depth: np.ndarray,
     img_small = img.resize((target_res, target_res), pil_interp)
     img_back = img_small.resize((w, h), pil_interp)
     
-    # 转回浮点深度
-    result = np.array(img_back, dtype=np.float32) / 65535.0 * depth_max
+    result = np.array(img_back, dtype=np.float32)
     return result[..., np.newaxis]
 
 
@@ -257,6 +277,67 @@ def apply_viewpoint_restriction(depth: np.ndarray,
     return np.clip(degraded, 0.1, 20.0)
 
 
+def apply_depth_failure(depth: np.ndarray, failure_percent: float,
+                        seed: int = 42) -> np.ndarray:
+    """Replace deterministic rectangular regions with maximum-range depth."""
+    ratio = float(np.clip(failure_percent / 100.0, 0.0, 1.0))
+    if ratio <= 0:
+        return depth
+    h, w = depth.shape[:2]
+    rng = np.random.RandomState(seed)
+    mask = np.zeros((h, w), dtype=bool)
+    target = int(round(ratio * h * w))
+    while int(mask.sum()) < target:
+        block_h = rng.randint(max(2, h // 8), max(3, h // 2))
+        block_w = rng.randint(max(2, w // 8), max(3, w // 2))
+        y = rng.randint(0, max(1, h - block_h + 1))
+        x = rng.randint(0, max(1, w - block_w + 1))
+        mask[y:y + block_h, x:x + block_w] = True
+    # Trim excess deterministically so the requested percentage is exact.
+    indices = np.flatnonzero(mask)
+    if len(indices) > target:
+        mask.flat[indices[target:]] = False
+    result = depth.copy()
+    result[..., 0][mask] = 20.0
+    return result
+
+
+def apply_occlusion(depth: np.ndarray, occlusion_percent: float) -> np.ndarray:
+    """Apply a near-field foreground occluder covering the requested area."""
+    ratio = float(np.clip(occlusion_percent / 100.0, 0.0, 1.0))
+    if ratio <= 0:
+        return depth
+    h, w = depth.shape[:2]
+    occluded_rows = min(h, int(round(h * ratio)))
+    result = depth.copy()
+    # Bottom-up obstruction models a lens/body obstruction while preserving
+    # a shrinking upper field of view.
+    result[h - occluded_rows:, :, 0] = 0.1
+    return result
+
+
+def apply_depth_scale_bias(depth: np.ndarray, scale: float) -> np.ndarray:
+    """Apply a global multiplicative depth calibration error."""
+    return np.clip(depth * float(scale), 0.1, 20.0)
+
+
+def apply_combined_degradation(depth: np.ndarray, severity: float,
+                               seed: int = 42) -> np.ndarray:
+    """Apply a calibrated mixture of all depth-affecting degradations."""
+    severity = float(np.clip(severity, 0.0, 1.0))
+    if severity <= 0:
+        return depth
+    target_res = max(1, int(round(64 * (1.0 - severity) + severity)))
+    result = apply_resolution_downscale(depth, target_res)
+    result = apply_perlin_depth_noise(result, sigma=4.0 * severity, seed=seed)
+    result = apply_depth_failure(result, failure_percent=80.0 * severity,
+                                 seed=seed)
+    result = apply_depth_scale_bias(result, scale=1.0 - 0.75 * severity)
+    result = apply_viewpoint_restriction(
+        result, coverage_deg=360.0 - 345.0 * severity, seed=seed)
+    return result
+
+
 # ─── 退化应用器 ──────────────────────────────────────────────────
 # WHY 统一入口: 环境只需调一个函数，退化组合由配置控制
 # 边界: 不修改renderer内部状态（gaussian除外，它需要修改obstacles）
@@ -309,6 +390,20 @@ def apply_degradation_pipeline(depth: np.ndarray,
     if 'viewpoint_uncertainty' in deg_config:
         degraded_depth = apply_viewpoint_restriction(
             degraded_depth, deg_config['viewpoint_uncertainty'], seed)
+
+    # 6–9. Structural depth failures used after the original Phase V2 suite.
+    if 'depth_failure' in deg_config:
+        degraded_depth = apply_depth_failure(
+            degraded_depth, deg_config['depth_failure'], seed)
+    if 'occlusion' in deg_config:
+        degraded_depth = apply_occlusion(
+            degraded_depth, deg_config['occlusion'])
+    if 'depth_scale' in deg_config:
+        degraded_depth = apply_depth_scale_bias(
+            degraded_depth, deg_config['depth_scale'])
+    if 'combined' in deg_config:
+        degraded_depth = apply_combined_degradation(
+            degraded_depth, deg_config['combined'], seed)
 
     return degraded_depth, degraded_rgb, degraded_obstacles
 
