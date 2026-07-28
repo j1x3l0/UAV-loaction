@@ -191,7 +191,7 @@
 | V3-Rand-Scale | ✅ 训练完成 | gate_mid | 2026-07-27 10:17 | 2026-07-27 | 服务器 `saved_models/v3_scale_rand_3x500_20260727_101721/` |
 | V3-Weighted-Scale | ❌ 完成但未通过验收 | gate_mid | 2026-07-28 07:14 | 2026-07-28 08:41 | 服务器 `saved_models/v3_scale_weighted_3x500_20260728_071450/` |
 | V3-Fixed | ⬜ | garden+room0 | — | — | — |
-| V3-Curric | ✅ seed2×200门控通过，待3×500正式训练 | gate_mid | 2026-07-28 10:11 | 2026-07-28 10:39 | 服务器 `saved_models/v3_scale_curriculum_seed2_200_20260728_101116/` |
+| V3-Curric | ⚠️ 小试通过、3×500正式验收失败，发现checkpoint选择混杂 | gate_mid | 2026-07-28 10:11 | 2026-07-28 13:13 | 服务器 `saved_models/v3_scale_curriculum_3x500_20260728_110541/` |
 | V3-DDRL | ⬜ | gate_mid | — | — | — |
 | V3-BC | ⬜ | garden+room0 | — | — | — |
 
@@ -268,6 +268,30 @@ gsplat 五档×100 episodes 门控结果：
 3 seeds×500 正式训练，之后重复 3×5×200 独立评估。
 
 完整数据：`reports/v3_scale_curriculum_gate_seed2_5x100_20260728_103900/`。
+
+### V3-Curriculum 正式 3×500 验收
+
+三个训练 seed 的 clean 最佳 SR 为 85%/86%/90%。使用各自 clean 最佳
+checkpoint 完成真实 gsplat 3×5×200（3,000 episodes）评估：
+
+| 深度尺度 | 汇总 SR（600ep） | Wilson 95% CI | Timeout | 相对均匀V3 |
+|---------:|-----------------:|--------------:|--------:|-----------:|
+| 1.0× | 78.33% | 74.86–81.44% | 0.00% | −3.50 pp |
+| 0.75× | 78.00% | 74.51–81.13% | 0.17% | −3.17 pp |
+| 0.5× | 68.00% | 64.16–71.61% | 9.83% | +10.83 pp |
+| 0.25× | 78.17% | 74.69–81.29% | 0.00% | +2.00 pp |
+| 0.1× | 63.33% | 59.40–67.09% | 12.50% | −14.00 pp |
+
+正式验收四项均未通过；0.5× 的单 seed SR 为
+75.5%/75.0%/53.5%。但本轮暴露出 checkpoint 选择混杂：
+`train_visual.py` 只按 clean SR 保存最佳模型，seed1/2 的 best 文件在
+robustness 阶段结束前已经写入。因此当前结果不能等同于“最终 curriculum
+策略”的公平评估。
+
+下一步先修复为同时保存 final checkpoint，并使用小规模多尺度验证分数选择
+robust-best checkpoint；在此之前不再启动完整 3×500。
+
+完整数据：`reports/v3_scale_curriculum_eval_3x5x200_20260728_124659/`。
 
 ### 对比分析
 
