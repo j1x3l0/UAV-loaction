@@ -1,6 +1,6 @@
 # v2 进度日志
 
-> 更新：随时 | 基于：MASTER_PLAN.md | 当前日期：2026-07-28
+> 更新：随时 | 基于：MASTER_PLAN.md | 当前日期：2026-07-29
 
 ---
 
@@ -191,7 +191,7 @@
 | V3-Rand-Scale | ✅ 训练完成 | gate_mid | 2026-07-27 10:17 | 2026-07-27 | 服务器 `saved_models/v3_scale_rand_3x500_20260727_101721/` |
 | V3-Weighted-Scale | ❌ 完成但未通过验收 | gate_mid | 2026-07-28 07:14 | 2026-07-28 08:41 | 服务器 `saved_models/v3_scale_weighted_3x500_20260728_071450/` |
 | V3-Fixed | ⬜ | garden+room0 | — | — | — |
-| V3-Curric | ⚠️ 小试通过、3×500正式验收失败，发现checkpoint选择混杂 | gate_mid | 2026-07-28 10:11 | 2026-07-28 13:13 | 服务器 `saved_models/v3_scale_curriculum_3x500_20260728_110541/` |
+| V3-Curric | ⚠️ robust-best三项通过，clean差2.17 pp | gate_mid | 2026-07-28 10:11 | 2026-07-29 02:40 | 服务器 `saved_models/v3_curriculum_ckptfix_3x500_20260728_133555/` |
 | V3-DDRL | ⬜ | gate_mid | — | — | — |
 | V3-BC | ⬜ | garden+room0 | — | — | — |
 
@@ -292,6 +292,32 @@ robustness 阶段结束前已经写入。因此当前结果不能等同于“最
 robust-best checkpoint；在此之前不再启动完整 3×500。
 
 完整数据：`reports/v3_scale_curriculum_eval_3x5x200_20260728_124659/`。
+
+### Checkpoint 选择修复与三方对照
+
+已修复为同时保存 clean-best、五尺度 min/mean 选择的 robust-best 和 final。
+真实 gsplat 短跑确认三类文件均生成且可加载；正式重跑后完成同一批模型三方
+对照：
+
+| 深度尺度 | Clean-best SR | Final SR | Robust-best SR | Robust 95% CI |
+|---------:|--------------:|---------:|---------------:|--------------:|
+| 1.0× | 73.67% | 70.00% | 77.83% | 74.34–80.97% |
+| 0.75× | 72.00% | 72.67% | 78.83% | 75.39–81.91% |
+| 0.5× | 69.00% | 71.00% | 77.00% | 73.47–80.19% |
+| 0.25× | 65.00% | 75.33% | 75.83% | 72.25–79.09% |
+| 0.1× | 72.33% | 77.00% | 76.00% | 72.42–79.25% |
+
+robust-best 在所有尺度均优于 clean-best（+3.67 至 +10.83 pp），且每档
+timeout≤1.5%；0.5× 单 seed SR 为 77.5%/67.0%/86.5%。
+
+正式标准四项中通过三项：所有汇总档≥70%、每 seed 0.5×≥60%、
+所有 timeout≤10%；仅 clean 汇总 77.83% 未达到80%，差2.17 pp。
+这证明 checkpoint 修复有效，剩余问题已收敛为小幅 clean 性能缺口。
+
+下一步先测试带 clean 下限约束的 robust checkpoint 选择，或从 robust-best
+做短程 clean fine-tuning；暂不直接再跑完整 3×500。
+
+完整对照：`reports/v3_checkpoint_selection_comparison_20260729/`。
 
 ### 对比分析
 
