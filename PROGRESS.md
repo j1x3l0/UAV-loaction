@@ -434,12 +434,29 @@ baseline 与旧200-episode结果82%一致，门控可信。速度输入移除导
 - 回归测试19/19通过；20次真实GS reset中9次为绕障任务，最大连通自由空间
   含5,494个网格点。修复后的深度范围约0.30–20m，不再出现原先全图
   0.11–0.29m的异常近深度。
-- 1轮端到端训练 smoke 已通过；正式对齐环境小试
-  `v3_aligned_geometry_seed2_100_20260729` 已在GPU0启动（PID 23768）。
+- 1轮端到端训练 smoke 已通过；对齐环境小试
+  `v3_aligned_geometry_seed2_100_20260729` 已完成100 updates、204,800步，
+  用时27分28秒，最佳内部 clean SR 20%。
+- 独立视觉必要性门控
+  `v3_aligned_visual_gate_seed2_7x100_20260729` 已完成：
+
+| 配置 | SR | Wilson 95% CI | Collision | Timeout |
+|------|---:|--------------:|----------:|--------:|
+| baseline | 21% | 14.2–30.0% | 79% | 0% |
+| const-depth | 24% | 16.7–33.2% | 76% | 0% |
+| no-velocity | 5% | 2.2–11.2% | 95% | 0% |
+| no-target-direction | 1% | 0.2–5.4% | 99% | 0% |
+| no-depth + no-velocity | 5% | 2.2–11.2% | 95% | 0% |
+| no-velocity + no-target-direction | 0% | 0–3.7% | 100% | 0% |
+| all-inputs-ablated | 0% | 0–3.7% | 100% | 0% |
+
+判定：门控失败，**不扩展3×500**。正常depth未优于const-depth（-3pp，CI
+高度重叠），且baseline只有21%。失败全部为碰撞。下一步先按直线可达/需绕障
+分层统计，并诊断点云碰撞半径、运动相机、任务难度和奖励。
 
 该修复会改变任务定义，旧模型只能作为“未对齐环境”历史对照，不能直接与新
-环境成功率混合汇总。新基线训练完成后必须重新运行 const-depth/no-velocity/
-no-target-direction 视觉必要性门控。
+环境成功率混合汇总。完整结果：
+`reports/v3_aligned_visual_gate_seed2_7x100_20260729/`。
 
 ---
 
