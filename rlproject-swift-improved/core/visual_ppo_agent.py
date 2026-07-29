@@ -218,6 +218,45 @@ class VisualPPO:
         for pg in self.optimizer.param_groups:
             pg['lr'] = lr
 
+    def get_actions_batch(self, observations: List[Dict]
+                          ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """批量推理: 多个环境的观测 → 批处理 actions/log_probs/values/entropies
+
+        WHY: train_visual 中用单次 CNN forward 处理所有环境,
+             避免逐环境推理的串行开销
+        数据流: [obs1, obs2, ...] → stack → CNN → dist → sample → actions
+        """
+        depths = []
+        vecs = []
+        for obs in observations:
+            depth = torch.tensor(obs['depth'], dtype=torch.float32
+                                ).permute(2, 0, 1).unsqueeze(0).to(DEVICE)  # (1,1,64,64)
+            vec = torch.tensor(obs['vec'], dtype=torch.float32
+                              ).unsqueeze(0).to(DEVICE)
+            depths.append(depth)
+            vecs.append(vec)
+
+        depth_batch = torch.cat(depths, dim=0)  # (B, 1, 64, 64)
+        vec_batch = torch.cat(vecs, dim=0)       # (B, 6)
+
+        with torch.no_grad():
+            mean, std, value = self.model(depth_batch, vec_batch)
+            dist = Normal(mean, std)
+
+            pre_tanh_action = dist.sample()
+            action_tensor = torch.tanh(pre_tanh_action) * self.action_max
+
+            log_prob = dist.log_prob(pre_tanh_action).sum(dim=-1)
+            tanh_jacobian = torch.log(1 - (action_tensor / self.action_max).pow(2) + 1e-6).sum(dim=-1)
+            log_prob = log_prob - tanh_jacobian
+
+            entropy = dist.entropy().sum(dim=-1)
+
+        return (action_tensor.cpu().numpy(),
+                log_prob.cpu().numpy(),
+                value.cpu().numpy(),
+                entropy.cpu().numpy())
+
     def get_action(self, observation: Dict, deterministic=False
                    ) -> Tuple[np.ndarray, float, float, float]:
         """observation = {'depth': (64,64,1), 'vec': (6,)}
