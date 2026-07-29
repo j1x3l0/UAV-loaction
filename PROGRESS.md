@@ -424,6 +424,18 @@ no-target-direction 视觉必要性门控。
 
 ---
 
+## 可选扩展：Sionna RT 通信感知导航
+
+2026-07-29 完成可行性评估，记录于
+`docs/sionna-integration-assessment.md`。Sionna 只用于离线生成 RSS/SINR/outage
+无线电地图，不替代3DGS渲染、碰撞几何或动力学，并使用独立 Python 环境。
+
+启用门槛：场景对齐 baseline 可学习、正常深度显著优于 const-depth、坐标
+一致性通过、至少一个 V3b 正式三种子消融完成。门槛通过前不安装 Sionna，
+避免偏离当前核心问题。
+
+---
+
 ## Phase V3c：跨场景泛化
 
 2026-07-29 资产审计：
