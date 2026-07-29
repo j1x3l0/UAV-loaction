@@ -439,8 +439,10 @@ class VisualPPO:
             ckpt = torch.load(path, map_location=DEVICE)
             self.model.load_state_dict(ckpt['model_state_dict'])
             logger.info(f"Model loaded: {path}")
+            return True
         except Exception as e:
             logger.warning(f"Load failed: {e}, training from scratch")
+            return False
 
 
 # ── 自检 ──

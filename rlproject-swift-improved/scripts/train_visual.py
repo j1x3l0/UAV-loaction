@@ -176,6 +176,10 @@ def make_env(degradation_config=None, renderer='mock', ply_path=None):
             cfg['depth_scale_levels'] = DEPTH_SCALE_LEVELS
             _, cfg['depth_scale_probabilities'] = \
                 get_scale_curriculum_stage(0.0)
+        elif degradation_config == 'scale_recovery':
+            cfg['randomize_depth_scale'] = True
+            cfg['depth_scale_levels'] = DEPTH_SCALE_LEVELS
+            cfg['depth_scale_probabilities'] = [0.60, 0.15, 0.10, 0.10, 0.05]
     return VisualDroneEnv(config=cfg)
 
 
@@ -201,6 +205,7 @@ def train_visual(config):
     eval_episodes = config.get('eval_episodes', 20)
     seed = config.get('seed', 0)
     model_out = config.get('model_out', 'saved_models/visual_ppo_best.pth')
+    resume_model = config.get('resume_model')
     checkpoint_paths = get_checkpoint_paths(model_out)
 
     np.random.seed(seed)
@@ -216,7 +221,7 @@ def train_visual(config):
     envs = [make_env(degradation, renderer, ply_path) for _ in range(num_envs)]
     eval_env = make_env('clean', renderer, ply_path)
     robust_eval_envs = None
-    if degradation == 'scale_curriculum':
+    if degradation in ('scale_curriculum', 'scale_recovery'):
         robust_eval_envs = [
             make_fixed_depth_scale_env(renderer, ply_path, scale)
             for scale in DEPTH_SCALE_LEVELS
@@ -235,6 +240,15 @@ def train_visual(config):
         use_adaptive_entropy=True,
         num_envs=num_envs,
     )
+    if resume_model:
+        resolved_resume_model = os.path.abspath(resume_model)
+        if not os.path.isfile(resolved_resume_model):
+            raise FileNotFoundError(
+                f"resume checkpoint not found: {resume_model}")
+        if not ppo.load_model(resolved_resume_model):
+            raise RuntimeError(
+                f"failed to load resume checkpoint: {resolved_resume_model}")
+        logger.info(f"Resuming training from: {resolved_resume_model}")
 
     # 重置环境
     observations = [env.reset(seed=seed + i)[0]
@@ -245,7 +259,8 @@ def train_visual(config):
     # loadable clean-best checkpoint.
     best_sr = -1.0
     best_robust_score = (-1.0, -1.0)
-    active_curriculum_stage = None
+    active_curriculum_stage = (
+        'recovery' if degradation == 'scale_recovery' else None)
 
     logger.info(f"Training: {max_episodes}ep × {num_envs}envs × "
                 f"{rollout_steps}steps, degradation={degradation}, "
@@ -305,7 +320,7 @@ def train_visual(config):
                         f"entropy: {result['entropy']:.2f} | "
                         f"alpha: {result['entropy_coeff']:.5f} | "
                         f"lr: {ppo.current_lr:.2e} | eta: {eta}")
-            if degradation == 'scale_curriculum':
+            if degradation in ('scale_curriculum', 'scale_recovery'):
                 sample_counts = np.sum(
                     [env.depth_scale_sample_counts for env in envs], axis=0)
                 sample_total = int(sample_counts.sum())
@@ -377,7 +392,8 @@ def main():
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--degradation', type=str, default='clean',
                        choices=['clean', 'rand', 'scale_rand',
-                                'scale_weighted', 'scale_curriculum'])
+                                'scale_weighted', 'scale_curriculum',
+                                'scale_recovery'])
     parser.add_argument('--rollout-steps', type=int, default=256)
     parser.add_argument('--renderer', type=str, default='mock',
                        choices=['mock', 'gsplat'])
@@ -390,6 +406,8 @@ def main():
                         help='curriculum每个尺度的checkpoint选择评估数')
     parser.add_argument('--eval-episodes', type=int, default=100,
                         help='clean checkpoint评估episode数')
+    parser.add_argument('--resume-model', type=str, default=None,
+                        help='从现有VisualPPO checkpoint继续训练')
     args = parser.parse_args()
 
     config = {
@@ -407,6 +425,7 @@ def main():
         'seed': args.seed,
         'model_out': args.model_out,
         'robust_eval_episodes': args.robust_eval_episodes,
+        'resume_model': args.resume_model,
     }
 
     result = train_visual(config)

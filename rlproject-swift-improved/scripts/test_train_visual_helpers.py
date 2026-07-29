@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from scripts.train_visual import (
     get_checkpoint_paths,
     get_scale_curriculum_stage,
+    make_env,
     robust_validation_score,
 )
 
@@ -40,8 +41,17 @@ def test_robust_score_prioritizes_worst_scale():
     assert balanced_score > brittle_score
 
 
+def test_recovery_sampling_distribution():
+    env = make_env('scale_recovery')
+    assert env.randomize_depth_scale
+    assert list(env.depth_scale_levels) == [1.0, 0.75, 0.5, 0.25, 0.1]
+    assert list(env.depth_scale_probabilities) == [
+        0.60, 0.15, 0.10, 0.10, 0.05]
+
+
 if __name__ == '__main__':
     test_curriculum_boundaries()
     test_checkpoint_paths()
     test_robust_score_prioritizes_worst_scale()
+    test_recovery_sampling_distribution()
     print('train_visual helper tests passed')
