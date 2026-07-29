@@ -23,6 +23,7 @@ from envs.degradation_utils import (
     apply_degradation_pipeline,
 )
 from envs.gs_renderer import GSplatRenderer
+from envs.scene_geometry import ScenePointCloudGeometry
 
 logger = logging.getLogger(__name__)
 
@@ -155,6 +156,7 @@ class VisualDroneEnv(gym.Env):
         ])
         self.obstacle_radius = 1.0
         self.collision_threshold = 0.5
+        self.scene_geometry = None
         collision_render_obstacles = np.column_stack([
             self.obstacles,
             np.full(len(self.obstacles), self.obstacle_radius),
@@ -177,6 +179,28 @@ class VisualDroneEnv(gym.Env):
             self._base_obstacles_for_render = np.empty((0, 4))
         else:
             raise ValueError(f"Unsupported renderer: {renderer_type}")
+
+        collision_ply_path = self.config.get('collision_ply_path')
+        if collision_ply_path:
+            self.scene_geometry = ScenePointCloudGeometry(
+                collision_ply_path,
+                bounds_percentiles=self.config.get(
+                    'scene_bounds_percentiles', (1, 99)),
+                boundary_margin=self.config.get(
+                    'scene_boundary_margin', (0.5, 0.5, 0.35)),
+            )
+            if self.config.get('auto_scene_bounds', True):
+                self.boundary_min = self.scene_geometry.boundary_min.copy()
+                self.boundary_max = self.scene_geometry.boundary_max.copy()
+            self.collision_threshold = float(
+                self.config.get('drone_collision_radius', 0.25))
+            self.scene_geometry.build_navigation_grid(
+                resolution=float(
+                    self.config.get('navigation_grid_resolution', 0.3)),
+                clearance=float(
+                    self.config.get('spawn_clearance',
+                                    self.collision_threshold + 0.2)),
+            )
 
         # ── 退化配置 ──
         self.deg_config = self.config.get('degradation', {})
@@ -253,7 +277,8 @@ class VisualDroneEnv(gym.Env):
                 depth, rgb, active_obstacles, post_config)
         else:
             # Real GS: 直接渲染 → 后处理退化
-            depth, rgb = self.renderer.render(camera_pos)
+            camera_quat = self._camera_quaternion(pos, vel)
+            depth, rgb = self.renderer.render(camera_pos, camera_quat)
             post_config = {k: v for k, v in self.deg_config.items()
                            if k != 'gaussian'}
             depth, rgb, _ = apply_degradation_pipeline(
@@ -264,6 +289,8 @@ class VisualDroneEnv(gym.Env):
 
         # 向量状态
         target_dir = self.target_pos - pos
+        if self.ablation_config.get('no_velocity', False):
+            vel = np.zeros(3, dtype=np.float32)
         if self.ablation_config.get('no_target_dir', False):
             target_dir = np.zeros(3, dtype=np.float32)
         vec = np.array([
@@ -275,11 +302,71 @@ class VisualDroneEnv(gym.Env):
 
     # ── 物理仿真 (复用v1) ──
     def _get_min_obstacle_distance(self, pos: np.ndarray) -> float:
+        if self.scene_geometry is not None:
+            return max(
+                self.scene_geometry.nearest_distance(pos)
+                - self.collision_threshold,
+                0.0,
+            )
         min_dist = float('inf')
         for obs_pos in self.obstacles:
             dist = np.linalg.norm(pos - obs_pos) - self.obstacle_radius
             min_dist = min(min_dist, dist)
         return max(min_dist, 0.0)
+
+    @staticmethod
+    def _rotation_matrix_to_quaternion(rotation):
+        """Convert a 3x3 camera-to-world rotation to [x, y, z, w]."""
+        matrix = np.asarray(rotation, dtype=np.float64)
+        trace = np.trace(matrix)
+        if trace > 0:
+            s = np.sqrt(trace + 1.0) * 2.0
+            qw = 0.25 * s
+            qx = (matrix[2, 1] - matrix[1, 2]) / s
+            qy = (matrix[0, 2] - matrix[2, 0]) / s
+            qz = (matrix[1, 0] - matrix[0, 1]) / s
+        else:
+            axis = int(np.argmax(np.diag(matrix)))
+            if axis == 0:
+                s = np.sqrt(1.0 + matrix[0, 0] - matrix[1, 1]
+                            - matrix[2, 2]) * 2.0
+                qw = (matrix[2, 1] - matrix[1, 2]) / s
+                qx, qy, qz = 0.25 * s, (
+                    matrix[0, 1] + matrix[1, 0]) / s, (
+                    matrix[0, 2] + matrix[2, 0]) / s
+            elif axis == 1:
+                s = np.sqrt(1.0 + matrix[1, 1] - matrix[0, 0]
+                            - matrix[2, 2]) * 2.0
+                qw = (matrix[0, 2] - matrix[2, 0]) / s
+                qx, qy, qz = (
+                    matrix[0, 1] + matrix[1, 0]) / s, 0.25 * s, (
+                    matrix[1, 2] + matrix[2, 1]) / s
+            else:
+                s = np.sqrt(1.0 + matrix[2, 2] - matrix[0, 0]
+                            - matrix[1, 1]) * 2.0
+                qw = (matrix[1, 0] - matrix[0, 1]) / s
+                qx, qy, qz = (
+                    matrix[0, 2] + matrix[2, 0]) / s, (
+                    matrix[1, 2] + matrix[2, 1]) / s, 0.25 * s
+        quaternion = np.array([qx, qy, qz, qw], dtype=np.float32)
+        return quaternion / (np.linalg.norm(quaternion) + 1e-8)
+
+    def _camera_quaternion(self, pos, velocity):
+        """Point the optical +Z axis along motion, falling back to the goal."""
+        if not self.config.get('camera_tracks_motion', False):
+            return None
+        forward = np.asarray(velocity, dtype=np.float64)
+        if np.linalg.norm(forward) < 0.1:
+            forward = np.asarray(self.target_pos - pos, dtype=np.float64)
+        forward /= np.linalg.norm(forward) + 1e-8
+        world_up = np.array([0.0, 0.0, 1.0])
+        if abs(np.dot(forward, world_up)) > 0.95:
+            world_up = np.array([0.0, 1.0, 0.0])
+        right = np.cross(forward, world_up)
+        right /= np.linalg.norm(right) + 1e-8
+        down = np.cross(forward, right)
+        rotation = np.column_stack([right, down, forward])
+        return self._rotation_matrix_to_quaternion(rotation)
 
     # ── Gym API ──
     def reset(self, seed: int = None,
@@ -299,12 +386,25 @@ class VisualDroneEnv(gym.Env):
                     self.depth_scale_levels[sampled_index]),
             }
 
-        start_min = self.boundary_min + 1.0
-        start_max = np.array([2.0, 2.0, 2.0])
-        pos = self.np_random.uniform(start_min, start_max)
+        if self.scene_geometry is not None:
+            pos, self.target_pos, requires_avoidance = \
+                self.scene_geometry.sample_reachable_pair(
+                    self.np_random,
+                    min_distance=float(
+                        self.config.get('min_goal_distance', 3.0)),
+                    blocked_probability=self.config.get(
+                        'avoidance_episode_probability', 0.5),
+                    collision_radius=self.collision_threshold,
+                )
+        else:
+            start_min = self.boundary_min + 1.0
+            start_max = np.array([2.0, 2.0, 2.0])
+            pos = self.np_random.uniform(start_min, start_max)
+            self.target_pos = self.np_random.uniform(
+                self.target_min, self.target_max)
+            requires_avoidance = None
         vel = np.zeros(3)
 
-        self.target_pos = self.np_random.uniform(self.target_min, self.target_max)
         self.state = np.concatenate([pos, vel]).astype(np.float32)
         self.step_count = 0
         self._prev_action = None
@@ -312,6 +412,7 @@ class VisualDroneEnv(gym.Env):
         return self._get_observation(), {
             'target_pos': self.target_pos,
             'depth_scale': self.deg_config.get('depth_scale', 1.0),
+            'requires_avoidance': requires_avoidance,
         }
 
     def step(self, action: np.ndarray) -> Tuple[Dict, float, bool, bool, Dict]:
@@ -335,10 +436,16 @@ class VisualDroneEnv(gym.Env):
                 boundary_hit = True
 
         # 碰撞检测
-        collision = False
-        for obs_pos in self.obstacles:
-            if np.linalg.norm(new_pos - obs_pos) <= self.collision_threshold + self.obstacle_radius:
-                collision = True; break
+        if self.scene_geometry is not None:
+            collision = self.scene_geometry.collides(
+                new_pos, self.collision_threshold)
+        else:
+            collision = False
+            for obs_pos in self.obstacles:
+                if np.linalg.norm(new_pos - obs_pos) <= \
+                        self.collision_threshold + self.obstacle_radius:
+                    collision = True
+                    break
 
         target_dist = np.linalg.norm(new_pos - self.target_pos)
         reached = target_dist <= self.target_threshold

@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 from envs.visual_drone_env import VisualDroneEnv, MockGSRenderer
 from envs.degradation_utils import apply_resolution_downscale, apply_perlin_depth_noise
+from envs.scene_geometry import ScenePointCloudGeometry
 
 # ── MockRenderer 测试 ──
 
@@ -167,6 +168,62 @@ def test_env_degradation_config():
     assert not np.isnan(obs['depth']).any()
     print(f"  ✓ degradation config: depth range [{obs['depth'].min():.1f}, {obs['depth'].max():.1f}]")
 
+def test_input_ablation_config():
+    """输入消融只清零指定向量分量，不改变观测结构。"""
+    env = VisualDroneEnv(config={
+        'ablation': {'no_velocity': True, 'no_target_dir': True}
+    })
+    obs, _ = env.reset(seed=42)
+    assert obs['vec'].shape == (6,)
+    assert np.allclose(obs['vec'], 0.0)
+    assert obs['depth'].shape == (64, 64, 1)
+    print("  ✓ input ablation: velocity and target direction zeroed")
+
+def test_scene_geometry_collision_and_sampling():
+    """场景点云同时驱动碰撞距离和自由空间采样。"""
+    wall_y, wall_z = np.meshgrid(
+        np.linspace(-2, 2, 20), np.linspace(0, 3, 20))
+    points = np.column_stack([
+        np.zeros(wall_y.size), wall_y.ravel(), wall_z.ravel()
+    ])
+    bounds_support = np.array([
+        [x, y, z]
+        for x in (-2.0, 2.0)
+        for y in (-2.0, 2.0)
+        for z in (0.0, 3.0)
+    ])
+    points = np.vstack([points, bounds_support])
+    geometry = ScenePointCloudGeometry(
+        points=points, bounds_percentiles=(0, 100), boundary_margin=0.0)
+    assert geometry.collides(np.array([0.1, 0.0, 1.5]), radius=0.2)
+    assert not geometry.collides(np.array([1.0, 0.0, 1.5]), radius=0.2)
+    assert geometry.segment_min_clearance(
+        np.array([-1.0, 0.0, 1.5]),
+        np.array([1.0, 0.0, 1.5])) < 0.2
+    sample = geometry.sample_free(
+        np.random.default_rng(42), clearance=0.2,
+        bounds_min=np.array([-1.0, -1.0, 0.5]),
+        bounds_max=np.array([1.0, 1.0, 2.5]))
+    assert geometry.nearest_distance(sample) > 0.2
+    grid_size = geometry.build_navigation_grid(
+        resolution=0.25, clearance=0.2)
+    assert grid_size > 10
+    start, target, _ = geometry.sample_reachable_pair(
+        np.random.default_rng(7), min_distance=1.0,
+        blocked_probability=None, collision_radius=0.2)
+    assert np.linalg.norm(target - start) >= 1.0
+    print("  ✓ scene geometry: collision and free sampling aligned")
+
+def test_motion_tracking_camera_quaternion():
+    """相机光轴应跟随速度方向，输出单位四元数。"""
+    env = VisualDroneEnv(config={'camera_tracks_motion': True})
+    env.reset(seed=42)
+    quaternion = env._camera_quaternion(
+        np.zeros(3), np.array([1.0, 0.0, 0.0]))
+    assert quaternion.shape == (4,)
+    assert np.isclose(np.linalg.norm(quaternion), 1.0)
+    print("  ✓ camera quaternion tracks motion")
+
 def test_weighted_depth_scale_sampling():
     """加权尺度按episode采样，并且相同seed可复现"""
     config = {
@@ -238,6 +295,11 @@ def run_all_tests():
         ("env max steps", test_env_max_steps),
         ("env deterministic", test_env_deterministic),
         ("env degradation config", test_env_degradation_config),
+        ("input ablation config", test_input_ablation_config),
+        ("scene geometry collision and sampling",
+         test_scene_geometry_collision_and_sampling),
+        ("motion tracking camera quaternion",
+         test_motion_tracking_camera_quaternion),
         ("weighted depth scale sampling", test_weighted_depth_scale_sampling),
         ("invalid depth scale probabilities",
          test_invalid_depth_scale_probabilities),

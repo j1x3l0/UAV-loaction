@@ -12,8 +12,8 @@
 | **Phase V1** | Baseline 训练 | ✅ 已完成（3 seeds） | 2026-07-27 |
 | **Phase V2** | 衰减曲线 | ✅ 扩展结构退化后找到明确相变 | 2026-07-27 |
 | **Phase V3** | 鲁棒训练+对比+消融 | 🔵 均匀随机化评估完成，发现0.5×跨种子不稳定 | — |
-| **Phase V3b** | 消融实验 | ⬜ 未开始 | — |
-| **Phase V3c** | 跨场景泛化 | ⬜ 未开始 | — |
+| **Phase V3b** | 消融实验 | 🔵 输入诊断已扩展，正式重训待执行 | — |
+| **Phase V3c** | 跨场景泛化 | ⚠️ 真实3DGS场景资产不足 | — |
 | **Phase V4** | 论文 | ⬜ 未开始 | — |
 
 > 状态标记：⬜ 未开始 | 🔵 进行中 | ✅ 已完成 | ❌ 已放弃 | ⏸️ 暂停 | ⚠️ 受阻
@@ -350,24 +350,96 @@ robust-best 的正式 clean 结果。按照预先约定的停止规则，clean-r
 
 ## Phase V3b：消融实验
 
+2026-07-29 清点与实现：
+
+- 已有真实 GS 测试时输入诊断（旧 seed2，200 episodes）：baseline 82%，
+  const-depth 71%，no-target-direction 0%，两者同时移除 0%。
+- `VisualDroneEnv` 已增加 `no_velocity`，评估脚本扩展为 baseline、
+  单输入移除与组合移除，并输出 Wilson 95% CI、CSV 和 JSON。
+- 这类“在已训练模型上清零输入”只能回答策略依赖性，不能替代从头重训的
+  正式 V3b 消融。
+- 当前 Actor/Critic 共享同一 CNN、向量输入和共享层，没有位置或障碍距离等
+  特权 Critic 输入。因此“无特权 Critic”在现代码中没有可移除对象，原计划
+  该项无效；如需研究非对称 Critic，应先实现一个有特权信息的对照架构。
+- 本机缺少 gymnasium/pytest；服务器常用 Python 路径也未恢复到此前 CUDA
+  gsplat 环境。遵循连续失败两次即停止规则，本轮没有伪造或重复启动消融评估。
+
+随后已定位实际训练环境 `/root/miniconda3/envs/myconda`，并完成 robust-best
+seed2 的真实 gsplat 7×100 输入门控（base seed 20260728）：
+
+| 配置 | SR | Wilson 95% CI | Collision | Timeout |
+|------|---:|--------------:|----------:|--------:|
+| baseline | 81% | 72.2–87.5% | 19% | 0% |
+| const-depth | 77% | 67.8–84.2% | 23% | 0% |
+| no-velocity | 11% | 6.3–18.6% | 53% | 36% |
+| no-target-direction | 0% | 0–3.7% | 7% | 93% |
+| no-depth + no-velocity | 12% | 7.0–19.8% | 60% | 28% |
+| no-velocity + no-target-direction | 0% | 0–3.7% | 7% | 93% |
+| all-inputs-ablated | 0% | 0–3.7% | 0% | 100% |
+
+baseline 与旧200-episode结果82%一致，门控可信。速度输入移除导致 -70pp，
+因此已启动无速度 curriculum seed2×100 重训小试
+`v3b_no_velocity_curriculum_seed2_100_pilot_20260729`（PID 22746）。
+首次配置因内部评估规模过大已主动终止，修正版使用20 clean与每档5次内部评估；
+训练完成后仍执行每档100次独立门控。
+
 | 消融 | 状态 | 训练开始 | 训练结束 | 模型路径 | 结论 |
 |------|------|---------|---------|---------|------|
-| 无深度图 (RGB) | ⬜ | — | — | — | — |
-| 无速度向量 | ⬜ | — | — | — | — |
+| 无深度图 (RGB) | ⬜ 正式重训待执行 | — | — | — | const-depth 测试时诊断为 -11pp |
+| 无速度向量 | 🔵 100轮重训小试运行中 | 2026-07-29 | — | `saved_models/v3b_no_velocity_curriculum_seed2_100_pilot_20260729/` | 测试时移除为11% SR |
 | 浅CNN (1层) | ⬜ | — | — | — | — |
-| 无特权Critic | ⬜ | — | — | — | — |
+| 无特权Critic | ➖ 当前架构不适用 | — | — | — | 当前 Critic 无特权输入 |
 
 | 产出 | 状态 | 路径 |
 |------|------|------|
-| 附表2：消融对比矩阵 | ⬜ | — |
+| 输入依赖门控 | ✅ | `reports/v3b_input_gate_seed2_7x100_20260729/` |
+| 附表2：消融对比矩阵 | 🔵 | 待正式重训 |
+
+---
+
+## Phase V3d：场景几何闭环修复
+
+2026-07-29 完成第一优先级修复：
+
+- 审计确认原环境目标高度可达8m，而 gate_mid 真实重建有效 z 范围约
+  -0.2–3.8m；渲染场景与三个固定球形碰撞体不一致。
+- 新增 `ScenePointCloudGeometry`：使用与3DGS同坐标系的稠密点云和 KD-tree
+  计算碰撞/安全距离，不再用硬编码球体代表真实场景。
+- 根据点云1–99分位与安全边距自动生成场景边界。
+- 构建最大连通自由空间网格，起终点只从同一连通分量采样。
+- 50% episode 的起终点直线路径被场景几何阻挡，用于显式测试绕障能力；
+  其余为直线可达对照。
+- 相机光轴随速度方向变化，低速时朝向目标；不再固定使用单位姿态。
+- gate_mid_new 配套稠密点云已同步到服务器：
+  `/root/data/point_cloud/gate_mid_new.ply`。
+- 回归测试19/19通过；20次真实GS reset中9次为绕障任务，最大连通自由空间
+  含5,494个网格点。修复后的深度范围约0.30–20m，不再出现原先全图
+  0.11–0.29m的异常近深度。
+- 1轮端到端训练 smoke 已通过；正式对齐环境小试
+  `v3_aligned_geometry_seed2_100_20260729` 已在GPU0启动（PID 23768）。
+
+该修复会改变任务定义，旧模型只能作为“未对齐环境”历史对照，不能直接与新
+环境成功率混合汇总。新基线训练完成后必须重新运行 const-depth/no-velocity/
+no-target-direction 视觉必要性门控。
 
 ---
 
 ## Phase V3c：跨场景泛化
 
+2026-07-29 资产审计：
+
+- 服务器仅发现一个标准真实 3DGS：`gate_mid_new_gs.ply`。
+- 本地有 gate_mid/left/right 的 nerfstudio checkpoint 与若干普通/导出点云，
+  但 Replica 18 场景目前只有 mesh/texture，尚未训练为 3DGS；garden 也未就绪。
+- 当前 `VisualDroneEnv` 的边界、目标分布和三个球形碰撞体固定，不随 PLY
+  改变。仅替换 PLY 最多是视觉域迁移代理，不是完整跨场景导航泛化。
+- 因此 garden→office0/room0/apartment0 正式 V3c 暂停。恢复条件是每个场景
+  同时具备标准 3DGS PLY、坐标变换/边界、碰撞几何和可复现起终点协议。
+
 | 实验 | 状态 | 训练场景 | 测试场景 | 结果 |
 |------|------|---------|---------|------|
-| L1 跨场景 | ⬜ | garden | office0, room0, apartment0 | — |
+| L0 gate-family 视觉域代理 | ⚠️ 待导出/校准 | gate_mid_new | gate_mid/left/right | 不得写作完整跨场景导航 |
+| L1 跨场景 | ⚠️ 资产受阻 | garden | office0, room0, apartment0 | 缺标准3DGS与场景几何协议 |
 | L3 大规模 (ScanNet+HM3D) | ⬜ | garden+room0 | ScanNet×5 + HM3D×10 | — |
 | 极端边界测试 | ⬜ | — | 全场景×最差退化 | — |
 

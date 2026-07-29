@@ -151,13 +151,18 @@ def resolve_ply_path(ply_arg):
         f"ply not found: {ply_arg} (tried cwd-relative, repo-relative, ply_exports)")
 
 
-def make_env(degradation_config=None, renderer='mock', ply_path=None):
+def make_env(degradation_config=None, renderer='mock', ply_path=None,
+             ablation_config=None, scene_config=None):
     """环境工厂"""
     cfg = {'renderer': renderer}
     if renderer == 'gsplat':
         if not ply_path:
             raise ValueError("--renderer gsplat requires --ply <path to .ply>")
         cfg['ply_path'] = resolve_ply_path(ply_path)
+    if ablation_config:
+        cfg['ablation'] = dict(ablation_config)
+    if scene_config:
+        cfg.update(scene_config)
     if degradation_config and degradation_config != 'clean':
         if degradation_config == 'rand':
             level = np.random.choice([100, 50, 25, 10, 5])
@@ -183,7 +188,8 @@ def make_env(degradation_config=None, renderer='mock', ply_path=None):
     return VisualDroneEnv(config=cfg)
 
 
-def make_fixed_depth_scale_env(renderer, ply_path, depth_scale):
+def make_fixed_depth_scale_env(renderer, ply_path, depth_scale,
+                               ablation_config=None, scene_config=None):
     """Create a validation environment with one fixed depth calibration."""
     cfg = {
         'renderer': renderer,
@@ -193,6 +199,10 @@ def make_fixed_depth_scale_env(renderer, ply_path, depth_scale):
         if not ply_path:
             raise ValueError("--renderer gsplat requires --ply <path to .ply>")
         cfg['ply_path'] = resolve_ply_path(ply_path)
+    if ablation_config:
+        cfg['ablation'] = dict(ablation_config)
+    if scene_config:
+        cfg.update(scene_config)
     return VisualDroneEnv(config=cfg)
 
 
@@ -216,14 +226,22 @@ def train_visual(config):
     degradation = config.get('degradation', 'clean')
     renderer = config.get('renderer', 'mock')
     ply_path = config.get('ply_path')
+    ablation_config = config.get('ablation')
+    scene_config = config.get('scene_config')
 
     # 创建环境
-    envs = [make_env(degradation, renderer, ply_path) for _ in range(num_envs)]
-    eval_env = make_env('clean', renderer, ply_path)
+    envs = [
+        make_env(
+            degradation, renderer, ply_path, ablation_config, scene_config)
+        for _ in range(num_envs)
+    ]
+    eval_env = make_env(
+        'clean', renderer, ply_path, ablation_config, scene_config)
     robust_eval_envs = None
     if degradation in ('scale_curriculum', 'scale_recovery'):
         robust_eval_envs = [
-            make_fixed_depth_scale_env(renderer, ply_path, scale)
+            make_fixed_depth_scale_env(
+                renderer, ply_path, scale, ablation_config, scene_config)
             for scale in DEPTH_SCALE_LEVELS
         ]
 
@@ -408,6 +426,13 @@ def main():
                         help='clean checkpoint评估episode数')
     parser.add_argument('--resume-model', type=str, default=None,
                         help='从现有VisualPPO checkpoint继续训练')
+    parser.add_argument('--ablation', choices=['none', 'no_velocity'],
+                        default='none',
+                        help='训练和评估时使用相同的输入消融')
+    parser.add_argument('--collision-ply', default=None,
+                        help='与渲染场景同坐标系的稠密碰撞点云')
+    parser.add_argument('--camera-tracks-motion', action='store_true',
+                        help='相机光轴随速度方向变化，低速时朝向目标')
     args = parser.parse_args()
 
     config = {
@@ -426,6 +451,17 @@ def main():
         'model_out': args.model_out,
         'robust_eval_episodes': args.robust_eval_episodes,
         'resume_model': args.resume_model,
+        'ablation': (
+            {'no_velocity': True}
+            if args.ablation == 'no_velocity' else None
+        ),
+        'scene_config': ({
+            'collision_ply_path': args.collision_ply,
+            'auto_scene_bounds': True,
+            'camera_tracks_motion': args.camera_tracks_motion,
+        } if args.collision_ply else {
+            'camera_tracks_motion': args.camera_tracks_motion,
+        }),
     }
 
     result = train_visual(config)

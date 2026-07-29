@@ -1,0 +1,100 @@
+{
+  "baseline": {
+    "success_rate": 81.0,
+    "collision_rate": 19.0,
+    "timeout_rate": 0.0,
+    "avg_reward": 423.6680550812192,
+    "reward_std": 146.59519523796928,
+    "episodes": 100,
+    "success_wilson_95": [
+      72.22115462093562,
+      87.48524849023126
+    ]
+  },
+  "const_depth": {
+    "success_rate": 77.0,
+    "collision_rate": 23.0,
+    "timeout_rate": 0.0,
+    "avg_reward": 409.263207486128,
+    "reward_std": 159.30964562530144,
+    "episodes": 100,
+    "success_wilson_95": [
+      67.84561697712623,
+      84.15673411969654
+    ]
+  },
+  "no_velocity": {
+    "success_rate": 11.0,
+    "collision_rate": 53.0,
+    "timeout_rate": 36.0,
+    "avg_reward": -493.5296246670896,
+    "reward_std": 636.6522025817353,
+    "episodes": 100,
+    "success_wilson_95": [
+      6.254196357064568,
+      18.631296503080314
+    ]
+  },
+  "no_target_dir": {
+    "success_rate": 0.0,
+    "collision_rate": 7.000000000000001,
+    "timeout_rate": 93.0,
+    "avg_reward": -2350.9623218180814,
+    "reward_std": 539.1735001964557,
+    "episodes": 100,
+    "success_wilson_95": [
+      3.469446951953614e-16,
+      3.699349820698568
+    ]
+  },
+  "no_depth_no_velocity": {
+    "success_rate": 12.0,
+    "collision_rate": 60.0,
+    "timeout_rate": 28.000000000000004,
+    "avg_reward": -348.9570233929836,
+    "reward_std": 600.4017146752326,
+    "episodes": 100,
+    "success_wilson_95": [
+      6.999406437019489,
+      19.81209942671142
+    ]
+  },
+  "no_velocity_no_target_dir": {
+    "success_rate": 0.0,
+    "collision_rate": 7.000000000000001,
+    "timeout_rate": 93.0,
+    "avg_reward": -2431.0418084491253,
+    "reward_std": 661.4787176015368,
+    "episodes": 100,
+    "success_wilson_95": [
+      3.469446951953614e-16,
+      3.699349820698568
+    ]
+  },
+  "all_inputs_ablated": {
+    "success_rate": 0.0,
+    "collision_rate": 0.0,
+    "timeout_rate": 100.0,
+    "avg_reward": -2642.427962680139,
+    "reward_std": 113.87649555482946,
+    "episodes": 100,
+    "success_wilson_95": [
+      3.469446951953614e-16,
+      3.699349820698568
+    ]
+  },
+  "analysis": {
+    "const_depth_delta": -4.0,
+    "no_velocity_delta": -70.0,
+    "no_target_dir_delta": -81.0,
+    "no_depth_no_velocity_delta": -69.0,
+    "no_velocity_no_target_dir_delta": -81.0,
+    "all_inputs_ablated_delta": -81.0
+  },
+  "metadata": {
+    "renderer": "gsplat",
+    "ply": "/root/data/gs_data/ply_exports/gate_mid_new_gs.ply",
+    "seed": 20260728,
+    "timestamp": "2026-07-29T10:23:07.296639"
+  }
+}

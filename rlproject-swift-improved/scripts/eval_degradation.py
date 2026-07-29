@@ -189,6 +189,9 @@ def main():
                         default='mock')
     parser.add_argument('--ply', type=str, default=None,
                         help='真实 3DGS PLY 路径')
+    parser.add_argument('--collision-ply', type=str, default=None,
+                        help='与渲染场景同坐标系的稠密碰撞点云')
+    parser.add_argument('--camera-tracks-motion', action='store_true')
     args = parser.parse_args()
     if args.renderer == 'gsplat':
         if not args.ply or not os.path.isfile(args.ply):
@@ -196,6 +199,12 @@ def main():
     base_config = {'renderer': args.renderer}
     if args.ply:
         base_config['ply_path'] = args.ply
+    if args.collision_ply:
+        if not os.path.isfile(args.collision_ply):
+            raise FileNotFoundError("--collision-ply must exist")
+        base_config['collision_ply_path'] = args.collision_ply
+        base_config['auto_scene_bounds'] = True
+    base_config['camera_tracks_motion'] = args.camera_tracks_motion
 
     # 加载模型
     logger.info(f"Loading model: {args.model}")
