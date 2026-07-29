@@ -31,7 +31,7 @@ logger.info(f"Visual PPO Device: {DEVICE}")
 # 128D输出 vs GRaD-Nav的16D: 我们的信息瓶颈更宽，端到端训练可充分利用
 
 class VisualEncoder(nn.Module):
-    """深度图 → 128D 视觉特征"""
+    """深度图 → 128D 视觉特征 (3层CNN)"""
     def __init__(self, in_channels=1, feature_dim=128):
         super().__init__()
         self.conv = nn.Sequential(
@@ -47,9 +47,25 @@ class VisualEncoder(nn.Module):
         self.fc = nn.Linear(64 * 8 * 8, feature_dim)
 
     def forward(self, depth):
-        """depth: (B, 1, 64, 64) → (B, 128)"""
+        """depth: (B, C, 64, 64) → (B, 128)"""
         x = self.conv(depth)
         return self.fc(x)
+
+
+class ShallowEncoder(nn.Module):
+    """浅层CNN: 1层Conv + FC (V3b-3 消融)"""
+    def __init__(self, in_channels=1, feature_dim=128):
+        super().__init__()
+        # WHY stride=4: 64→16, 单层直接降到与3层CNN相同的空间尺寸
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_channels, 32, kernel_size=5, stride=4, padding=2),
+            nn.ReLU(),                                      # 64→16
+            nn.Flatten(),
+        )
+        self.fc = nn.Linear(32 * 16 * 16, feature_dim)
+
+    def forward(self, x):
+        return self.fc(self.conv(x))
 
 
 # ── Visual Actor-Critic ─────────────────────────────────────────
@@ -57,34 +73,67 @@ class VisualEncoder(nn.Module):
 # tanh(mean)将动作限制在(-1,1), 匹配归一化动作空间
 
 class VisualActorCritic(nn.Module):
-    """CNN编码器 + 共享MLP → Actor(3D动作) + Critic(1D价值)"""
+    """CNN编码器 + 共享MLP → Actor(3D动作) + Critic(1D价值)
+
+    ablation_config: 支持 V3b 消融实验
+      - shallow_cnn: 使用 ShallowEncoder (1层)
+      - no_privileged_critic: 分离 actor/critic 编码器 (无特权批评者)
+      - in_channels: 输入通道数 (1=深度图, 3=RGB)
+    """
 
     def __init__(self, vec_dim=6, visual_feature_dim=128,
-                 hidden_dim=128, action_dim=3):
+                 hidden_dim=128, action_dim=3,
+                 ablation_config=None):
         super().__init__()
-        self.visual_encoder = VisualEncoder(in_channels=1,
-                                             feature_dim=visual_feature_dim)
+        acfg = ablation_config or {}
+        in_channels = acfg.get('in_channels', 1)
+
+        if acfg.get('shallow_cnn', False):
+            self.visual_encoder = ShallowEncoder(
+                in_channels=in_channels, feature_dim=visual_feature_dim)
+        else:
+            self.visual_encoder = VisualEncoder(
+                in_channels=in_channels, feature_dim=visual_feature_dim)
+
         combined_dim = visual_feature_dim + vec_dim  # 128 + 6 = 134
 
-        # 共享层
-        self.shared = nn.Sequential(
-            nn.Linear(combined_dim, hidden_dim),
-            nn.ReLU(),
-        )
-
-        # Actor
-        self.actor = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, action_dim),
-        )
-
-        # Critic
-        self.critic = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, 1),
-        )
+        if acfg.get('no_privileged_critic', False):
+            # V3b-4: 分离 actor/critic, critic 只看 vec, 不看视觉
+            # WHY: 验证共享编码器是否对 critic 有正则化作用
+            self.shared = nn.Sequential(
+                nn.Linear(combined_dim, hidden_dim),
+                nn.ReLU(),
+            )
+            self.actor = nn.Sequential(
+                nn.Linear(hidden_dim, hidden_dim),
+                nn.ReLU(),
+                nn.Linear(hidden_dim, action_dim),
+            )
+            # Critic 只看 vec (无视觉特征)
+            self.critic_net = nn.Sequential(
+                nn.Linear(vec_dim, hidden_dim),
+                nn.ReLU(),
+                nn.Linear(hidden_dim, hidden_dim),
+                nn.ReLU(),
+                nn.Linear(hidden_dim, 1),
+            )
+        else:
+            # 默认: 共享特征提取器
+            self.shared = nn.Sequential(
+                nn.Linear(combined_dim, hidden_dim),
+                nn.ReLU(),
+            )
+            self.actor = nn.Sequential(
+                nn.Linear(hidden_dim, hidden_dim),
+                nn.ReLU(),
+                nn.Linear(hidden_dim, action_dim),
+            )
+            # 标准 critic (与 actor 共享特征)
+            self.critic = nn.Sequential(
+                nn.Linear(hidden_dim, hidden_dim),
+                nn.ReLU(),
+                nn.Linear(hidden_dim, 1),
+            )
 
         # 可学习 log_std
         # WHY init=-0.5 (std≈0.6): 原始std=1.0在视觉观测下entropy(4.26)太高,
@@ -100,22 +149,30 @@ class VisualActorCritic(nn.Module):
                 nn.init.zeros_(m.bias)
         # Actor输出层用小gain (Swift实践)
         nn.init.orthogonal_(self.actor[-1].weight, gain=0.01)
-        nn.init.orthogonal_(self.critic[-1].weight, gain=1.0)
+        # Critic输出层
+        critic_head = self.critic if hasattr(self, 'critic') else self.critic_net
+        nn.init.orthogonal_(critic_head[-1].weight, gain=1.0)
 
     def forward(self, depth, vec):
         """
-        depth: (B, 1, 64, 64)
+        depth: (B, C, 64, 64)  (C=1 depth, C=3 RGB)
         vec:   (B, 6)
         → mean: (B, 3), std: (B, 3), value: (B,)
         """
         vis = self.visual_encoder(depth)           # (B, 128)
         combined = torch.cat([vis, vec], dim=-1)   # (B, 134)
-        shared = self.shared(combined)              # (B, 128)
 
-        mean = torch.tanh(self.actor(shared))       # (B, 3) ∈ (-1,1)
+        if hasattr(self, 'critic_net'):
+            # V3b-4: 无特权 critic — 只看 vec, 不看视觉
+            shared = self.shared(combined)          # (B, 128)
+            mean = torch.tanh(self.actor(shared))   # (B, 3)
+            value = self.critic_net(vec).squeeze(-1)  # (B,)
+        else:
+            shared = self.shared(combined)          # (B, 128)
+            mean = torch.tanh(self.actor(shared))   # (B, 3)
+            value = self.critic(shared).squeeze(-1) # (B,)
+
         std = torch.clamp(self.log_std.exp(), 1e-3, 1.0)
-        value = self.critic(shared).squeeze(-1)     # (B,)
-
         return mean, std, value
 
 
@@ -175,7 +232,8 @@ class VisualPPO:
                  lr=3e-4, gamma=0.99, gae_lambda=0.95, clip_eps=0.2,
                  epochs=10, minibatch_size=64, hidden_dim=128,
                  use_adaptive_entropy=True, num_envs=8,
-                 reward_scale=0.1):
+                 reward_scale=0.1,
+                 ablation_config=None):
         """
         Args:
             reward_scale: 奖励缩放因子。原始reward量级[-10, 100],
@@ -193,8 +251,10 @@ class VisualPPO:
         self.num_envs = num_envs
         self.reward_scale = reward_scale
 
+        self.ablation_config = ablation_config or {}
         self.model = VisualActorCritic(
-            vec_dim=vec_dim, hidden_dim=hidden_dim, action_dim=action_dim
+            vec_dim=vec_dim, hidden_dim=hidden_dim, action_dim=action_dim,
+            ablation_config=self.ablation_config,
         ).to(DEVICE)
 
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
@@ -429,12 +489,20 @@ class VisualPPO:
 
     def save_model(self, path="visual_ppo_model.pth"):
         torch.save({'model_state_dict': self.model.state_dict(),
-                     'action_dim': self.action_dim}, path)
+                     'action_dim': self.action_dim,
+                     'ablation_config': self.ablation_config}, path)
         logger.info(f"Model saved: {path}")
 
     def load_model(self, path="visual_ppo_model.pth"):
         try:
             ckpt = torch.load(path, map_location=DEVICE)
+            saved_ablation = ckpt.get('ablation_config', {})
+            if saved_ablation and saved_ablation != self.ablation_config:
+                logger.info(f"Rebuilding model with saved ablation config: {saved_ablation}")
+                self.__init__(
+                    vec_dim=6, action_dim=ckpt.get('action_dim', self.action_dim),
+                    ablation_config=saved_ablation,
+                )
             self.model.load_state_dict(ckpt['model_state_dict'])
             logger.info(f"Model loaded: {path}")
         except Exception as e:

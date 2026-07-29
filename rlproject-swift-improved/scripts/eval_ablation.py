@@ -74,6 +74,8 @@ def main():
         "baseline": {},
         "const_depth": {"const_depth": True},
         "no_target_dir": {"no_target_dir": True},
+        "no_velocity": {"no_velocity": True},
+        "no_vec": {"no_velocity": True, "no_target_dir": True},
         "both": {"const_depth": True, "no_target_dir": True},
     }
     results = {

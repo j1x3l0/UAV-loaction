@@ -235,12 +235,22 @@ class VisualDroneEnv(gym.Env):
         if self.ablation_config.get('const_depth', False):
             depth = np.full_like(depth, 5.0)
 
+        # V3b-1: RGB 替代深度 (3通道RGB → 1通道depth替代)
+        if self.ablation_config.get('rgb_only', False):
+            depth = rgb.astype(np.float32)  # (64,64,3) → depth字段变成RGB
+
         # 向量状态
         target_dir = self.target_pos - pos
         if self.ablation_config.get('no_target_dir', False):
             target_dir = np.zeros(3, dtype=np.float32)
+
+        # V3b-2: 无速度 (zero out velocity)
+        effective_vel = vel
+        if self.ablation_config.get('no_velocity', False):
+            effective_vel = np.zeros(3, dtype=np.float32)
+
         vec = np.array([
-            vel[0], vel[1], vel[2],
+            effective_vel[0], effective_vel[1], effective_vel[2],
             target_dir[0], target_dir[1], target_dir[2]
         ], dtype=np.float32)
 

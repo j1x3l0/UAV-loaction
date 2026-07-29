@@ -113,13 +113,16 @@ def resolve_ply_path(ply_arg):
         f"ply not found: {ply_arg} (tried cwd-relative, repo-relative, ply_exports)")
 
 
-def make_env(degradation_config=None, renderer='mock', ply_path=None):
+def make_env(degradation_config=None, renderer='mock', ply_path=None,
+             ablation_config=None):
     """环境工厂"""
     cfg = {'renderer': renderer}
     if renderer == 'gsplat':
         if not ply_path:
             raise ValueError("--renderer gsplat requires --ply <path to .ply>")
         cfg['ply_path'] = resolve_ply_path(ply_path)
+    if ablation_config:
+        cfg['ablation'] = ablation_config
     if degradation_config and degradation_config != 'clean':
         # 简化退化配置 (Phase 0冒烟测试用)
         if degradation_config == 'rand':
@@ -146,12 +149,15 @@ def train_visual(config):
     degradation = config.get('degradation', 'clean')
     renderer = config.get('renderer', 'mock')
     ply_path = config.get('ply_path')
+    env_ablation = config.get('env_ablation', {})
 
     # 创建环境
-    envs = [make_env(degradation, renderer, ply_path) for _ in range(num_envs)]
-    eval_env = make_env('clean', renderer, ply_path)
+    envs = [make_env(degradation, renderer, ply_path, env_ablation)
+            for _ in range(num_envs)]
+    eval_env = make_env('clean', renderer, ply_path, env_ablation)
 
     # 创建PPO (per-env rollout 需要调整num_envs)
+    ablation_config = config.get('ablation_config', {})
     ppo = VisualPPO(
         vec_dim=6, action_dim=3, action_max=1.0,
         lr=config.get('lr', 3e-4),
@@ -163,6 +169,7 @@ def train_visual(config):
         hidden_dim=config.get('hidden_dim', 128),
         use_adaptive_entropy=True,
         num_envs=num_envs,
+        ablation_config=ablation_config,
     )
 
     # 重置环境
@@ -479,6 +486,9 @@ def main():
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--model-out', type=str,
                         default='saved_models/visual_ppo_best.pth')
+    # V3b 消融参数
+    parser.add_argument('--ablation', type=str, default=None,
+                       help='V3b消融: shallow-cnn | no-privileged-critic | rgb')
     # Fine-tune 参数
     parser.add_argument('--checkpoint', type=str, default=None,
                        help='fine-tune 起始 checkpoint (*.pth)')
@@ -521,6 +531,16 @@ def main():
         return
 
     # 默认: train mode
+    ablation_config = {}
+    env_ablation = {}
+    if args.ablation == 'shallow-cnn':
+        ablation_config = {'shallow_cnn': True}
+    elif args.ablation == 'no-privileged-critic':
+        ablation_config = {'no_privileged_critic': True}
+    elif args.ablation == 'rgb':
+        ablation_config = {'in_channels': 3}
+        env_ablation = {'rgb_only': True}
+
     config = {
         'max_episodes': args.episodes,
         'num_envs': args.envs,
@@ -535,6 +555,8 @@ def main():
         'eval_episodes': 100,  # Fix 4: ≥100ep 稳定评估 (was 20)
         'seed': args.seed,
         'model_out': args.model_out,
+        'ablation_config': ablation_config,
+        'env_ablation': env_ablation,  # 传给 make_env
     }
 
     result = train_visual(config)
