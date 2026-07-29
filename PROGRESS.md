@@ -319,6 +319,26 @@ timeout≤1.5%；0.5× 单 seed SR 为 77.5%/67.0%/86.5%。
 
 完整对照：`reports/v3_checkpoint_selection_comparison_20260729/`。
 
+### Clean-recovery 单 seed 收尾
+
+从 seed0 robust-best 以 `60/15/10/10/5%` 尺度概率、`3e-5` 学习率继续
+训练100 updates。训练中 clean 最佳仅77%，最终73%。随后执行唯一一次真实
+gsplat 五尺度×100门控：
+
+| 深度尺度 | SR | CR | Timeout |
+|---------:|---:|---:|--------:|
+| 1.0× | 75% | 25% | 0% |
+| 0.75× | 74% | 25% | 1% |
+| 0.5× | 78% | 21% | 1% |
+| 0.25× | 78% | 22% | 0% |
+| 0.1× | 73% | 27% | 0% |
+
+退化档与 timeout 门槛通过，但 clean 仅75%，未达到80%，且未改善原 seed0
+robust-best 的正式 clean 结果。按照预先约定的停止规则，clean-recovery
+路线已终止，不扩展到3 seeds、不再重跑。
+
+完整结果：`reports/v3_clean_recovery_gate_seed0_5x100_20260729_053619/`。
+
 ### 对比分析
 
 | 产出 | 状态 | 路径 |
