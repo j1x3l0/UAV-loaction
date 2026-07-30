@@ -214,6 +214,25 @@ class VisualDroneEnv(gym.Env):
         self.depth_scale_sample_counts = np.zeros(
             len(self.depth_scale_levels), dtype=np.int64)
         self.ablation_config = self.config.get('ablation', {})
+        self.avoidance_episode_probability = self.config.get(
+            'avoidance_episode_probability', 0.5)
+        self.avoidance_sample_counts = np.zeros(2, dtype=np.int64)
+        self.use_geodesic_reward = bool(
+            self.config.get('use_geodesic_reward', False))
+        self.use_waypoint_observation = bool(
+            self.config.get('use_waypoint_observation', False))
+        self.geodesic_progress_scale = float(
+            self.config.get('geodesic_progress_scale', 10.0))
+        self.geodesic_heading_weight = float(
+            self.config.get('geodesic_heading_weight', 2.0))
+        self.geodesic_waypoint_lookahead = float(
+            self.config.get('geodesic_waypoint_lookahead', 0.9))
+        if (
+            self.use_geodesic_reward or self.use_waypoint_observation
+        ) and self.scene_geometry is None:
+            raise ValueError(
+                "geodesic reward/waypoint observation requires "
+                "collision_ply_path")
 
         # ── 观测/动作空间 ──
         self.observation_space = spaces.Dict({
@@ -231,6 +250,10 @@ class VisualDroneEnv(gym.Env):
         self.max_steps = 500
         self.target_threshold = 0.5
         self._prev_action = None
+        self._geodesic_distance_field = None
+        self._prev_geodesic_distance = None
+        self._geodesic_path = None
+        self._geodesic_path_index = 0
 
     def set_depth_scale_probabilities(self, probabilities):
         """Validate and update per-episode scale sampling probabilities."""
@@ -249,6 +272,17 @@ class VisualDroneEnv(gym.Env):
 
     def reset_depth_scale_sample_counts(self):
         self.depth_scale_sample_counts.fill(0)
+
+    def set_avoidance_episode_probability(self, probability):
+        """Update the probability of sampling a directly blocked task."""
+        if probability is not None and not 0.0 <= float(probability) <= 1.0:
+            raise ValueError(
+                "avoidance episode probability must be in [0, 1] or None")
+        self.avoidance_episode_probability = (
+            None if probability is None else float(probability))
+
+    def reset_avoidance_sample_counts(self):
+        self.avoidance_sample_counts.fill(0)
 
     # ── 观测构建 ──
     def _get_observation(self) -> Dict[str, np.ndarray]:
@@ -289,6 +323,8 @@ class VisualDroneEnv(gym.Env):
 
         # 向量状态
         target_dir = self.target_pos - pos
+        if self.use_waypoint_observation:
+            target_dir = self._geodesic_waypoint_direction(pos)
         if self.ablation_config.get('no_velocity', False):
             vel = np.zeros(3, dtype=np.float32)
         if self.ablation_config.get('no_target_dir', False):
@@ -392,10 +428,11 @@ class VisualDroneEnv(gym.Env):
                     self.np_random,
                     min_distance=float(
                         self.config.get('min_goal_distance', 3.0)),
-                    blocked_probability=self.config.get(
-                        'avoidance_episode_probability', 0.5),
+                    blocked_probability=self.avoidance_episode_probability,
                     collision_radius=self.collision_threshold,
                 )
+            if requires_avoidance is not None:
+                self.avoidance_sample_counts[int(requires_avoidance)] += 1
         else:
             start_min = self.boundary_min + 1.0
             start_max = np.array([2.0, 2.0, 2.0])
@@ -408,6 +445,20 @@ class VisualDroneEnv(gym.Env):
         self.state = np.concatenate([pos, vel]).astype(np.float32)
         self.step_count = 0
         self._prev_action = None
+        if self.use_geodesic_reward or self.use_waypoint_observation:
+            self._geodesic_distance_field = \
+                self.scene_geometry.geodesic_distance_field(self.target_pos)
+            self._prev_geodesic_distance = \
+                self.scene_geometry.geodesic_distance(
+                    pos, self._geodesic_distance_field)
+            self._geodesic_path = self.scene_geometry.shortest_path(
+                pos, self.target_pos)
+            self._geodesic_path_index = 0
+        else:
+            self._geodesic_distance_field = None
+            self._prev_geodesic_distance = None
+            self._geodesic_path = None
+            self._geodesic_path_index = 0
 
         return self._get_observation(), {
             'target_pos': self.target_pos,
@@ -467,16 +518,52 @@ class VisualDroneEnv(gym.Env):
         return self._get_observation(), reward, terminated, truncated, info
 
     # ── 奖励: 复用v1的7组件 ──
+    def _geodesic_waypoint_direction(self, pos):
+        """Return a dense safe-heading signal from the reset-time path."""
+        remaining = self._geodesic_path[self._geodesic_path_index:]
+        nearest_offset = int(np.argmin(
+            np.linalg.norm(remaining - pos[None, :], axis=1)))
+        self._geodesic_path_index += nearest_offset
+        waypoint_index = self._geodesic_path_index
+        accumulated = 0.0
+        while waypoint_index < len(self._geodesic_path) - 1:
+            accumulated += float(np.linalg.norm(
+                self._geodesic_path[waypoint_index + 1]
+                - self._geodesic_path[waypoint_index]))
+            waypoint_index += 1
+            if accumulated >= self.geodesic_waypoint_lookahead:
+                break
+        direction = self._geodesic_path[waypoint_index] - pos
+        return direction / (np.linalg.norm(direction) + 1e-8)
+
     def _compute_reward(self, pos, vel, action, collision, reached, target_dist):
         reward = 0.0
-        r_dist = -5.0 * (1 - np.exp(-0.3 * target_dist))
-        reward += r_dist
 
         speed = np.linalg.norm(vel)
         tgt_dir = (self.target_pos - pos)
         tgt_norm = tgt_dir / (np.linalg.norm(tgt_dir) + 1e-8)
         vel_norm = vel / (speed + 1e-8) if speed > 0 else np.zeros(3)
-        r_heading = speed * np.clip(np.dot(vel_norm, tgt_norm), -1, 1) * 2.0
+        if self.use_geodesic_reward:
+            geodesic_distance = self.scene_geometry.geodesic_distance(
+                pos, self._geodesic_distance_field)
+            progress = self._prev_geodesic_distance - geodesic_distance
+            r_dist = self.geodesic_progress_scale * progress
+            self._prev_geodesic_distance = geodesic_distance
+            waypoint_direction = self._geodesic_waypoint_direction(pos)
+            r_heading = (
+                speed
+                * np.clip(
+                    np.dot(vel_norm, waypoint_direction), -1, 1)
+                * self.geodesic_heading_weight
+            )
+        else:
+            r_dist = -5.0 * (1 - np.exp(-0.3 * target_dist))
+            r_heading = (
+                speed
+                * np.clip(np.dot(vel_norm, tgt_norm), -1, 1)
+                * 2.0
+            )
+        reward += r_dist
         reward += r_heading
 
         min_obs = self._get_min_obstacle_distance(pos)

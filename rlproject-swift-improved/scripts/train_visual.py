@@ -44,6 +44,11 @@ SCALE_CURRICULUM = (
     (0.3, 'transition', [0.25, 0.20, 0.30, 0.15, 0.10]),
     (0.7, 'robustness', [0.25, 0.15, 0.25, 0.20, 0.15]),
 )
+AVOIDANCE_CURRICULUM = (
+    (0.0, 'clear_foundation', 0.10),
+    (0.3, 'mixed_transition', 0.30),
+    (0.7, 'balanced_avoidance', 0.50),
+)
 
 
 def get_scale_curriculum_stage(progress):
@@ -52,6 +57,17 @@ def get_scale_curriculum_stage(progress):
         raise ValueError("curriculum progress must be in [0, 1]")
     active = SCALE_CURRICULUM[0]
     for stage in SCALE_CURRICULUM:
+        if progress >= stage[0]:
+            active = stage
+    return active[1], active[2]
+
+
+def get_avoidance_curriculum_stage(progress):
+    """Return curriculum name and blocked-episode probability."""
+    if not 0.0 <= progress <= 1.0:
+        raise ValueError("curriculum progress must be in [0, 1]")
+    active = AVOIDANCE_CURRICULUM[0]
+    for stage in AVOIDANCE_CURRICULUM:
         if progress >= stage[0]:
             active = stage
     return active[1], active[2]
@@ -217,6 +233,11 @@ def train_visual(config):
     model_out = config.get('model_out', 'saved_models/visual_ppo_best.pth')
     resume_model = config.get('resume_model')
     checkpoint_paths = get_checkpoint_paths(model_out)
+    for checkpoint_path in checkpoint_paths.values():
+        os.makedirs(
+            os.path.dirname(os.path.abspath(checkpoint_path)),
+            exist_ok=True,
+        )
 
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -227,21 +248,33 @@ def train_visual(config):
     renderer = config.get('renderer', 'mock')
     ply_path = config.get('ply_path')
     ablation_config = config.get('ablation')
-    scene_config = config.get('scene_config')
+    scene_config = dict(config.get('scene_config') or {})
+    avoidance_curriculum = bool(config.get('avoidance_curriculum', False))
+    train_scene_config = dict(scene_config)
+    eval_scene_config = dict(scene_config)
+    if avoidance_curriculum:
+        _, initial_avoidance_probability = \
+            get_avoidance_curriculum_stage(0.0)
+        train_scene_config['avoidance_episode_probability'] = \
+            initial_avoidance_probability
+        # Evaluation remains balanced throughout training.
+        eval_scene_config['avoidance_episode_probability'] = 0.5
 
     # 创建环境
     envs = [
         make_env(
-            degradation, renderer, ply_path, ablation_config, scene_config)
+            degradation, renderer, ply_path, ablation_config,
+            train_scene_config)
         for _ in range(num_envs)
     ]
     eval_env = make_env(
-        'clean', renderer, ply_path, ablation_config, scene_config)
+        'clean', renderer, ply_path, ablation_config, eval_scene_config)
     robust_eval_envs = None
     if degradation in ('scale_curriculum', 'scale_recovery'):
         robust_eval_envs = [
             make_fixed_depth_scale_env(
-                renderer, ply_path, scale, ablation_config, scene_config)
+                renderer, ply_path, scale, ablation_config,
+                eval_scene_config)
             for scale in DEPTH_SCALE_LEVELS
         ]
 
@@ -279,12 +312,27 @@ def train_visual(config):
     best_robust_score = (-1.0, -1.0)
     active_curriculum_stage = (
         'recovery' if degradation == 'scale_recovery' else None)
+    active_avoidance_stage = None
 
     logger.info(f"Training: {max_episodes}ep × {num_envs}envs × "
                 f"{rollout_steps}steps, degradation={degradation}, "
                 f"renderer={renderer}")
 
     for episode in range(max_episodes):
+        if avoidance_curriculum:
+            curriculum_progress = episode / max_episodes
+            avoidance_stage, avoidance_probability = \
+                get_avoidance_curriculum_stage(curriculum_progress)
+            if avoidance_stage != active_avoidance_stage:
+                active_avoidance_stage = avoidance_stage
+                for env in envs:
+                    env.set_avoidance_episode_probability(
+                        avoidance_probability)
+                    env.reset_avoidance_sample_counts()
+                logger.info(
+                    f"Avoidance curriculum stage={avoidance_stage} "
+                    f"progress={curriculum_progress:.1%} "
+                    f"blocked_probability={avoidance_probability:.2f}")
         if degradation == 'scale_curriculum':
             curriculum_progress = episode / max_episodes
             stage_name, probabilities = get_scale_curriculum_stage(
@@ -350,6 +398,19 @@ def train_visual(config):
                     f"  Scale samples ({active_curriculum_stage}, "
                     f"n={sample_total}): "
                     f"{dict(zip(DEPTH_SCALE_LEVELS, frequencies.round(3)))}")
+            if avoidance_curriculum:
+                avoidance_counts = np.sum(
+                    [env.avoidance_sample_counts for env in envs], axis=0)
+                avoidance_total = int(avoidance_counts.sum())
+                avoidance_frequencies = (
+                    avoidance_counts / avoidance_total
+                    if avoidance_total else np.zeros(
+                        2, dtype=np.float64))
+                logger.info(
+                    f"  Task samples ({active_avoidance_stage}, "
+                    f"n={avoidance_total}): "
+                    f"clear={avoidance_frequencies[0]:.3f}, "
+                    f"avoidance={avoidance_frequencies[1]:.3f}")
 
         # 评估
         if episode % eval_interval == 0 or episode == max_episodes - 1:
@@ -433,6 +494,20 @@ def main():
                         help='与渲染场景同坐标系的稠密碰撞点云')
     parser.add_argument('--camera-tracks-motion', action='store_true',
                         help='相机光轴随速度方向变化，低速时朝向目标')
+    parser.add_argument('--geodesic-reward', action='store_true',
+                        help='使用沿自由空间最短路的进度奖励')
+    parser.add_argument('--geodesic-progress-scale', type=float, default=10.0,
+                        help='测地势能差奖励权重')
+    parser.add_argument('--geodesic-heading-weight', type=float, default=2.0,
+                        help='局部安全路径方向奖励权重')
+    parser.add_argument('--geodesic-waypoint-lookahead', type=float,
+                        default=0.9,
+                        help='训练奖励使用的路径点前视距离（米）')
+    parser.add_argument(
+        '--waypoint-observation', action='store_true',
+        help='诊断模式：用局部安全路径方向替代最终目标方向观测')
+    parser.add_argument('--avoidance-curriculum', action='store_true',
+                        help='避障任务比例按10%%/30%%/50%%分阶段增加')
     args = parser.parse_args()
 
     config = {
@@ -455,10 +530,17 @@ def main():
             {'no_velocity': True}
             if args.ablation == 'no_velocity' else None
         ),
+        'avoidance_curriculum': args.avoidance_curriculum,
         'scene_config': ({
             'collision_ply_path': args.collision_ply,
             'auto_scene_bounds': True,
             'camera_tracks_motion': args.camera_tracks_motion,
+            'use_geodesic_reward': args.geodesic_reward,
+            'geodesic_progress_scale': args.geodesic_progress_scale,
+            'geodesic_heading_weight': args.geodesic_heading_weight,
+            'geodesic_waypoint_lookahead':
+                args.geodesic_waypoint_lookahead,
+            'use_waypoint_observation': args.waypoint_observation,
         } if args.collision_ply else {
             'camera_tracks_motion': args.camera_tracks_motion,
         }),

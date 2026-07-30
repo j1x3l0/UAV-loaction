@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scripts.train_visual import (
+    get_avoidance_curriculum_stage,
     get_checkpoint_paths,
     get_scale_curriculum_stage,
     make_env,
@@ -20,6 +21,21 @@ def test_curriculum_boundaries():
     assert get_scale_curriculum_stage(0.699)[0] == 'transition'
     assert get_scale_curriculum_stage(0.7)[0] == 'robustness'
     assert get_scale_curriculum_stage(1.0)[0] == 'robustness'
+
+
+def test_avoidance_curriculum_boundaries():
+    assert get_avoidance_curriculum_stage(0.0) == (
+        'clear_foundation', 0.10)
+    assert get_avoidance_curriculum_stage(0.299) == (
+        'clear_foundation', 0.10)
+    assert get_avoidance_curriculum_stage(0.3) == (
+        'mixed_transition', 0.30)
+    assert get_avoidance_curriculum_stage(0.699) == (
+        'mixed_transition', 0.30)
+    assert get_avoidance_curriculum_stage(0.7) == (
+        'balanced_avoidance', 0.50)
+    assert get_avoidance_curriculum_stage(1.0) == (
+        'balanced_avoidance', 0.50)
 
 
 def test_checkpoint_paths():
@@ -51,6 +67,7 @@ def test_recovery_sampling_distribution():
 
 if __name__ == '__main__':
     test_curriculum_boundaries()
+    test_avoidance_curriculum_boundaries()
     test_checkpoint_paths()
     test_robust_score_prioritizes_worst_scale()
     test_recovery_sampling_distribution()

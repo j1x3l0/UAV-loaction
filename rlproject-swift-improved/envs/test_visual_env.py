@@ -179,6 +179,18 @@ def test_input_ablation_config():
     assert obs['depth'].shape == (64, 64, 1)
     print("  ✓ input ablation: velocity and target direction zeroed")
 
+
+def test_waypoint_observation_requires_scene_geometry():
+    """局部路径点观测不得在无场景几何时静默启用。"""
+    try:
+        VisualDroneEnv(config={'use_waypoint_observation': True})
+    except ValueError:
+        print("  ✓ waypoint observation requires scene geometry")
+        return
+    raise AssertionError(
+        "waypoint observation accepted without collision geometry")
+
+
 def test_scene_geometry_collision_and_sampling():
     """场景点云同时驱动碰撞距离和自由空间采样。"""
     wall_y, wall_z = np.meshgrid(
@@ -213,6 +225,43 @@ def test_scene_geometry_collision_and_sampling():
         blocked_probability=None, collision_radius=0.2)
     assert np.linalg.norm(target - start) >= 1.0
     print("  ✓ scene geometry: collision and free sampling aligned")
+
+
+def test_scene_geodesic_distance_routes_around_obstacle():
+    """测地距离应沿自由空间绕过位于起终点之间的墙段。"""
+    wall_y, wall_z = np.meshgrid(
+        np.linspace(-0.5, 0.5, 11), np.linspace(0.0, 1.0, 11))
+    wall = np.column_stack([
+        np.zeros(wall_y.size), wall_y.ravel(), wall_z.ravel()
+    ])
+    bounds_support = np.array([
+        [x, y, z]
+        for x in (-2.0, 2.0)
+        for y in (-2.0, 2.0)
+        for z in (0.0, 1.0)
+    ])
+    geometry = ScenePointCloudGeometry(
+        points=np.vstack([wall, bounds_support]),
+        bounds_percentiles=(0, 100),
+        boundary_margin=0.0,
+    )
+    geometry.build_navigation_grid(resolution=0.25, clearance=0.2)
+    start = np.array([-1.0, 0.0, 0.5])
+    target = np.array([1.0, 0.0, 0.5])
+    field = geometry.geodesic_distance_field(target)
+    geodesic = geometry.geodesic_distance(start, field)
+    path = geometry.shortest_path(start, target)
+    assert np.isfinite(geodesic)
+    assert geodesic > np.linalg.norm(target - start)
+    assert geometry.geodesic_distance(target, field) < 0.2
+    assert np.allclose(path[0], start)
+    assert np.allclose(path[-1], target)
+    assert all(
+        not geometry.collides(point, radius=0.2)
+        for point in path[1:-1]
+    )
+    print(f"  ✓ geodesic route: {geodesic:.2f}m > direct 2.00m")
+
 
 def test_motion_tracking_camera_quaternion():
     """相机光轴应跟随速度方向，输出单位四元数。"""
@@ -296,8 +345,12 @@ def run_all_tests():
         ("env deterministic", test_env_deterministic),
         ("env degradation config", test_env_degradation_config),
         ("input ablation config", test_input_ablation_config),
+        ("waypoint observation geometry requirement",
+         test_waypoint_observation_requires_scene_geometry),
         ("scene geometry collision and sampling",
          test_scene_geometry_collision_and_sampling),
+        ("scene geodesic distance",
+         test_scene_geodesic_distance_routes_around_obstacle),
         ("motion tracking camera quaternion",
          test_motion_tracking_camera_quaternion),
         ("weighted depth scale sampling", test_weighted_depth_scale_sampling),
