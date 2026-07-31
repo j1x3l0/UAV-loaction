@@ -39,7 +39,8 @@ colcon。直接安装最新版Gazebo/ROS 2会污染现有gsplat训练环境，�
   Gazebo；
 - 当前服务器：先尝试PX4 SIH零外部仿真依赖；如果需要Gazebo，使用独立容器
   或维护窗口，避免覆盖CUDA/gsplat环境；
-- 笔记本：适合Gazebo GUI、QGroundControl和人工观察；
+- 开发机（MacBook）：通过 QGC 客户端经网络连接服务器 SITL，或 VNC/X 转发查看
+  服务器 Gazebo 渲染；不部署自己的 PX4+Gazebo（联想笔记本已评估为不需要）；
 - Isaac Sim/Pegasus在PX4+Gazebo接口门控通过后再启动。
 
 ## 安全边界

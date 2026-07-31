@@ -1,6 +1,6 @@
 # UAV-loaction 仿真平台需求与实施方案
 
-日期：2026-07-30
+日期：2026-07-30（2026-07-31 修订：确认联想笔记本 8 GB 显存，评估为不需要，计划简化为 MacBook 开发/观察机 + 服务器）
 
 ## 1. 目的
 
@@ -60,19 +60,20 @@ x86_64 要求为 Ubuntu 22.04/24.04，并给出更新的测试驱动和 RTX 4080
 GPU 配置。因此，不能把“3090 可以尝试运行旧版/适配版”表述为“当前系统满足
 最新 Isaac Sim 官方要求”。
 
-### 3.2 联想拯救者 Y7000P（用户报告）
+### 3.2 联想拯救者 Y7000P（评估结论：不需要）
 
-- GPU：RTX 4060 Laptop；
-- 显存：用户报告为 16 GB；
-- 预期用途：GUI 开发、场景编辑、QGroundControl、PX4/Gazebo 联调和中小规模
-  Isaac Sim 冒烟测试。
+- GPU：RTX 4060 Laptop，8 GB 显存（`nvidia-smi` 确认）。
 
-部署前必须通过 `nvidia-smi` 确认显示约 `16384 MiB` 专用显存。Windows
-任务管理器中的“专用显存 + 共享系统内存”总和不能作为 16 GB 独立显存证明。
+评估结论：本项目不需要第二台电脑。所有角色均可由现有开发机（MacBook）与
+服务器覆盖：
 
-即使确认为 16 GB，RTX 4060 Laptop 的计算性能仍低于最新 Isaac Sim 官方列出的
-最低 RTX 4080。它适合单无人机、单深度相机、低分辨率和简单/中等场景的开发，
-不应承担复杂场景、多传感器或正式多种子批量训练。
+- 开发、绘图、可视化：MacBook；
+- QGroundControl 监控：MacBook 作为客户端经网络连接服务器 SITL 的 MAVLink；
+- Gazebo 渲染观察：服务器 headless 渲染 + VNC/X 转发，MacBook 查看；
+- Isaac Sim：8 GB 显存低于最低 RTX 4080（16 GB），只能在服务器运行。
+
+联想笔记本不承担任何不可替代职责，也不需维护独立的 PX4+Gazebo 环境，故不
+列入计划。若未来出现 Windows 目标部署或需要本地 GUI 调试，再重新评估。
 
 ## 4. 平台选择
 
@@ -121,7 +122,8 @@ GPU 配置。因此，不能把“3090 可以尝试运行旧版/适配版”表�
 
 - 当前服务器系统与驱动不满足最新官方组合；
 - 安装体积、显存占用和集成成本明显高于 Gazebo；
-- 4060 笔记本只能承担受控规模开发，不能替代服务器正式实验；
+- 联想笔记本（8 GB）已评估为不需要，不承担任何仿真职责；Isaac Sim 只在服务器
+  运行；
 - 3DGS 外观不能自动等价为可靠碰撞几何，仍需 Mesh、SDF、占据图或显式
   Gaussian 碰撞校准。
 
@@ -142,15 +144,15 @@ AirSim不进入主线；Sionna列为可选扩展。只有当论文问题明确�
 
 ## 6. 设备分工
 
-### 笔记本
+### 开发/观察机（MacBook）
 
 - VS Code/Codex 开发；
-- QGroundControl 状态监控；
-- PX4 SITL + Gazebo GUI；
-- MAVSDK/ROS 2 接口调试；
-- Isaac Sim + Pegasus 单机小场景；
-- 20–100 episodes 功能门控；
-- 场景、视频和传感器可视化。
+- QGroundControl 客户端（经网络连接服务器 SITL 的 MAVLink）；
+- 绘图、场景/深度可视化；
+- MAVSDK/ROS 2 客户端调试；
+- VNC/X 转发查看服务器 Gazebo 渲染；
+- 20–100 episodes 结果查看与人工抽查；
+- 不部署自己的 PX4/Gazebo/Isaac。
 
 ### 双 3090 服务器
 
@@ -171,9 +173,9 @@ AirSim不进入主线；Sionna列为可选扩展。只有当论文问题明确�
 5. 接入 PPO 动作，建立动作限幅、控制频率、坐标系和时间戳转换；
 6. 运行 20 episodes Headless 冒烟，再运行 100 episodes 单 seed 门控。
 
-### 阶段 B：笔记本 Isaac 原型
+### 阶段 B：服务器 Isaac 原型
 
-1. 核验 16 GB 专用显存、操作系统、内存和剩余磁盘；
+1. 在隔离的 Ubuntu 22.04 环境或容器中部署，避免污染当前训练环境；
 2. 选择与 Pegasus 明确兼容的 Isaac Sim 版本；
 3. 只启用一架无人机、一个低分辨率深度相机和 IMU；
 4. 验证 Pegasus 多旋翼、PX4 SITL 和 ROS 2/MAVSDK 通路；
@@ -247,8 +249,8 @@ AirSim不进入主线；Sionna列为可选扩展。只有当论文问题明确�
 ## 11. 决策结论
 
 1. **立即实施：** 当前服务器部署 PX4 SITL + Gazebo Headless；
-2. **并行开发：** 16 GB 显存笔记本用于 Gazebo GUI、QGroundControl 和受控规模
-   Isaac + Pegasus 原型；
+2. **并行开发：** 开发/观察在现有 MacBook（代码、绘图、QGC 客户端连接服务器
+   SITL）；仿真与训练全部在服务器；联想笔记本评估为不需要；
 3. **最终主验证：** 服务器兼容升级后运行 Isaac Sim + Pegasus + PX4；
 4. **不选主线：** 原版 AirSim；
 5. **条件性扩展：** Sionna，仅用于通信感知研究；
