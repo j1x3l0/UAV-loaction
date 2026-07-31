@@ -44,3 +44,7 @@ venv312/
 
 # Project: training artifacts (训练日志, 体积大且可再生)
 rlproject-swift-improved/logs/
+
+# Local experiment artifacts
+*.pth
+*.pid
