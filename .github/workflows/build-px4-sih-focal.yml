@@ -74,10 +74,10 @@ jobs:
         working-directory: PX4-Autopilot
         run: |
           set -euxo pipefail
-          DONT_RUN=1 make px4_sitl_sih sihsim_quadx
-          test -x build/px4_sitl_sih/bin/px4
-          file build/px4_sitl_sih/bin/px4
-          ldd build/px4_sitl_sih/bin/px4
+          DONT_RUN=1 make px4_sitl sihsim_quadx
+          test -x build/px4_sitl_default/bin/px4
+          file build/px4_sitl_default/bin/px4
+          ldd build/px4_sitl_default/bin/px4
 
       - name: Package portable build tree
         shell: bash
@@ -85,11 +85,11 @@ jobs:
         run: |
           set -euxo pipefail
           mkdir -p ../artifact
-          cp -a build/px4_sitl_sih ../artifact/
-          ldd build/px4_sitl_sih/bin/px4 > ../artifact/ldd.txt
+          cp -a build/px4_sitl_default ../artifact/
+          ldd build/px4_sitl_default/bin/px4 > ../artifact/ldd.txt
           git rev-parse HEAD > ../artifact/px4_commit.txt
           tar -C ../artifact -czf ../px4-sitl-sih-v1.17.0-focal-amd64.tar.gz \
-            px4_sitl_sih ldd.txt px4_commit.txt
+            px4_sitl_default ldd.txt px4_commit.txt
           sha256sum ../px4-sitl-sih-v1.17.0-focal-amd64.tar.gz \
             > ../px4-sitl-sih-v1.17.0-focal-amd64.tar.gz.sha256
 
