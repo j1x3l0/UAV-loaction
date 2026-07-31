@@ -14,7 +14,7 @@ permissions:
 jobs:
   build-px4-sih:
     runs-on: ubuntu-22.04
-    timeout-minutes: 90
+    timeout-minutes: 240
     container:
       image: ubuntu:20.04
 
@@ -74,7 +74,7 @@ jobs:
         working-directory: PX4-Autopilot
         run: |
           set -euxo pipefail
-          DONT_RUN=1 make px4_sitl sihsim_quadx
+          DONT_RUN=1 make px4_sitl sihsim_quadx -j$(nproc)
           test -x build/px4_sitl_default/bin/px4
           file build/px4_sitl_default/bin/px4
           ldd build/px4_sitl_default/bin/px4
