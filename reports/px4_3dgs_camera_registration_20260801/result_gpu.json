@@ -1,0 +1,112 @@
+{
+  "camera": {
+    "width": 72,
+    "height": 128,
+    "fx": 109.28626057956929,
+    "fy": 109.1978990632419,
+    "cx": 36.0,
+    "cy": 64.0
+  },
+  "indices": [
+    0,
+    77,
+    154,
+    231,
+    308
+  ],
+  "summary": {
+    "opengl_to_opencv": {
+      "mean_coverage": 1.0,
+      "mean_mae": 0.16176387667655945,
+      "mean_luma_correlation": 0.22659830706222506
+    },
+    "as_recorded_opencv": {
+      "mean_coverage": 0.9233289930555555,
+      "mean_mae": 0.1945448786020279,
+      "mean_luma_correlation": -0.14250438823773623
+    }
+  },
+  "provisional_pass": true,
+  "records": [
+    {
+      "frame_index": 0,
+      "file_path": "images/frame_00001.png",
+      "candidate": "opengl_to_opencv",
+      "coverage": 1.0,
+      "mae": 0.15532448887825012,
+      "luma_correlation": -0.009075812767944245
+    },
+    {
+      "frame_index": 0,
+      "file_path": "images/frame_00001.png",
+      "candidate": "as_recorded_opencv",
+      "coverage": 0.7646484375,
+      "mae": 0.14404721558094025,
+      "luma_correlation": -0.06742995765823961
+    },
+    {
+      "frame_index": 77,
+      "file_path": "images/frame_00078.png",
+      "candidate": "opengl_to_opencv",
+      "coverage": 1.0,
+      "mae": 0.17210876941680908,
+      "luma_correlation": 0.14498733098251096
+    },
+    {
+      "frame_index": 77,
+      "file_path": "images/frame_00078.png",
+      "candidate": "as_recorded_opencv",
+      "coverage": 0.8836805555555556,
+      "mae": 0.21251250803470612,
+      "luma_correlation": -0.18178591306972552
+    },
+    {
+      "frame_index": 154,
+      "file_path": "images/frame_00155.png",
+      "candidate": "opengl_to_opencv",
+      "coverage": 1.0,
+      "mae": 0.1704891175031662,
+      "luma_correlation": 0.4638565191132372
+    },
+    {
+      "frame_index": 154,
+      "file_path": "images/frame_00155.png",
+      "candidate": "as_recorded_opencv",
+      "coverage": 0.9899088541666666,
+      "mae": 0.24233703315258026,
+      "luma_correlation": -0.12407224529900586
+    },
+    {
+      "frame_index": 231,
+      "file_path": "images/frame_00232.png",
+      "candidate": "opengl_to_opencv",
+      "coverage": 1.0,
+      "mae": 0.15923132002353668,
+      "luma_correlation": 0.21129263093305803
+    },
+    {
+      "frame_index": 231,
+      "file_path": "images/frame_00232.png",
+      "candidate": "as_recorded_opencv",
+      "coverage": 0.9784071180555556,
+      "mae": 0.18323944509029388,
+      "luma_correlation": -0.19338828493966745
+    },
+    {
+      "frame_index": 308,
+      "file_path": "images/frame_00309.png",
+      "candidate": "opengl_to_opencv",
+      "coverage": 1.0,
+      "mae": 0.15166568756103516,
+      "luma_correlation": 0.3219308670502632
+    },
+    {
+      "frame_index": 308,
+      "file_path": "images/frame_00309.png",
+      "candidate": "as_recorded_opencv",
+      "coverage": 1.0,
+      "mae": 0.19058819115161896,
+      "luma_correlation": -0.14584554022204282
+    }
+  ]
+}
