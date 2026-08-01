@@ -28,17 +28,37 @@ class GSplatRenderer:
     """3DGS .ply 渲染器 — GPU (gsplat) + CPU (projection fallback)"""
 
     def __init__(self, ply_path: str, width: int = 64, height: int = 64,
-                 max_depth: float = 20.0, fov: float = 90.0):
+                 max_depth: float = 20.0, fov: float = 90.0,
+                 fx: float = None, fy: float = None,
+                 cx: float = None, cy: float = None,
+                 device: str = "auto"):
         self.width = width
         self.height = height
         self.max_depth = max_depth
         self.fov = fov
+        default_focal = (self.width / 2) / np.tan(np.deg2rad(fov / 2))
+        self.fx = float(default_focal if fx is None else fx)
+        self.fy = float(default_focal if fy is None else fy)
+        self.cx = float(self.width / 2 if cx is None else cx)
+        self.cy = float(self.height / 2 if cy is None else cy)
+        if not all(np.isfinite(value) for value in
+                   (self.fx, self.fy, self.cx, self.cy)):
+            raise ValueError("camera intrinsics must be finite")
+        if self.fx <= 0 or self.fy <= 0:
+            raise ValueError("camera focal lengths must be positive")
+        if device not in ("auto", "cpu", "cuda"):
+            raise ValueError("device must be auto, cpu, or cuda")
 
         # 加载 Gaussians
         self._means, self._quats, self._scales, self._opacities, self._colors = \
             self._load_ply(ply_path)
 
-        self._device = 'cuda' if self._has_gpu() else 'cpu'
+        if device == "cuda" and not self._has_gpu():
+            raise RuntimeError("CUDA renderer requested but CUDA is unavailable")
+        self._device = (
+            ('cuda' if self._has_gpu() else 'cpu')
+            if device == "auto" else device
+        )
         self._gaussian_keep_percent = 100.0
         if self._device == 'cpu':
             logger.warning("No GPU detected — using CPU fallback (slow, dev only)")
@@ -114,7 +134,8 @@ class GSplatRenderer:
     # ── 公共接口 (兼容 MockGSRenderer) ──
 
     def render(self, camera_pos: np.ndarray,
-               camera_quat: np.ndarray = None) -> Tuple[np.ndarray, np.ndarray]:
+               camera_quat: np.ndarray = None,
+               camera_c2w: np.ndarray = None) -> Tuple[np.ndarray, np.ndarray]:
         """
         从相机位姿渲染深度图
 
@@ -125,16 +146,19 @@ class GSplatRenderer:
             depth: (H, W, 1) 范围 [0.1, max_depth]
             rgb:   (H, W, 3)
         """
+        c2w = (
+            self._validate_c2w(camera_c2w)
+            if camera_c2w is not None
+            else self._compute_c2w(camera_pos, camera_quat)
+        )
         if self._device == 'cuda':
-            return self._render_gpu(camera_pos, camera_quat)
+            return self._render_gpu(c2w)
         else:
-            return self._render_cpu(camera_pos, camera_quat)
+            return self._render_cpu(c2w)
 
     # ── GPU 渲染 (gsplat) ──
 
-    def _render_gpu(self, camera_pos: np.ndarray,
-                    camera_quat: np.ndarray = None
-                    ) -> Tuple[np.ndarray, np.ndarray]:
+    def _render_gpu(self, c2w: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
         gsplat 高性能渲染 (已按 gsplat 1.5.3 API 验证)
 
@@ -147,15 +171,13 @@ class GSplatRenderer:
         from gsplat import rasterization
 
         # 构建 view matrix
-        c2w = self._compute_c2w(camera_pos, camera_quat)
         w2c = np.linalg.inv(c2w)
         viewmat = torch.from_numpy(w2c.astype(np.float32)).cuda()
 
         # 内参矩阵
-        fx = (self.width / 2) / np.tan(np.deg2rad(self.fov / 2))
         K = torch.tensor([
-            [fx, 0, self.width / 2],
-            [0, fx, self.height / 2],
+            [self.fx, 0, self.cx],
+            [0, self.fy, self.cy],
             [0, 0, 1],
         ], dtype=torch.float32, device='cuda')
 
@@ -185,9 +207,7 @@ class GSplatRenderer:
 
     # ── CPU 回退渲染 ──
 
-    def _render_cpu(self, camera_pos: np.ndarray,
-                    camera_quat: np.ndarray = None
-                    ) -> Tuple[np.ndarray, np.ndarray]:
+    def _render_cpu(self, c2w: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
         CPU 投影渲染 — 开发用，速度慢但输出合理
 
@@ -198,19 +218,9 @@ class GSplatRenderer:
         depth = np.full((H, W, 1), self.max_depth, dtype=np.float32)
         rgb = np.zeros((H, W, 3), dtype=np.float32)
 
-        # 变换到相机坐标系 (简化: 假设朝向+X, up=+Z)
-        R_w2c = np.eye(3)
-        if camera_quat is not None:
-            # 四元数 → 旋转矩阵
-            qx, qy, qz, qw = camera_quat
-            R_w2c = np.array([
-                [1-2*(qy**2+qz**2), 2*(qx*qy-qw*qz), 2*(qx*qz+qw*qy)],
-                [2*(qx*qy+qw*qz), 1-2*(qx**2+qz**2), 2*(qy*qz-qw*qx)],
-                [2*(qx*qz-qw*qy), 2*(qy*qz+qw*qx), 1-2*(qx**2+qy**2)],
-            ])
-            R_w2c = R_w2c.T  # world→camera
-
-        t = -R_w2c @ camera_pos
+        w2c = np.linalg.inv(c2w)
+        R_w2c = w2c[:3, :3]
+        t = w2c[:3, 3]
 
         # 变换Gaussian centers
         means_cam = self._means @ R_w2c.T + t  # (N, 3)
@@ -225,9 +235,8 @@ class GSplatRenderer:
         opacities_filt = self._opacities[in_front]
 
         # 投影
-        fx = (W / 2) / np.tan(np.deg2rad(self.fov / 2))
-        u = (means_cam[:, 0] * fx / means_cam[:, 2] + W / 2).astype(int)
-        v = (means_cam[:, 1] * fx / means_cam[:, 2] + H / 2).astype(int)
+        u = (means_cam[:, 0] * self.fx / means_cam[:, 2] + self.cx).astype(int)
+        v = (means_cam[:, 1] * self.fy / means_cam[:, 2] + self.cy).astype(int)
         d = means_cam[:, 2]  # 深度
 
         # 仅保留图像范围内的点
@@ -275,6 +284,21 @@ class GSplatRenderer:
         c2w[:3, :3] = R
         c2w[:3, 3] = pos
         return c2w
+
+    @staticmethod
+    def _validate_c2w(c2w: np.ndarray) -> np.ndarray:
+        """Validate an OpenCV camera-to-world matrix (+Z forward, +Y down)."""
+        matrix = np.asarray(c2w, dtype=np.float64)
+        if matrix.shape != (4, 4) or not np.all(np.isfinite(matrix)):
+            raise ValueError("camera_c2w must be a finite 4x4 matrix")
+        if not np.allclose(matrix[3], [0, 0, 0, 1], atol=1e-6):
+            raise ValueError("camera_c2w must be homogeneous")
+        rotation = matrix[:3, :3]
+        if not np.allclose(rotation.T @ rotation, np.eye(3), atol=1e-4):
+            raise ValueError("camera_c2w rotation must be orthonormal")
+        if not np.isclose(np.linalg.det(rotation), 1.0, atol=1e-4):
+            raise ValueError("camera_c2w rotation must be right-handed")
+        return matrix
 
 
 # ── 自检 ──
