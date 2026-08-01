@@ -172,7 +172,24 @@ class VisualDroneEnv(gym.Env):
             ply_path = self.config.get('ply_path')
             if ply_path is None:
                 raise ValueError("gsplat renderer requires 'ply_path' in config")
-            self.renderer = GSplatRenderer(ply_path, width=64, height=64)
+            intrinsics = self.config.get('camera_intrinsics')
+            if intrinsics is not None:
+                # Explicit policy camera model (fx/fy/cx/cy), matching the
+                # PX4 alignment config and the read-only observation bridge.
+                # Without it the renderer falls back to fov=90 (fx=32).
+                try:
+                    self.renderer = GSplatRenderer(
+                        ply_path, width=64, height=64,
+                        fx=float(intrinsics['fx']),
+                        fy=float(intrinsics['fy']),
+                        cx=float(intrinsics['cx']),
+                        cy=float(intrinsics['cy']),
+                    )
+                except KeyError as exc:
+                    raise ValueError(
+                        "camera_intrinsics must define fx/fy/cx/cy") from exc
+            else:
+                self.renderer = GSplatRenderer(ply_path, width=64, height=64)
             gaussian_level = self.config.get('degradation', {}).get('gaussian')
             if gaussian_level is not None:
                 self.renderer.set_gaussian_keep_percent(gaussian_level)

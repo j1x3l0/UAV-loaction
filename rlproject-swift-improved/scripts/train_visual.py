@@ -20,7 +20,7 @@ WHY 这个设计:
 
 import numpy as np
 import torch
-import os, sys, time, argparse
+import os, sys, time, argparse, json
 from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -167,14 +167,41 @@ def resolve_ply_path(ply_arg):
         f"ply not found: {ply_arg} (tried cwd-relative, repo-relative, ply_exports)")
 
 
+def load_camera_intrinsics(alignment_json):
+    """Load the policy camera model from the PX4 alignment config.
+
+    Returns ``{'fx','fy','cx','cy'}`` so training renders with the same
+    intrinsics (fx≈97.14) as the read-only observation bridge and the
+    30-pose registration gate. Falls back to fov=90 only when unset.
+    """
+    with open(alignment_json, "r", encoding="utf-8") as handle:
+        raw = json.load(handle)
+    camera = raw.get("camera")
+    if camera is None:
+        raise ValueError(f"alignment config {alignment_json} has no camera block")
+    for key in ("fx", "fy", "cx", "cy"):
+        if key not in camera:
+            raise ValueError(f"alignment camera block missing '{key}'")
+    intrinsics = {
+        "fx": float(camera["fx"]),
+        "fy": float(camera["fy"]),
+        "cx": float(camera["cx"]),
+        "cy": float(camera["cy"]),
+    }
+    return intrinsics
+
+
 def make_env(degradation_config=None, renderer='mock', ply_path=None,
-             ablation_config=None, scene_config=None):
+             ablation_config=None, scene_config=None,
+             camera_intrinsics=None):
     """环境工厂"""
     cfg = {'renderer': renderer}
     if renderer == 'gsplat':
         if not ply_path:
             raise ValueError("--renderer gsplat requires --ply <path to .ply>")
         cfg['ply_path'] = resolve_ply_path(ply_path)
+        if camera_intrinsics:
+            cfg['camera_intrinsics'] = dict(camera_intrinsics)
     if ablation_config:
         cfg['ablation'] = dict(ablation_config)
     if scene_config:
@@ -205,7 +232,8 @@ def make_env(degradation_config=None, renderer='mock', ply_path=None,
 
 
 def make_fixed_depth_scale_env(renderer, ply_path, depth_scale,
-                               ablation_config=None, scene_config=None):
+                               ablation_config=None, scene_config=None,
+                               camera_intrinsics=None):
     """Create a validation environment with one fixed depth calibration."""
     cfg = {
         'renderer': renderer,
@@ -215,6 +243,8 @@ def make_fixed_depth_scale_env(renderer, ply_path, depth_scale,
         if not ply_path:
             raise ValueError("--renderer gsplat requires --ply <path to .ply>")
         cfg['ply_path'] = resolve_ply_path(ply_path)
+        if camera_intrinsics:
+            cfg['camera_intrinsics'] = dict(camera_intrinsics)
     if ablation_config:
         cfg['ablation'] = dict(ablation_config)
     if scene_config:
@@ -247,6 +277,9 @@ def train_visual(config):
     degradation = config.get('degradation', 'clean')
     renderer = config.get('renderer', 'mock')
     ply_path = config.get('ply_path')
+    camera_intrinsics = None
+    if config.get('intrinsics'):
+        camera_intrinsics = load_camera_intrinsics(config['intrinsics'])
     ablation_config = config.get('ablation')
     scene_config = dict(config.get('scene_config') or {})
     avoidance_curriculum = bool(config.get('avoidance_curriculum', False))
@@ -264,17 +297,18 @@ def train_visual(config):
     envs = [
         make_env(
             degradation, renderer, ply_path, ablation_config,
-            train_scene_config)
+            train_scene_config, camera_intrinsics)
         for _ in range(num_envs)
     ]
     eval_env = make_env(
-        'clean', renderer, ply_path, ablation_config, eval_scene_config)
+        'clean', renderer, ply_path, ablation_config, eval_scene_config,
+        camera_intrinsics)
     robust_eval_envs = None
     if degradation in ('scale_curriculum', 'scale_recovery'):
         robust_eval_envs = [
             make_fixed_depth_scale_env(
                 renderer, ply_path, scale, ablation_config,
-                eval_scene_config)
+                eval_scene_config, camera_intrinsics)
             for scale in DEPTH_SCALE_LEVELS
         ]
 
@@ -478,6 +512,10 @@ def main():
                        choices=['mock', 'gsplat'])
     parser.add_argument('--ply', type=str, default=None,
                        help='3DGS .ply 路径 (--renderer gsplat 时必填)')
+    parser.add_argument('--intrinsics', type=str, default=None,
+                       help='PX4 对齐配置 JSON，取其 camera 块作为策略相机内参 '
+                            '(fx≈97.14)，使训练观测与观测桥/注册门禁一致；'
+                            '不传则回退 fov=90')
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--model-out', type=str,
                         default='saved_models/visual_ppo_best.pth')
@@ -518,6 +556,7 @@ def main():
         'rollout_steps': args.rollout_steps,
         'renderer': args.renderer,
         'ply_path': args.ply,
+        'intrinsics': args.intrinsics,
         'minibatch_size': 32,
         'epochs': 5,
         'eval_interval': max(5, args.episodes // 10),
