@@ -31,8 +31,12 @@ rlproject-基本框架/
 │   └── scripts/                    #   训练/评估/可视化脚本
 ├── grad_nav-main/                  # GRaD-Nav 参考实现 (Stanford IROS 2025)
 ├── past/                           # v1 历史归档 (旧实验、日志、论文)
-└── jxl_better_vibe_coding/         # 开发笔记 + 代码审查
+└── better_vibe_coding/             # 开发笔记 + 代码审查
 ```
+
+更完整的目录职责、文件准入规则和大型本地资产说明见
+[`docs/repository-layout.md`](docs/repository-layout.md)。当前仓库盘点见
+[`docs/repository-inventory.md`](docs/repository-inventory.md)。
 
 ## 快速开始
 
