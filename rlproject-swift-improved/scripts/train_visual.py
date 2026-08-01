@@ -283,6 +283,8 @@ def train_visual(config):
     alignment_config = config.get('intrinsics')
     ablation_config = config.get('ablation')
     scene_config = dict(config.get('scene_config') or {})
+    if config.get('collision_radius'):
+        scene_config['drone_collision_radius'] = config['collision_radius']
     avoidance_curriculum = bool(config.get('avoidance_curriculum', False))
     train_scene_config = dict(scene_config)
     eval_scene_config = dict(scene_config)
@@ -531,6 +533,9 @@ def main():
                         help='训练和评估时使用相同的输入消融')
     parser.add_argument('--collision-ply', default=None,
                         help='与渲染场景同坐标系的稠密碰撞点云')
+    parser.add_argument('--collision-radius', type=float, default=None,
+                        help='无人机碰撞半径 (m)。对齐后的窄视场相机 (fx≈97.14) '
+                             '默认 0.25m 太紧，导航不可学；建议 0.5m 真实净空')
     parser.add_argument('--camera-tracks-motion', action='store_true',
                         help='相机光轴随速度方向变化，低速时朝向目标')
     parser.add_argument('--geodesic-reward', action='store_true',
@@ -558,6 +563,7 @@ def main():
         'renderer': args.renderer,
         'ply_path': args.ply,
         'intrinsics': args.intrinsics,
+        'collision_radius': args.collision_radius,
         'minibatch_size': 32,
         'epochs': 5,
         'eval_interval': max(5, args.episodes // 10),
