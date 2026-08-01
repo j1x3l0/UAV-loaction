@@ -1,0 +1,60 @@
+{
+  "baseline_success_rate": 68.0,
+  "threshold_definition": {
+    "critical_50": "first tested degradation level with success_rate < 50%",
+    "critical_20": "first tested degradation level with success_rate < 20%"
+  },
+  "axes": {
+    "gaussian": {
+      "extreme_level": 2,
+      "unit": "%",
+      "extreme_success_rate": 68.0,
+      "delta_pp": 0.0,
+      "critical_50": null,
+      "critical_20": null
+    },
+    "resolution": {
+      "extreme_level": 2,
+      "unit": "px",
+      "extreme_success_rate": 62.0,
+      "delta_pp": -6.0,
+      "critical_50": null,
+      "critical_20": null
+    },
+    "depth_noise": {
+      "extreme_level": 1.0,
+      "unit": "sigma",
+      "extreme_success_rate": 68.0,
+      "delta_pp": 0.0,
+      "critical_50": null,
+      "critical_20": null
+    },
+    "lighting": {
+      "extreme_level": 4,
+      "unit": "EV",
+      "extreme_success_rate": 68.0,
+      "delta_pp": 0.0,
+      "critical_50": null,
+      "critical_20": null,
+      "negative_control": true
+    },
+    "viewpoint_uncertainty": {
+      "extreme_level": 45,
+      "unit": "degree",
+      "extreme_success_rate": 66.0,
+      "delta_pp": -2.0,
+      "critical_50": null,
+      "critical_20": null
+    }
+  },
+  "lethality_ranking_by_extreme_success_drop": [
+    "resolution",
+    "viewpoint_uncertainty",
+    "gaussian",
+    "depth_noise",
+    "lighting"
+  ],
+  "most_lethal_tested_axis": "resolution",
+  "gate_g4_passed": false,
+  "conclusion": "No tested axis crossed 50% or 20%. Stronger or structurally different degradations are required before V3 robust training."
+}

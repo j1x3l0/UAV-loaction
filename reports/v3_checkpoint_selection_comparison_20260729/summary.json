@@ -1,0 +1,25 @@
+{
+  "training_run_id": "v3_curriculum_ckptfix_3x500_20260728_133555",
+  "evaluation_runs": {
+    "clean_best": "v3_ckptfix_clean_eval_3x5x100_20260729_022411",
+    "final": "v3_ckptfix_final_eval_3x5x100_20260728_160950",
+    "robust_best": "v3_ckptfix_robust_eval_3x5x200_20260728_160950"
+  },
+  "success_rate_by_scale": {
+    "depth_scales": [1.0, 0.75, 0.5, 0.25, 0.1],
+    "clean_best": [73.6667, 72.0, 69.0, 65.0, 72.3333],
+    "final": [70.0, 72.6667, 71.0, 75.3333, 77.0],
+    "robust_best": [77.8333, 78.8333, 77.0, 75.8333, 76.0],
+    "robust_minus_clean_pp": [4.1666, 6.8333, 8.0, 10.8333, 3.6667],
+    "robust_minus_final_pp": [7.8333, 6.1666, 6.0, 0.5, -1.0]
+  },
+  "robust_best_per_seed_0_5_success_rate": [77.5, 67.0, 86.5],
+  "robust_best_acceptance": {
+    "clean_pooled_at_least_80": false,
+    "every_pooled_level_at_least_70": true,
+    "every_seed_at_0_5_at_least_60": true,
+    "every_pooled_timeout_at_most_10": true,
+    "overall": "partially_passed_3_of_4"
+  },
+  "conclusion": "Multi-scale robust checkpoint selection is effective and removes the previous checkpoint-selection confound. The remaining shortfall is clean pooled SR (77.83% versus the 80% target), not degradation robustness."
+}

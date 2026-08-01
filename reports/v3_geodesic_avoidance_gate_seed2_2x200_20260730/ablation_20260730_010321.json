@@ -1,0 +1,91 @@
+{
+  "baseline": {
+    "success_rate": 7.000000000000001,
+    "collision_rate": 93.0,
+    "timeout_rate": 0.0,
+    "avg_reward": -53.371133113491176,
+    "reward_std": 66.85386536975899,
+    "episodes": 200,
+    "success_wilson_95": [
+      4.215217182834281,
+      11.405480885610647
+    ],
+    "strata": {
+      "clear": {
+        "success": 13,
+        "collision": 84,
+        "timeout": 0,
+        "episodes": 97,
+        "success_rate": 13.402061855670103,
+        "collision_rate": 86.5979381443299,
+        "timeout_rate": 0.0,
+        "success_wilson_95": [
+          8.002456680409932,
+          21.589993854994482
+        ]
+      },
+      "avoidance": {
+        "success": 1,
+        "collision": 102,
+        "timeout": 0,
+        "episodes": 103,
+        "success_rate": 0.970873786407767,
+        "collision_rate": 99.02912621359224,
+        "timeout_rate": 0.0,
+        "success_wilson_95": [
+          0.17158914790501578,
+          5.295819183253688
+        ]
+      }
+    }
+  },
+  "const_depth": {
+    "success_rate": 2.0,
+    "collision_rate": 98.0,
+    "timeout_rate": 0.0,
+    "avg_reward": -63.63219929638743,
+    "reward_std": 34.40500823229812,
+    "episodes": 200,
+    "success_wilson_95": [
+      0.7804426416349468,
+      5.0287086905826435
+    ],
+    "strata": {
+      "clear": {
+        "success": 4,
+        "collision": 93,
+        "timeout": 0,
+        "episodes": 97,
+        "success_rate": 4.123711340206185,
+        "collision_rate": 95.87628865979381,
+        "timeout_rate": 0.0,
+        "success_wilson_95": [
+          1.6151236586163193,
+          10.127525604073725
+        ]
+      },
+      "avoidance": {
+        "success": 0,
+        "collision": 103,
+        "timeout": 0,
+        "episodes": 103,
+        "success_rate": 0.0,
+        "collision_rate": 100.0,
+        "timeout_rate": 0.0,
+        "success_wilson_95": [
+          0.0,
+          3.595475822864816
+        ]
+      }
+    }
+  },
+  "analysis": {
+    "const_depth_delta": -5.000000000000001
+  },
+  "metadata": {
+    "renderer": "gsplat",
+    "ply": "/root/data/gs_data/ply_exports/gate_mid_new_gs.ply",
+    "seed": 20260728,
+    "timestamp": "2026-07-30T01:03:21.688298"
+  }
+}

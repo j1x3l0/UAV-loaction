@@ -44,3 +44,11 @@ venv312/
 
 # Project: training artifacts (训练日志, 体积大且可再生)
 rlproject-swift-improved/logs/
+
+# Project: PX4 源码与离线包 (395MB+, 不在仓库, 服务器上单独同步)
+PX4-Autopilot-1.17.0/
+*.tar
+
+# Local experiment artifacts
+*.pth
+*.pid

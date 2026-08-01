@@ -1,0 +1,91 @@
+{
+  "baseline": {
+    "success_rate": 48.0,
+    "collision_rate": 52.0,
+    "timeout_rate": 0.0,
+    "avg_reward": 115.85602412425615,
+    "reward_std": 160.7240341236442,
+    "episodes": 200,
+    "success_wilson_95": [
+      41.1791663783233,
+      54.89621492718576
+    ],
+    "strata": {
+      "clear": {
+        "success": 84,
+        "collision": 13,
+        "timeout": 0,
+        "episodes": 97,
+        "success_rate": 86.5979381443299,
+        "collision_rate": 13.402061855670103,
+        "timeout_rate": 0.0,
+        "success_wilson_95": [
+          78.41000614500551,
+          91.99754331959006
+        ]
+      },
+      "avoidance": {
+        "success": 12,
+        "collision": 91,
+        "timeout": 0,
+        "episodes": 103,
+        "success_rate": 11.650485436893204,
+        "collision_rate": 88.3495145631068,
+        "timeout_rate": 0.0,
+        "success_wilson_95": [
+          6.791546266112921,
+          19.26711965627854
+        ]
+      }
+    }
+  },
+  "const_depth": {
+    "success_rate": 11.0,
+    "collision_rate": 71.5,
+    "timeout_rate": 17.5,
+    "avg_reward": -136.28589396233608,
+    "reward_std": 342.5561275729737,
+    "episodes": 200,
+    "success_wilson_95": [
+      7.377244460125302,
+      16.09269099730149
+    ],
+    "strata": {
+      "clear": {
+        "success": 19,
+        "collision": 48,
+        "timeout": 30,
+        "episodes": 97,
+        "success_rate": 19.587628865979383,
+        "collision_rate": 49.48453608247423,
+        "timeout_rate": 30.927835051546392,
+        "success_wilson_95": [
+          12.913940356821547,
+          28.57837769372578
+        ]
+      },
+      "avoidance": {
+        "success": 3,
+        "collision": 95,
+        "timeout": 5,
+        "episodes": 103,
+        "success_rate": 2.912621359223301,
+        "collision_rate": 92.23300970873787,
+        "timeout_rate": 4.854368932038835,
+        "success_wilson_95": [
+          0.9954367816644549,
+          8.215836566082022
+        ]
+      }
+    }
+  },
+  "analysis": {
+    "const_depth_delta": -37.0
+  },
+  "metadata": {
+    "renderer": "gsplat",
+    "ply": "/root/data/gs_data/ply_exports/gate_mid_new_gs.ply",
+    "seed": 20260728,
+    "timestamp": "2026-07-30T02:55:21.726496"
+  }
+}

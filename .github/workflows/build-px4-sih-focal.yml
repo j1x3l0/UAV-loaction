@@ -1,0 +1,104 @@
+name: Build PX4 SIH for Ubuntu 20.04
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/phase-v2-v3-progress
+    paths:
+      - .github/workflows/build-px4-sih-focal.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build-px4-sih:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 240
+    container:
+      image: ubuntu:20.04
+
+    steps:
+      - name: Install isolated build prerequisites
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            astyle \
+            build-essential \
+            ca-certificates \
+            cmake \
+            cppcheck \
+            curl \
+            file \
+            git \
+            lcov \
+            lsb-release \
+            ninja-build \
+            python3 \
+            python3-dev \
+            python3-pip \
+            python3-setuptools \
+            python3-wheel \
+            rsync \
+            sudo \
+            unzip \
+            wget \
+            zip
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Fetch PX4 v1.17.0 with submodules
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git -c http.version=HTTP/1.1 clone \
+            --branch v1.17.0 \
+            --single-branch \
+            --depth 1 \
+            --recurse-submodules \
+            --shallow-submodules \
+            https://github.com/PX4/PX4-Autopilot.git
+          test "$(git -C PX4-Autopilot rev-parse --short=7 HEAD)" = "d6f12ad"
+
+      - name: Install PX4 host-only dependencies
+        shell: bash
+        working-directory: PX4-Autopilot
+        run: |
+          set -euxo pipefail
+          bash Tools/setup/ubuntu.sh --no-nuttx --no-sim-tools
+
+      - name: Build headless SIH
+        shell: bash
+        working-directory: PX4-Autopilot
+        run: |
+          set -euxo pipefail
+          DONT_RUN=1 make px4_sitl sihsim_quadx -j$(nproc)
+          test -x build/px4_sitl_default/bin/px4
+          file build/px4_sitl_default/bin/px4
+          ldd build/px4_sitl_default/bin/px4
+
+      - name: Package portable build tree
+        shell: bash
+        working-directory: PX4-Autopilot
+        run: |
+          set -euxo pipefail
+          mkdir -p ../artifact
+          cp -a build/px4_sitl_default ../artifact/
+          ldd build/px4_sitl_default/bin/px4 > ../artifact/ldd.txt
+          git rev-parse HEAD > ../artifact/px4_commit.txt
+          tar -C ../artifact -czf ../px4-sitl-sih-v1.17.0-focal-amd64.tar.gz \
+            px4_sitl_default ldd.txt px4_commit.txt
+          sha256sum ../px4-sitl-sih-v1.17.0-focal-amd64.tar.gz \
+            > ../px4-sitl-sih-v1.17.0-focal-amd64.tar.gz.sha256
+
+      - name: Upload offline server bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: px4-sitl-sih-v1.17.0-focal-amd64
+          path: |
+            px4-sitl-sih-v1.17.0-focal-amd64.tar.gz
+            px4-sitl-sih-v1.17.0-focal-amd64.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 7

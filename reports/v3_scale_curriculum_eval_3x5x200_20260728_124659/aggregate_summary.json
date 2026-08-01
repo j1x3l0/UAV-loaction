@@ -1,0 +1,33 @@
+{
+  "run_id": "v3_scale_curriculum_eval_3x5x200_20260728_124659",
+  "training_run_id": "v3_scale_curriculum_3x500_20260728_110541",
+  "setting": {
+    "renderer": "gsplat",
+    "scene": "gate_mid",
+    "training_seeds": [0, 1, 2],
+    "evaluation_base_seed": 20260728,
+    "episodes_per_seed_per_level": 200,
+    "episodes_per_level": 600,
+    "total_episodes": 3000
+  },
+  "aggregate": [
+    {"depth_scale": 1.0, "successes": 470, "episodes": 600, "success_rate": 78.3333, "wilson_ci95": [74.86, 81.44], "collision_rate": 21.6667, "timeout_rate": 0.0, "avg_reward": 391.4709, "delta_vs_uniform_v3_pp": -3.5, "delta_vs_weighted_v3_pp": 1.3333, "delta_vs_baseline_pp": -5.1667},
+    {"depth_scale": 0.75, "successes": 468, "episodes": 600, "success_rate": 78.0, "wilson_ci95": [74.51, 81.13], "collision_rate": 21.8333, "timeout_rate": 0.1667, "avg_reward": 390.2705, "delta_vs_uniform_v3_pp": -3.1667, "delta_vs_weighted_v3_pp": 1.1667, "delta_vs_baseline_pp": -2.5},
+    {"depth_scale": 0.5, "successes": 408, "episodes": 600, "success_rate": 68.0, "wilson_ci95": [64.16, 71.61], "collision_rate": 22.1667, "timeout_rate": 9.8333, "avg_reward": 301.8481, "delta_vs_uniform_v3_pp": 10.8333, "delta_vs_weighted_v3_pp": -5.6667, "delta_vs_baseline_pp": -5.0},
+    {"depth_scale": 0.25, "successes": 469, "episodes": 600, "success_rate": 78.1667, "wilson_ci95": [74.69, 81.29], "collision_rate": 21.8333, "timeout_rate": 0.0, "avg_reward": 391.4684, "delta_vs_uniform_v3_pp": 2.0, "delta_vs_weighted_v3_pp": 27.0, "delta_vs_baseline_pp": 64.6667},
+    {"depth_scale": 0.1, "successes": 380, "episodes": 600, "success_rate": 63.3333, "wilson_ci95": [59.40, 67.09], "collision_rate": 24.1667, "timeout_rate": 12.5, "avg_reward": 274.4043, "delta_vs_uniform_v3_pp": -14.0, "delta_vs_weighted_v3_pp": 3.1666, "delta_vs_baseline_pp": 49.8333}
+  ],
+  "per_seed_0_5_success_rate": [75.5, 75.0, 53.5],
+  "acceptance": {
+    "clean_pooled_at_least_80": false,
+    "every_pooled_level_at_least_70": false,
+    "every_seed_at_0_5_at_least_60": false,
+    "every_pooled_timeout_at_most_10": false,
+    "overall": "failed"
+  },
+  "checkpoint_selection_caveat": {
+    "issue": "train_visual.py saves only the checkpoint with the highest clean success rate",
+    "impact": "seed1 and seed2 best files were written before the robustness stage finished, so the formal evaluation does not consistently measure final curriculum policies",
+    "required_fix": "always save a final checkpoint and select the robust checkpoint using a multi-scale validation score"
+  }
+}

@@ -1,0 +1,3 @@
+ablation,episodes,success_rate,success_ci_low,success_ci_high,collision_rate,timeout_rate,avg_reward,reward_std,delta_vs_baseline
+baseline,200,48.0,41.1791663783233,54.89621492718576,52.0,0.0,115.85602412425615,160.7240341236442,0.0
+const_depth,200,11.0,7.377244460125302,16.09269099730149,71.5,17.5,-136.28589396233608,342.5561275729737,-37.0

@@ -176,8 +176,7 @@ def main():
     parser.add_argument('--model', type=str, required=True,
                        help='模型路径 (.pth)')
     parser.add_argument('--axis', type=str, default='all',
-                       help='退化轴: all | gaussian | resolution | '
-                            'depth_noise | lighting | viewpoint_uncertainty')
+                       help='退化轴: all | original | structural | 单个轴名')
     parser.add_argument('--levels', type=str, default=None,
                        help='自定义退化水平, 逗号分隔 (覆盖默认)')
     parser.add_argument('--episodes', type=int, default=50,
@@ -190,6 +189,9 @@ def main():
                         default='mock')
     parser.add_argument('--ply', type=str, default=None,
                         help='真实 3DGS PLY 路径')
+    parser.add_argument('--collision-ply', type=str, default=None,
+                        help='与渲染场景同坐标系的稠密碰撞点云')
+    parser.add_argument('--camera-tracks-motion', action='store_true')
     args = parser.parse_args()
     if args.renderer == 'gsplat':
         if not args.ply or not os.path.isfile(args.ply):
@@ -197,6 +199,12 @@ def main():
     base_config = {'renderer': args.renderer}
     if args.ply:
         base_config['ply_path'] = args.ply
+    if args.collision_ply:
+        if not os.path.isfile(args.collision_ply):
+            raise FileNotFoundError("--collision-ply must exist")
+        base_config['collision_ply_path'] = args.collision_ply
+        base_config['auto_scene_bounds'] = True
+    base_config['camera_tracks_motion'] = args.camera_tracks_motion
 
     # 加载模型
     logger.info(f"Loading model: {args.model}")
@@ -205,6 +213,15 @@ def main():
     # 确定退化轴
     if args.axis == 'all':
         axes_to_run = list(DEGRADATION_AXES.keys())
+    elif args.axis == 'original':
+        axes_to_run = [
+            'gaussian', 'resolution', 'depth_noise', 'lighting',
+            'viewpoint_uncertainty',
+        ]
+    elif args.axis == 'structural':
+        axes_to_run = [
+            'depth_failure', 'occlusion', 'depth_scale', 'combined',
+        ]
     else:
         if args.axis not in DEGRADATION_AXES:
             raise ValueError(f"Unknown axis: {args.axis}. "

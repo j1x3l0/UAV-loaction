@@ -23,6 +23,7 @@ from envs.degradation_utils import (
     apply_degradation_pipeline,
 )
 from envs.gs_renderer import GSplatRenderer
+from envs.scene_geometry import ScenePointCloudGeometry
 
 logger = logging.getLogger(__name__)
 
@@ -145,11 +146,28 @@ class VisualDroneEnv(gym.Env):
         self.max_velocity = 5.0
         self.dt = 0.05
 
+        # Collision geometry. Mock rendering must use these exact spheres;
+        # otherwise the policy sees obstacles at different positions from
+        # those used by collision detection.
+        self.obstacles = np.array([
+            [2.0, 2.0, 3.0],
+            [6.0, 3.0, 5.0],
+            [3.0, 7.0, 4.0],
+        ])
+        self.obstacle_radius = 1.0
+        self.collision_threshold = 0.5
+        self.scene_geometry = None
+        collision_render_obstacles = np.column_stack([
+            self.obstacles,
+            np.full(len(self.obstacles), self.obstacle_radius),
+        ]).astype(np.float32)
+
         # ── 渲染器 ──
         renderer_type = self.config.get('renderer', 'mock')
         if renderer_type == 'mock':
-            self.renderer = MockGSRenderer(width=64, height=64)
-            self._base_obstacles_for_render = self.renderer.obstacles.copy()
+            self.renderer = MockGSRenderer(
+                width=64, height=64, obstacles=collision_render_obstacles)
+            self._base_obstacles_for_render = collision_render_obstacles.copy()
         elif renderer_type == 'gsplat':
             ply_path = self.config.get('ply_path')
             if ply_path is None:
@@ -162,18 +180,59 @@ class VisualDroneEnv(gym.Env):
         else:
             raise ValueError(f"Unsupported renderer: {renderer_type}")
 
+        collision_ply_path = self.config.get('collision_ply_path')
+        if collision_ply_path:
+            self.scene_geometry = ScenePointCloudGeometry(
+                collision_ply_path,
+                bounds_percentiles=self.config.get(
+                    'scene_bounds_percentiles', (1, 99)),
+                boundary_margin=self.config.get(
+                    'scene_boundary_margin', (0.5, 0.5, 0.35)),
+            )
+            if self.config.get('auto_scene_bounds', True):
+                self.boundary_min = self.scene_geometry.boundary_min.copy()
+                self.boundary_max = self.scene_geometry.boundary_max.copy()
+            self.collision_threshold = float(
+                self.config.get('drone_collision_radius', 0.25))
+            self.scene_geometry.build_navigation_grid(
+                resolution=float(
+                    self.config.get('navigation_grid_resolution', 0.3)),
+                clearance=float(
+                    self.config.get('spawn_clearance',
+                                    self.collision_threshold + 0.2)),
+            )
+
         # ── 退化配置 ──
         self.deg_config = self.config.get('degradation', {})
+        self.randomize_depth_scale = self.config.get(
+            'randomize_depth_scale', False)
+        self.depth_scale_levels = self.config.get(
+            'depth_scale_levels', [1.0, 0.75, 0.5, 0.25, 0.1])
+        self.depth_scale_probabilities = None
+        self.set_depth_scale_probabilities(
+            self.config.get('depth_scale_probabilities'))
+        self.depth_scale_sample_counts = np.zeros(
+            len(self.depth_scale_levels), dtype=np.int64)
         self.ablation_config = self.config.get('ablation', {})
-
-        # ── 障碍物 (与v1一致) ──
-        self.obstacles = np.array([
-            [2.0, 2.0, 3.0],
-            [6.0, 3.0, 5.0],
-            [3.0, 7.0, 4.0]
-        ])
-        self.obstacle_radius = 1.0
-        self.collision_threshold = 0.5
+        self.avoidance_episode_probability = self.config.get(
+            'avoidance_episode_probability', 0.5)
+        self.avoidance_sample_counts = np.zeros(2, dtype=np.int64)
+        self.use_geodesic_reward = bool(
+            self.config.get('use_geodesic_reward', False))
+        self.use_waypoint_observation = bool(
+            self.config.get('use_waypoint_observation', False))
+        self.geodesic_progress_scale = float(
+            self.config.get('geodesic_progress_scale', 10.0))
+        self.geodesic_heading_weight = float(
+            self.config.get('geodesic_heading_weight', 2.0))
+        self.geodesic_waypoint_lookahead = float(
+            self.config.get('geodesic_waypoint_lookahead', 0.9))
+        if (
+            self.use_geodesic_reward or self.use_waypoint_observation
+        ) and self.scene_geometry is None:
+            raise ValueError(
+                "geodesic reward/waypoint observation requires "
+                "collision_ply_path")
 
         # ── 观测/动作空间 ──
         self.observation_space = spaces.Dict({
@@ -191,6 +250,39 @@ class VisualDroneEnv(gym.Env):
         self.max_steps = 500
         self.target_threshold = 0.5
         self._prev_action = None
+        self._geodesic_distance_field = None
+        self._prev_geodesic_distance = None
+        self._geodesic_path = None
+        self._geodesic_path_index = 0
+
+    def set_depth_scale_probabilities(self, probabilities):
+        """Validate and update per-episode scale sampling probabilities."""
+        if probabilities is None:
+            self.depth_scale_probabilities = None
+            return
+        probabilities = np.asarray(probabilities, dtype=np.float64)
+        if probabilities.shape != (len(self.depth_scale_levels),):
+            raise ValueError(
+                "depth_scale_probabilities must match depth_scale_levels")
+        if np.any(probabilities < 0) or not np.isclose(
+                probabilities.sum(), 1.0):
+            raise ValueError(
+                "depth_scale_probabilities must be non-negative and sum to 1")
+        self.depth_scale_probabilities = probabilities.copy()
+
+    def reset_depth_scale_sample_counts(self):
+        self.depth_scale_sample_counts.fill(0)
+
+    def set_avoidance_episode_probability(self, probability):
+        """Update the probability of sampling a directly blocked task."""
+        if probability is not None and not 0.0 <= float(probability) <= 1.0:
+            raise ValueError(
+                "avoidance episode probability must be in [0, 1] or None")
+        self.avoidance_episode_probability = (
+            None if probability is None else float(probability))
+
+    def reset_avoidance_sample_counts(self):
+        self.avoidance_sample_counts.fill(0)
 
     # ── 观测构建 ──
     def _get_observation(self) -> Dict[str, np.ndarray]:
@@ -219,7 +311,8 @@ class VisualDroneEnv(gym.Env):
                 depth, rgb, active_obstacles, post_config)
         else:
             # Real GS: 直接渲染 → 后处理退化
-            depth, rgb = self.renderer.render(camera_pos)
+            camera_quat = self._camera_quaternion(pos, vel)
+            depth, rgb = self.renderer.render(camera_pos, camera_quat)
             post_config = {k: v for k, v in self.deg_config.items()
                            if k != 'gaussian'}
             depth, rgb, _ = apply_degradation_pipeline(
@@ -230,6 +323,10 @@ class VisualDroneEnv(gym.Env):
 
         # 向量状态
         target_dir = self.target_pos - pos
+        if self.use_waypoint_observation:
+            target_dir = self._geodesic_waypoint_direction(pos)
+        if self.ablation_config.get('no_velocity', False):
+            vel = np.zeros(3, dtype=np.float32)
         if self.ablation_config.get('no_target_dir', False):
             target_dir = np.zeros(3, dtype=np.float32)
         vec = np.array([
@@ -241,29 +338,133 @@ class VisualDroneEnv(gym.Env):
 
     # ── 物理仿真 (复用v1) ──
     def _get_min_obstacle_distance(self, pos: np.ndarray) -> float:
+        if self.scene_geometry is not None:
+            return max(
+                self.scene_geometry.nearest_distance(pos)
+                - self.collision_threshold,
+                0.0,
+            )
         min_dist = float('inf')
         for obs_pos in self.obstacles:
             dist = np.linalg.norm(pos - obs_pos) - self.obstacle_radius
             min_dist = min(min_dist, dist)
         return max(min_dist, 0.0)
 
+    @staticmethod
+    def _rotation_matrix_to_quaternion(rotation):
+        """Convert a 3x3 camera-to-world rotation to [x, y, z, w]."""
+        matrix = np.asarray(rotation, dtype=np.float64)
+        trace = np.trace(matrix)
+        if trace > 0:
+            s = np.sqrt(trace + 1.0) * 2.0
+            qw = 0.25 * s
+            qx = (matrix[2, 1] - matrix[1, 2]) / s
+            qy = (matrix[0, 2] - matrix[2, 0]) / s
+            qz = (matrix[1, 0] - matrix[0, 1]) / s
+        else:
+            axis = int(np.argmax(np.diag(matrix)))
+            if axis == 0:
+                s = np.sqrt(1.0 + matrix[0, 0] - matrix[1, 1]
+                            - matrix[2, 2]) * 2.0
+                qw = (matrix[2, 1] - matrix[1, 2]) / s
+                qx, qy, qz = 0.25 * s, (
+                    matrix[0, 1] + matrix[1, 0]) / s, (
+                    matrix[0, 2] + matrix[2, 0]) / s
+            elif axis == 1:
+                s = np.sqrt(1.0 + matrix[1, 1] - matrix[0, 0]
+                            - matrix[2, 2]) * 2.0
+                qw = (matrix[0, 2] - matrix[2, 0]) / s
+                qx, qy, qz = (
+                    matrix[0, 1] + matrix[1, 0]) / s, 0.25 * s, (
+                    matrix[1, 2] + matrix[2, 1]) / s
+            else:
+                s = np.sqrt(1.0 + matrix[2, 2] - matrix[0, 0]
+                            - matrix[1, 1]) * 2.0
+                qw = (matrix[1, 0] - matrix[0, 1]) / s
+                qx, qy, qz = (
+                    matrix[0, 2] + matrix[2, 0]) / s, (
+                    matrix[1, 2] + matrix[2, 1]) / s, 0.25 * s
+        quaternion = np.array([qx, qy, qz, qw], dtype=np.float32)
+        return quaternion / (np.linalg.norm(quaternion) + 1e-8)
+
+    def _camera_quaternion(self, pos, velocity):
+        """Point the optical +Z axis along motion, falling back to the goal."""
+        if not self.config.get('camera_tracks_motion', False):
+            return None
+        forward = np.asarray(velocity, dtype=np.float64)
+        if np.linalg.norm(forward) < 0.1:
+            forward = np.asarray(self.target_pos - pos, dtype=np.float64)
+        forward /= np.linalg.norm(forward) + 1e-8
+        world_up = np.array([0.0, 0.0, 1.0])
+        if abs(np.dot(forward, world_up)) > 0.95:
+            world_up = np.array([0.0, 1.0, 0.0])
+        right = np.cross(forward, world_up)
+        right /= np.linalg.norm(right) + 1e-8
+        down = np.cross(forward, right)
+        rotation = np.column_stack([right, down, forward])
+        return self._rotation_matrix_to_quaternion(rotation)
+
     # ── Gym API ──
     def reset(self, seed: int = None,
               options: Dict[str, Any] = None) -> Tuple[Dict, Dict]:
         super().reset(seed=seed)
-        self.np_random, _ = seeding.np_random(seed)
 
-        start_min = self.boundary_min + 1.0
-        start_max = np.array([2.0, 2.0, 2.0])
-        pos = self.np_random.uniform(start_min, start_max)
+        if self.randomize_depth_scale:
+            # Sample once per episode so the policy cannot memorize a fixed
+            # calibration while each trajectory remains internally coherent.
+            sampled_index = int(self.np_random.choice(
+                len(self.depth_scale_levels),
+                p=self.depth_scale_probabilities))
+            self.depth_scale_sample_counts[sampled_index] += 1
+            self.deg_config = {
+                **self.deg_config,
+                'depth_scale': float(
+                    self.depth_scale_levels[sampled_index]),
+            }
+
+        if self.scene_geometry is not None:
+            pos, self.target_pos, requires_avoidance = \
+                self.scene_geometry.sample_reachable_pair(
+                    self.np_random,
+                    min_distance=float(
+                        self.config.get('min_goal_distance', 3.0)),
+                    blocked_probability=self.avoidance_episode_probability,
+                    collision_radius=self.collision_threshold,
+                )
+            if requires_avoidance is not None:
+                self.avoidance_sample_counts[int(requires_avoidance)] += 1
+        else:
+            start_min = self.boundary_min + 1.0
+            start_max = np.array([2.0, 2.0, 2.0])
+            pos = self.np_random.uniform(start_min, start_max)
+            self.target_pos = self.np_random.uniform(
+                self.target_min, self.target_max)
+            requires_avoidance = None
         vel = np.zeros(3)
 
-        self.target_pos = self.np_random.uniform(self.target_min, self.target_max)
         self.state = np.concatenate([pos, vel]).astype(np.float32)
         self.step_count = 0
         self._prev_action = None
+        if self.use_geodesic_reward or self.use_waypoint_observation:
+            self._geodesic_distance_field = \
+                self.scene_geometry.geodesic_distance_field(self.target_pos)
+            self._prev_geodesic_distance = \
+                self.scene_geometry.geodesic_distance(
+                    pos, self._geodesic_distance_field)
+            self._geodesic_path = self.scene_geometry.shortest_path(
+                pos, self.target_pos)
+            self._geodesic_path_index = 0
+        else:
+            self._geodesic_distance_field = None
+            self._prev_geodesic_distance = None
+            self._geodesic_path = None
+            self._geodesic_path_index = 0
 
-        return self._get_observation(), {'target_pos': self.target_pos}
+        return self._get_observation(), {
+            'target_pos': self.target_pos,
+            'depth_scale': self.deg_config.get('depth_scale', 1.0),
+            'requires_avoidance': requires_avoidance,
+        }
 
     def step(self, action: np.ndarray) -> Tuple[Dict, float, bool, bool, Dict]:
         thrust = np.clip(action, -1.0, 1.0) * self.max_thrust
@@ -286,10 +487,16 @@ class VisualDroneEnv(gym.Env):
                 boundary_hit = True
 
         # 碰撞检测
-        collision = False
-        for obs_pos in self.obstacles:
-            if np.linalg.norm(new_pos - obs_pos) <= self.collision_threshold + self.obstacle_radius:
-                collision = True; break
+        if self.scene_geometry is not None:
+            collision = self.scene_geometry.collides(
+                new_pos, self.collision_threshold)
+        else:
+            collision = False
+            for obs_pos in self.obstacles:
+                if np.linalg.norm(new_pos - obs_pos) <= \
+                        self.collision_threshold + self.obstacle_radius:
+                    collision = True
+                    break
 
         target_dist = np.linalg.norm(new_pos - self.target_pos)
         reached = target_dist <= self.target_threshold
@@ -311,16 +518,52 @@ class VisualDroneEnv(gym.Env):
         return self._get_observation(), reward, terminated, truncated, info
 
     # ── 奖励: 复用v1的7组件 ──
+    def _geodesic_waypoint_direction(self, pos):
+        """Return a dense safe-heading signal from the reset-time path."""
+        remaining = self._geodesic_path[self._geodesic_path_index:]
+        nearest_offset = int(np.argmin(
+            np.linalg.norm(remaining - pos[None, :], axis=1)))
+        self._geodesic_path_index += nearest_offset
+        waypoint_index = self._geodesic_path_index
+        accumulated = 0.0
+        while waypoint_index < len(self._geodesic_path) - 1:
+            accumulated += float(np.linalg.norm(
+                self._geodesic_path[waypoint_index + 1]
+                - self._geodesic_path[waypoint_index]))
+            waypoint_index += 1
+            if accumulated >= self.geodesic_waypoint_lookahead:
+                break
+        direction = self._geodesic_path[waypoint_index] - pos
+        return direction / (np.linalg.norm(direction) + 1e-8)
+
     def _compute_reward(self, pos, vel, action, collision, reached, target_dist):
         reward = 0.0
-        r_dist = -5.0 * (1 - np.exp(-0.3 * target_dist))
-        reward += r_dist
 
         speed = np.linalg.norm(vel)
         tgt_dir = (self.target_pos - pos)
         tgt_norm = tgt_dir / (np.linalg.norm(tgt_dir) + 1e-8)
         vel_norm = vel / (speed + 1e-8) if speed > 0 else np.zeros(3)
-        r_heading = speed * np.clip(np.dot(vel_norm, tgt_norm), -1, 1) * 2.0
+        if self.use_geodesic_reward:
+            geodesic_distance = self.scene_geometry.geodesic_distance(
+                pos, self._geodesic_distance_field)
+            progress = self._prev_geodesic_distance - geodesic_distance
+            r_dist = self.geodesic_progress_scale * progress
+            self._prev_geodesic_distance = geodesic_distance
+            waypoint_direction = self._geodesic_waypoint_direction(pos)
+            r_heading = (
+                speed
+                * np.clip(
+                    np.dot(vel_norm, waypoint_direction), -1, 1)
+                * self.geodesic_heading_weight
+            )
+        else:
+            r_dist = -5.0 * (1 - np.exp(-0.3 * target_dist))
+            r_heading = (
+                speed
+                * np.clip(np.dot(vel_norm, tgt_norm), -1, 1)
+                * 2.0
+            )
+        reward += r_dist
         reward += r_heading
 
         min_obs = self._get_min_obstacle_distance(pos)

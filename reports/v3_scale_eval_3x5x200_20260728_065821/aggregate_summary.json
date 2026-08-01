@@ -1,0 +1,28 @@
+{
+  "run_id": "v3_scale_eval_3x5x200_20260728_065821",
+  "setting": {
+    "renderer": "gsplat",
+    "scene": "gate_mid",
+    "training_seeds": [0, 1, 2],
+    "evaluation_base_seed": 20260728,
+    "episodes_per_seed_per_level": 200,
+    "episodes_per_level": 600,
+    "total_episodes": 3000,
+    "depth_scales": [1.0, 0.75, 0.5, 0.25, 0.1]
+  },
+  "aggregate": [
+    {"depth_scale": 1.0, "successes": 491, "episodes": 600, "success_rate": 81.8333, "wilson_ci95": [78.55, 84.71], "collision_rate": 18.1667, "timeout_rate": 0.0, "avg_reward": 404.9157, "baseline_success_rate": 83.5, "delta_vs_baseline_pp": -1.6667},
+    {"depth_scale": 0.75, "successes": 487, "episodes": 600, "success_rate": 81.1667, "wilson_ci95": [77.84, 84.09], "collision_rate": 18.8333, "timeout_rate": 0.0, "avg_reward": 402.7735, "baseline_success_rate": 80.5, "delta_vs_baseline_pp": 0.6667},
+    {"depth_scale": 0.5, "successes": 343, "episodes": 600, "success_rate": 57.1667, "wilson_ci95": [53.17, 61.07], "collision_rate": 20.3333, "timeout_rate": 22.5, "avg_reward": 194.1006, "baseline_success_rate": 73.0, "delta_vs_baseline_pp": -15.8333},
+    {"depth_scale": 0.25, "successes": 457, "episodes": 600, "success_rate": 76.1667, "wilson_ci95": [72.60, 79.40], "collision_rate": 19.3333, "timeout_rate": 4.5, "avg_reward": 359.6366, "baseline_success_rate": 13.5, "delta_vs_baseline_pp": 62.6667},
+    {"depth_scale": 0.1, "successes": 464, "episodes": 600, "success_rate": 77.3333, "wilson_ci95": [73.82, 80.50], "collision_rate": 20.0, "timeout_rate": 2.6667, "avg_reward": 356.7544, "baseline_success_rate": 13.5, "delta_vs_baseline_pp": 63.8333}
+  ],
+  "decision": {
+    "status": "partially_passed",
+    "clean_preserved": true,
+    "extreme_scale_robustness_improved": true,
+    "stable_across_seeds": false,
+    "failure": "seed0 collapses at 0.5x: 14.5% success and 66.5% timeout",
+    "recommended_next_step": "Run curriculum or reweighted scale training with extra mass near 0.5x and reduced 0.25x/0.1x sampling; retain seed2 as the current strongest checkpoint."
+  }
+}

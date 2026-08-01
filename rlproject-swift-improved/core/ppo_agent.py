@@ -46,14 +46,13 @@ class AdaptiveEntropyCoeff:
     def update(self, entropy):
         """根据当前策略熵更新 alpha
         
-        P0修复：确保 entropy 和 target_entropy 都是正数，loss 有界
+        熵高于目标时降低 alpha，熵低于目标时提高 alpha。
         """
         if self.target_entropy is None:
             return
 
-        alpha = torch.clamp(self.log_alpha, self.log_alpha_min, self.log_alpha_max).exp()
-        # P0修复：entropy 是正数，target_entropy 也是正数，loss 有界
-        loss = -(self.log_alpha * (entropy.detach() - self.target_entropy)).mean()
+        # 梯度下降下必须使用正号：entropy > target 时 log_alpha 减小。
+        loss = (self.log_alpha * (entropy.detach() - self.target_entropy)).mean()
 
         self.optimizer.zero_grad()
         loss.backward()

@@ -1,0 +1,366 @@
+{
+  "axes_definition": {
+    "gaussian": {
+      "name": "\u9ad8\u65af\u7403\u7a00\u758f\u5316",
+      "levels": [
+        100,
+        50,
+        20,
+        5,
+        2
+      ],
+      "unit": "%"
+    },
+    "resolution": {
+      "name": "\u6e32\u67d3\u5206\u8fa8\u7387",
+      "levels": [
+        64,
+        32,
+        16,
+        8,
+        2
+      ],
+      "unit": "px"
+    },
+    "depth_noise": {
+      "name": "\u6df1\u5ea6\u566a\u58f0",
+      "levels": [
+        0.0,
+        0.1,
+        0.25,
+        0.5,
+        1.0
+      ],
+      "unit": "\u03c3"
+    },
+    "lighting": {
+      "name": "\u5149\u7167\u504f\u79fb",
+      "levels": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "unit": "EV"
+    },
+    "viewpoint_uncertainty": {
+      "name": "\u89c6\u89d2\u4e0d\u786e\u5b9a\u6027",
+      "levels": [
+        360,
+        270,
+        180,
+        90,
+        45
+      ],
+      "unit": "\u00b0"
+    },
+    "depth_failure": {
+      "name": "\u6df1\u5ea6\u5927\u9762\u79ef\u5931\u6548",
+      "levels": [
+        0,
+        25,
+        50,
+        75,
+        90
+      ],
+      "unit": "%"
+    },
+    "occlusion": {
+      "name": "\u76f8\u673a\u906e\u6321",
+      "levels": [
+        0,
+        25,
+        50,
+        75,
+        90
+      ],
+      "unit": "%"
+    },
+    "depth_scale": {
+      "name": "\u6df1\u5ea6\u5c3a\u5ea6\u504f\u5dee",
+      "levels": [
+        1.0,
+        0.75,
+        0.5,
+        0.25,
+        0.1
+      ],
+      "unit": "\u00d7"
+    },
+    "combined": {
+      "name": "\u7ec4\u5408\u9000\u5316",
+      "levels": [
+        0.0,
+        0.25,
+        0.5,
+        0.75,
+        1.0
+      ],
+      "unit": "severity"
+    }
+  },
+  "results": [
+    {
+      "axis": "depth_failure",
+      "axis_name": "\u6df1\u5ea6\u5927\u9762\u79ef\u5931\u6548",
+      "level": 0,
+      "unit": "%",
+      "success_rate": 60.0,
+      "collision_rate": 40.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 316.6924690270429,
+      "reward_std": 199.36303490739854,
+      "avg_steps": 58.833333333333336,
+      "episodes": 10
+    },
+    {
+      "axis": "depth_failure",
+      "axis_name": "\u6df1\u5ea6\u5927\u9762\u79ef\u5931\u6548",
+      "level": 25,
+      "unit": "%",
+      "success_rate": 60.0,
+      "collision_rate": 40.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 316.36963116850814,
+      "reward_std": 197.62178453814798,
+      "avg_steps": 59.166666666666664,
+      "episodes": 10
+    },
+    {
+      "axis": "depth_failure",
+      "axis_name": "\u6df1\u5ea6\u5927\u9762\u79ef\u5931\u6548",
+      "level": 50,
+      "unit": "%",
+      "success_rate": 60.0,
+      "collision_rate": 40.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 318.3345020030681,
+      "reward_std": 197.29880111821484,
+      "avg_steps": 58.833333333333336,
+      "episodes": 10
+    },
+    {
+      "axis": "depth_failure",
+      "axis_name": "\u6df1\u5ea6\u5927\u9762\u79ef\u5931\u6548",
+      "level": 75,
+      "unit": "%",
+      "success_rate": 50.0,
+      "collision_rate": 50.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 283.0030142010025,
+      "reward_std": 234.00143036629396,
+      "avg_steps": 60.8,
+      "episodes": 10
+    },
+    {
+      "axis": "depth_failure",
+      "axis_name": "\u6df1\u5ea6\u5927\u9762\u79ef\u5931\u6548",
+      "level": 90,
+      "unit": "%",
+      "success_rate": 60.0,
+      "collision_rate": 40.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 319.2092746781612,
+      "reward_std": 198.42803142463245,
+      "avg_steps": 58.333333333333336,
+      "episodes": 10
+    },
+    {
+      "axis": "occlusion",
+      "axis_name": "\u76f8\u673a\u906e\u6321",
+      "level": 0,
+      "unit": "%",
+      "success_rate": 60.0,
+      "collision_rate": 40.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 316.6924690270429,
+      "reward_std": 199.36303490739854,
+      "avg_steps": 58.833333333333336,
+      "episodes": 10
+    },
+    {
+      "axis": "occlusion",
+      "axis_name": "\u76f8\u673a\u906e\u6321",
+      "level": 25,
+      "unit": "%",
+      "success_rate": 60.0,
+      "collision_rate": 40.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 315.42254315580976,
+      "reward_std": 198.07738950712738,
+      "avg_steps": 59.666666666666664,
+      "episodes": 10
+    },
+    {
+      "axis": "occlusion",
+      "axis_name": "\u76f8\u673a\u906e\u6321",
+      "level": 50,
+      "unit": "%",
+      "success_rate": 70.0,
+      "collision_rate": 30.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 303.75904625054227,
+      "reward_std": 165.99299037465676,
+      "avg_steps": 80.85714285714286,
+      "episodes": 10
+    },
+    {
+      "axis": "occlusion",
+      "axis_name": "\u76f8\u673a\u906e\u6321",
+      "level": 75,
+      "unit": "%",
+      "success_rate": 70.0,
+      "collision_rate": 30.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 340.7937915532108,
+      "reward_std": 188.6368858247797,
+      "avg_steps": 58.857142857142854,
+      "episodes": 10
+    },
+    {
+      "axis": "occlusion",
+      "axis_name": "\u76f8\u673a\u906e\u6321",
+      "level": 90,
+      "unit": "%",
+      "success_rate": 60.0,
+      "collision_rate": 40.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 313.15059511191504,
+      "reward_std": 221.04542163825377,
+      "avg_steps": 60.5,
+      "episodes": 10
+    },
+    {
+      "axis": "depth_scale",
+      "axis_name": "\u6df1\u5ea6\u5c3a\u5ea6\u504f\u5dee",
+      "level": 1.0,
+      "unit": "\u00d7",
+      "success_rate": 60.0,
+      "collision_rate": 40.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 316.6924690270429,
+      "reward_std": 199.36303490739854,
+      "avg_steps": 58.833333333333336,
+      "episodes": 10
+    },
+    {
+      "axis": "depth_scale",
+      "axis_name": "\u6df1\u5ea6\u5c3a\u5ea6\u504f\u5dee",
+      "level": 0.75,
+      "unit": "\u00d7",
+      "success_rate": 60.0,
+      "collision_rate": 40.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 319.3816021060985,
+      "reward_std": 198.1410056917812,
+      "avg_steps": 58.5,
+      "episodes": 10
+    },
+    {
+      "axis": "depth_scale",
+      "axis_name": "\u6df1\u5ea6\u5c3a\u5ea6\u504f\u5dee",
+      "level": 0.5,
+      "unit": "\u00d7",
+      "success_rate": 50.0,
+      "collision_rate": 50.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 288.82268891561534,
+      "reward_std": 199.53934582916654,
+      "avg_steps": 60.0,
+      "episodes": 10
+    },
+    {
+      "axis": "depth_scale",
+      "axis_name": "\u6df1\u5ea6\u5c3a\u5ea6\u504f\u5dee",
+      "level": 0.25,
+      "unit": "\u00d7",
+      "success_rate": 10.0,
+      "collision_rate": 60.0,
+      "timeout_rate": 30.0,
+      "avg_reward": -332.93117331639917,
+      "reward_std": 733.5728853423857,
+      "avg_steps": 84.0,
+      "episodes": 10
+    },
+    {
+      "axis": "depth_scale",
+      "axis_name": "\u6df1\u5ea6\u5c3a\u5ea6\u504f\u5dee",
+      "level": 0.1,
+      "unit": "\u00d7",
+      "success_rate": 10.0,
+      "collision_rate": 70.0,
+      "timeout_rate": 20.0,
+      "avg_reward": -224.44158683952233,
+      "reward_std": 736.7130382564818,
+      "avg_steps": 86.0,
+      "episodes": 10
+    },
+    {
+      "axis": "combined",
+      "axis_name": "\u7ec4\u5408\u9000\u5316",
+      "level": 0.0,
+      "unit": "severity",
+      "success_rate": 60.0,
+      "collision_rate": 40.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 316.6924690270429,
+      "reward_std": 199.36303490739854,
+      "avg_steps": 58.833333333333336,
+      "episodes": 10
+    },
+    {
+      "axis": "combined",
+      "axis_name": "\u7ec4\u5408\u9000\u5316",
+      "level": 0.25,
+      "unit": "severity",
+      "success_rate": 60.0,
+      "collision_rate": 40.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 320.5877979210151,
+      "reward_std": 197.98200589124602,
+      "avg_steps": 58.5,
+      "episodes": 10
+    },
+    {
+      "axis": "combined",
+      "axis_name": "\u7ec4\u5408\u9000\u5316",
+      "level": 0.5,
+      "unit": "severity",
+      "success_rate": 30.0,
+      "collision_rate": 70.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 207.90597908610215,
+      "reward_std": 223.9280428733205,
+      "avg_steps": 63.333333333333336,
+      "episodes": 10
+    },
+    {
+      "axis": "combined",
+      "axis_name": "\u7ec4\u5408\u9000\u5316",
+      "level": 0.75,
+      "unit": "severity",
+      "success_rate": 30.0,
+      "collision_rate": 70.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 206.84922126102396,
+      "reward_std": 223.06710796918355,
+      "avg_steps": 63.666666666666664,
+      "episodes": 10
+    },
+    {
+      "axis": "combined",
+      "axis_name": "\u7ec4\u5408\u9000\u5316",
+      "level": 1.0,
+      "unit": "severity",
+      "success_rate": 40.0,
+      "collision_rate": 60.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 246.85207135569922,
+      "reward_std": 226.54906879202366,
+      "avg_steps": 64.25,
+      "episodes": 10
+    }
+  ],
+  "timestamp": "20260727_083226"
+}

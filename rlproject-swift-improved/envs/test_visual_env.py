@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 from envs.visual_drone_env import VisualDroneEnv, MockGSRenderer
 from envs.degradation_utils import apply_resolution_downscale, apply_perlin_depth_noise
+from envs.scene_geometry import ScenePointCloudGeometry
 
 # ── MockRenderer 测试 ──
 
@@ -167,6 +168,152 @@ def test_env_degradation_config():
     assert not np.isnan(obs['depth']).any()
     print(f"  ✓ degradation config: depth range [{obs['depth'].min():.1f}, {obs['depth'].max():.1f}]")
 
+def test_input_ablation_config():
+    """输入消融只清零指定向量分量，不改变观测结构。"""
+    env = VisualDroneEnv(config={
+        'ablation': {'no_velocity': True, 'no_target_dir': True}
+    })
+    obs, _ = env.reset(seed=42)
+    assert obs['vec'].shape == (6,)
+    assert np.allclose(obs['vec'], 0.0)
+    assert obs['depth'].shape == (64, 64, 1)
+    print("  ✓ input ablation: velocity and target direction zeroed")
+
+
+def test_waypoint_observation_requires_scene_geometry():
+    """局部路径点观测不得在无场景几何时静默启用。"""
+    try:
+        VisualDroneEnv(config={'use_waypoint_observation': True})
+    except ValueError:
+        print("  ✓ waypoint observation requires scene geometry")
+        return
+    raise AssertionError(
+        "waypoint observation accepted without collision geometry")
+
+
+def test_scene_geometry_collision_and_sampling():
+    """场景点云同时驱动碰撞距离和自由空间采样。"""
+    wall_y, wall_z = np.meshgrid(
+        np.linspace(-2, 2, 20), np.linspace(0, 3, 20))
+    points = np.column_stack([
+        np.zeros(wall_y.size), wall_y.ravel(), wall_z.ravel()
+    ])
+    bounds_support = np.array([
+        [x, y, z]
+        for x in (-2.0, 2.0)
+        for y in (-2.0, 2.0)
+        for z in (0.0, 3.0)
+    ])
+    points = np.vstack([points, bounds_support])
+    geometry = ScenePointCloudGeometry(
+        points=points, bounds_percentiles=(0, 100), boundary_margin=0.0)
+    assert geometry.collides(np.array([0.1, 0.0, 1.5]), radius=0.2)
+    assert not geometry.collides(np.array([1.0, 0.0, 1.5]), radius=0.2)
+    assert geometry.segment_min_clearance(
+        np.array([-1.0, 0.0, 1.5]),
+        np.array([1.0, 0.0, 1.5])) < 0.2
+    sample = geometry.sample_free(
+        np.random.default_rng(42), clearance=0.2,
+        bounds_min=np.array([-1.0, -1.0, 0.5]),
+        bounds_max=np.array([1.0, 1.0, 2.5]))
+    assert geometry.nearest_distance(sample) > 0.2
+    grid_size = geometry.build_navigation_grid(
+        resolution=0.25, clearance=0.2)
+    assert grid_size > 10
+    start, target, _ = geometry.sample_reachable_pair(
+        np.random.default_rng(7), min_distance=1.0,
+        blocked_probability=None, collision_radius=0.2)
+    assert np.linalg.norm(target - start) >= 1.0
+    print("  ✓ scene geometry: collision and free sampling aligned")
+
+
+def test_scene_geodesic_distance_routes_around_obstacle():
+    """测地距离应沿自由空间绕过位于起终点之间的墙段。"""
+    wall_y, wall_z = np.meshgrid(
+        np.linspace(-0.5, 0.5, 11), np.linspace(0.0, 1.0, 11))
+    wall = np.column_stack([
+        np.zeros(wall_y.size), wall_y.ravel(), wall_z.ravel()
+    ])
+    bounds_support = np.array([
+        [x, y, z]
+        for x in (-2.0, 2.0)
+        for y in (-2.0, 2.0)
+        for z in (0.0, 1.0)
+    ])
+    geometry = ScenePointCloudGeometry(
+        points=np.vstack([wall, bounds_support]),
+        bounds_percentiles=(0, 100),
+        boundary_margin=0.0,
+    )
+    geometry.build_navigation_grid(resolution=0.25, clearance=0.2)
+    start = np.array([-1.0, 0.0, 0.5])
+    target = np.array([1.0, 0.0, 0.5])
+    field = geometry.geodesic_distance_field(target)
+    geodesic = geometry.geodesic_distance(start, field)
+    path = geometry.shortest_path(start, target)
+    assert np.isfinite(geodesic)
+    assert geodesic > np.linalg.norm(target - start)
+    assert geometry.geodesic_distance(target, field) < 0.2
+    assert np.allclose(path[0], start)
+    assert np.allclose(path[-1], target)
+    assert all(
+        not geometry.collides(point, radius=0.2)
+        for point in path[1:-1]
+    )
+    print(f"  ✓ geodesic route: {geodesic:.2f}m > direct 2.00m")
+
+
+def test_motion_tracking_camera_quaternion():
+    """相机光轴应跟随速度方向，输出单位四元数。"""
+    env = VisualDroneEnv(config={'camera_tracks_motion': True})
+    env.reset(seed=42)
+    quaternion = env._camera_quaternion(
+        np.zeros(3), np.array([1.0, 0.0, 0.0]))
+    assert quaternion.shape == (4,)
+    assert np.isclose(np.linalg.norm(quaternion), 1.0)
+    print("  ✓ camera quaternion tracks motion")
+
+def test_weighted_depth_scale_sampling():
+    """加权尺度按episode采样，并且相同seed可复现"""
+    config = {
+        'randomize_depth_scale': True,
+        'depth_scale_levels': [1.0, 0.75, 0.5, 0.25, 0.1],
+        'depth_scale_probabilities': [0.2, 0.2, 0.4, 0.1, 0.1],
+    }
+    env1 = VisualDroneEnv(config=config)
+    env2 = VisualDroneEnv(config=config)
+    _, info1 = env1.reset(seed=20260728)
+    _, info2 = env2.reset(seed=20260728)
+    assert info1['depth_scale'] == info2['depth_scale']
+    assert info1['depth_scale'] in config['depth_scale_levels']
+
+    sampled = []
+    for seed in range(2000):
+        _, info = env1.reset(seed=seed)
+        sampled.append(info['depth_scale'])
+    transition_fraction = np.mean(np.asarray(sampled) == 0.5)
+    assert 0.35 < transition_fraction < 0.45, transition_fraction
+    assert env1.depth_scale_sample_counts.sum() == 2001
+    env1.reset_depth_scale_sample_counts()
+    assert env1.depth_scale_sample_counts.sum() == 0
+    env1.set_depth_scale_probabilities([0.35, 0.25, 0.2, 0.1, 0.1])
+    assert np.allclose(
+        env1.depth_scale_probabilities, [0.35, 0.25, 0.2, 0.1, 0.1])
+    print(f"  ✓ weighted depth scale: 0.5x={transition_fraction:.1%}")
+
+def test_invalid_depth_scale_probabilities():
+    """非法尺度概率应在环境创建时立即失败"""
+    try:
+        VisualDroneEnv(config={
+            'randomize_depth_scale': True,
+            'depth_scale_levels': [1.0, 0.5],
+            'depth_scale_probabilities': [0.5],
+        })
+    except ValueError:
+        print("  ✓ invalid depth scale probabilities rejected")
+        return
+    raise AssertionError("invalid depth scale probabilities were accepted")
+
 def test_env_reward_components():
     """7个reward组件都在info中"""
     env = VisualDroneEnv()
@@ -197,6 +344,18 @@ def run_all_tests():
         ("env max steps", test_env_max_steps),
         ("env deterministic", test_env_deterministic),
         ("env degradation config", test_env_degradation_config),
+        ("input ablation config", test_input_ablation_config),
+        ("waypoint observation geometry requirement",
+         test_waypoint_observation_requires_scene_geometry),
+        ("scene geometry collision and sampling",
+         test_scene_geometry_collision_and_sampling),
+        ("scene geodesic distance",
+         test_scene_geodesic_distance_routes_around_obstacle),
+        ("motion tracking camera quaternion",
+         test_motion_tracking_camera_quaternion),
+        ("weighted depth scale sampling", test_weighted_depth_scale_sampling),
+        ("invalid depth scale probabilities",
+         test_invalid_depth_scale_probabilities),
         ("env reward components", test_env_reward_components),
     ]
 
