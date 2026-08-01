@@ -834,7 +834,8 @@ PX4 SIH，验证连接、解锁、Offboard、悬停和失联保护，再进入Ga
 - ✅ 只读观测桥实现并回放冒烟通过：`integrations/read_only_observation_bridge.py` 从 PX4 位姿遥测（或回放 JSON）经 `Px4SceneAlignment` 映射渲染 64×64 深度并构造 `{depth, vec}` 观测，不发送任何控制、不加载策略。悬停遥测 61 样本回放全部产出有效深度（invalid_ratio=0，depth 1.84–7.54m），vec 语义与 `visual_drone_env._get_observation` 一致。10 个离线单元测试通过。
 - ✅ 遥测回放与定点悬停渲染测试通过：真实 PX4 SIH 悬停录播 200 样本（裁瞬态后 160 稳定悬停样本），桥回放 160 观测全部有效深度（invalid_ratio=0），深度均值 4.054±0.151 m（悬停低方差）、速度 0.159 m/s、场景漂移 <0.25 m；录播后 PX4 已停止。
 - ✅ PX4 环境对齐四大门禁全部通过：30 位姿注册、飞行净空、只读观测桥、遥测回放+悬停渲染。
-- ⚠️ `formal_v3_ready=false`：正式 V3 尚不能开始。亮度相关绝对值仍低（轴向/内参基本可信但不构成照片级证据）；重训 V3 前需将训练侧渲染内参与桥上内参（fx≈97.14）对齐，旧 `legacy-unaligned` checkpoint 不得复用。
+- ✅ 训练侧渲染内参对齐完成：`VisualDroneEnv` 支持 `camera_intrinsics` 配置，`train_visual.py --intrinsics` 从对齐配置读 fx≈97.14；服务器验证 env 渲染器 fx=97.1433（与桥上/门禁一致），不带时回退 fov=90。
+- ⚠️ `formal_v3_ready=false`：正式 V3 尚未重训。亮度相关绝对值仍低（轴向/内参基本可信但不构成照片级证据）；重训 V3 用 `--intrinsics` 从头训练 3 seeds，不复用旧 `legacy-unaligned` checkpoint。
 
 ### 后续执行顺序（2026-08-02）
 
@@ -843,7 +844,7 @@ PX4 SIH，验证连接、解锁、Offboard、悬停和失联保护，再进入Ga
 3. ✅ 检查映射后 PX4 飞行区域的最小碰撞净空（连通自由空间 153 m³ @ 0.45 m）。
 4. ✅ 实现只读观测桥：PX4 位姿→3DGS 深度和策略向量，不发送控制（10 个单元测试 + 服务器回放冒烟通过）。
 5. ✅ 做遥测回放和定点悬停渲染测试（真实 PX4 悬停遥测录播 160 样本，全部有效深度）。
-6. ⏳ 门禁全部通过。重训三种子正式 V3 前：对齐训练侧渲染内参（fx≈97.14），再从头训练，不复用旧 checkpoint。
+6. ⏳ 门禁全部通过，训练内参已对齐（fx≈97.14）。下一步：`--renderer gsplat --ply ... --intrinsics configs/px4_gate_mid_alignment.json` 从头重训 3 seeds 正式 V3，不复用旧 checkpoint。
 
 ---
 
