@@ -42,7 +42,7 @@
   "status": {
     "camera_axis_registration": "gpu_30_pose_policy64_provisional_pass",
     "gpu_raster_registration": "pass_after_explicit_cuda_warmup",
-    "pending_gate": "telemetry_replay_and_hover_render_test",
+    "pending_gate": "all_alignment_gates_passed_retrain_v3_with_config_intrinsics",
     "formal_v3_ready": false
   }
 }
