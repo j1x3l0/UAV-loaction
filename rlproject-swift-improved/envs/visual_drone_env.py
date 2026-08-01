@@ -439,11 +439,14 @@ class VisualDroneEnv(gym.Env):
     def _aligned_camera_c2w(self, pos, velocity):
         """Simulated PX4-equivalent camera, matching the read-only bridge.
 
-        Maps the scene-space drone state to a PX4 LOCAL_NED pose (yaw follows
-        the horizontal velocity, falling back to the goal heading at low
-        speed; roll/pitch stay 0 for the point-mass model) and builds the
-        OpenCV optical camera-to-scene matrix exactly like the observation
-        bridge's ``Px4SceneAlignment.camera_c2w``.
+        Maps the scene-space drone state to a PX4 LOCAL_NED pose and builds
+        the OpenCV optical camera-to-scene matrix exactly like the observation
+        bridge's ``Px4SceneAlignment.camera_c2w``. The camera yaws toward the
+        goal (commanded heading for goal navigation); with the narrow
+        fx≈97.14 field of view this keeps the target visible, matching a
+        deployment controller that commands yaw toward the goal. Falls back
+        to the velocity heading, then zero, when the goal bearing is
+        degenerate. Roll/pitch stay 0 for the point-mass model.
         """
         alignment = self._alignment
         position = np.asarray(pos, dtype=np.float64)
@@ -452,12 +455,12 @@ class VisualDroneEnv(gym.Env):
             alignment.scene_from_ned_rotation.T
             @ (position - alignment.scene_from_ned_translation)
         ) / alignment.scale
-        velocity_ned = alignment.vector_ned_from_scene(velocity)
-        heading = velocity_ned[:2]
+        target_dir_ned = alignment.vector_ned_from_scene(
+            np.asarray(self.target_pos, dtype=np.float64) - position)
+        heading = target_dir_ned[:2]
         if np.linalg.norm(heading) < 0.1:
-            target_dir_ned = alignment.vector_ned_from_scene(
-                np.asarray(self.target_pos, dtype=np.float64) - position)
-            heading = target_dir_ned[:2]
+            velocity_ned = alignment.vector_ned_from_scene(velocity)
+            heading = velocity_ned[:2]
         yaw = float(np.arctan2(heading[1], heading[0]))
         return alignment.camera_c2w(position_ned, 0.0, 0.0, yaw)
 
