@@ -23,6 +23,7 @@
 | `integrations/mavlink_offboard.py` | pymavlink Offboard 客户端 (连接/arm/起飞/落地) | 坐标转换、策略推理 | pymavlink | 75% |
 | `integrations/px4_scene_alignment.py` | PX4 LOCAL_NED↔3DGS场景坐标对齐 (唯一入口) | 渲染、MAVLink通信 | numpy, config json | 80% |
 | `integrations/rl_policy_offboard.py` | 限幅策略冒烟门禁 (合成深度, 不声明对齐导航) | 真实视觉闭环、正式V3结果 | VisualPPO, mavlink_offboard | 75% |
+| `integrations/read_only_observation_bridge.py` | PX4 位姿遥测→3DGS 深度+策略 vec 观测桥 (只读) | 发送控制、加载策略推理 | Px4SceneAlignment, GSplatRenderer | 80% |
 | `scripts/validate_camera_registration.py` | 训练相机位姿注册验证 (OpenGL→OpenCV轴判别) | 在线观测、飞控交互 | GSplatRenderer, PIL | 80% |
 | `configs/px4_gate_mid_alignment.json` | gate_mid_new 锚点/内参/坐标约定 (formal_v3_ready=false) | 代码逻辑 | — (配置) | 85% |
 
