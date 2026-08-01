@@ -40,9 +40,9 @@
     }
   },
   "status": {
-    "camera_axis_registration": "gpu_5_frame_policy64_provisional_pass",
+    "camera_axis_registration": "gpu_30_pose_policy64_provisional_pass",
     "gpu_raster_registration": "pass_after_explicit_cuda_warmup",
-    "pending_gate": "30_pose_policy64_registration_and_flight_volume_clearance",
+    "pending_gate": "flight_volume_clearance_then_read_only_observation_bridge",
     "formal_v3_ready": false
   }
 }
