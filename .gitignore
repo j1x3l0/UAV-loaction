@@ -26,6 +26,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.log
+*.lock
 
 # Environment variables
 .env
@@ -52,3 +53,5 @@ PX4-Autopilot-1.17.0/
 # Local experiment artifacts
 *.pth
 *.pid
+artifacts/
+reports/**/models/

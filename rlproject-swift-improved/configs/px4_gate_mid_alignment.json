@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "scene": "gate_mid_new",
+  "world_frame": "nerfstudio_transformed_world",
+  "px4_frame": "LOCAL_NED",
+  "anchor": {
+    "transforms_file": "data/gs_data/gate_mid_new/splatfacto/2025-05-23_120625/data/transforms.json",
+    "frame_index": 154,
+    "image": "images/frame_00155.png",
+    "px4_position_ned_m": [0.0, 0.0, -1.0],
+    "px4_attitude_rpy_rad": [0.0, 0.0, 0.0]
+  },
+  "scene_from_ned": {
+    "rotation": [
+      [0.8590044995, -0.4128668189, -0.3027412422],
+      [-0.3769904848, -0.9101836218, 0.1715923917],
+      [-0.3463949252, -0.0332680689, -0.9374986887]
+    ],
+    "translation_m": [2.3850343120, 2.6391286930, 0.5502077496],
+    "scale": 1.0
+  },
+  "body_frd_from_camera_opencv": [
+    [0.0, 0.0, 1.0],
+    [1.0, 0.0, 0.0],
+    [0.0, 1.0, 0.0]
+  ],
+  "camera": {
+    "model": "PINHOLE_CENTER_CROP",
+    "source_resolution": [720, 1280],
+    "policy_resolution": [64, 64],
+    "fx": 97.1433427374,
+    "fy": 97.0647991673,
+    "cx": 32.0,
+    "cy": 32.0,
+    "source_distortion_not_applied": {
+      "k1": 0.1415511802,
+      "k2": -0.2495394514,
+      "p1": -0.0000209060,
+      "p2": 0.0001822539
+    }
+  },
+  "status": {
+    "camera_axis_registration": "gpu_5_frame_policy64_provisional_pass",
+    "gpu_raster_registration": "pass_after_explicit_cuda_warmup",
+    "pending_gate": "30_pose_policy64_registration_and_flight_volume_clearance",
+    "formal_v3_ready": false
+  }
+}
