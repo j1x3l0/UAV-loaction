@@ -834,7 +834,7 @@ PX4 SIH，验证连接、解锁、Offboard、悬停和失联保护，再进入Ga
 - ✅ 只读观测桥实现并回放冒烟通过：`integrations/read_only_observation_bridge.py` 从 PX4 位姿遥测（或回放 JSON）经 `Px4SceneAlignment` 映射渲染 64×64 深度并构造 `{depth, vec}` 观测，不发送任何控制、不加载策略。悬停遥测 61 样本回放全部产出有效深度（invalid_ratio=0，depth 1.84–7.54m），vec 语义与 `visual_drone_env._get_observation` 一致。10 个离线单元测试通过。
 - ✅ 遥测回放与定点悬停渲染测试通过：真实 PX4 SIH 悬停录播 200 样本（裁瞬态后 160 稳定悬停样本），桥回放 160 观测全部有效深度（invalid_ratio=0），深度均值 4.054±0.151 m（悬停低方差）、速度 0.159 m/s、场景漂移 <0.25 m；录播后 PX4 已停止。
 - ✅ PX4 环境对齐四大门禁全部通过：30 位姿注册、飞行净空、只读观测桥、遥测回放+悬停渲染。
-- ✅ 训练侧渲染内参对齐完成：`VisualDroneEnv` 支持 `camera_intrinsics` 配置，`train_visual.py --intrinsics` 从对齐配置读 fx≈97.14；服务器验证 env 渲染器 fx=97.1433（与桥上/门禁一致），不带时回退 fov=90。
+- ✅ 训练侧相机模型统一完成：`VisualDroneEnv` 配置 `alignment_config` 时，真实 GS 渲染改用与只读观测桥完全相同的 `Px4SceneAlignment.camera_c2w` 路径——从 env 状态模拟 PX4 等效位姿（yaw=水平速度朝向，低速回退目标方向，roll/pitch=0），内参 fx≈97.14。服务器验证 `_aligned_camera_c2w` 与桥 `camera_c2w` 一致（atol 1e-9），观测渲染正常。不带 `alignment_config` 时保持旧相机行为（不影响 legacy）。
 - ⚠️ `formal_v3_ready=false`：正式 V3 尚未重训。亮度相关绝对值仍低（轴向/内参基本可信但不构成照片级证据）；重训 V3 用 `--intrinsics` 从头训练 3 seeds，不复用旧 `legacy-unaligned` checkpoint。
 
 ### 后续执行顺序（2026-08-02）

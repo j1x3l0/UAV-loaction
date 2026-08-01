@@ -193,15 +193,17 @@ def load_camera_intrinsics(alignment_json):
 
 def make_env(degradation_config=None, renderer='mock', ply_path=None,
              ablation_config=None, scene_config=None,
-             camera_intrinsics=None):
+             alignment_config=None):
     """环境工厂"""
     cfg = {'renderer': renderer}
     if renderer == 'gsplat':
         if not ply_path:
             raise ValueError("--renderer gsplat requires --ply <path to .ply>")
         cfg['ply_path'] = resolve_ply_path(ply_path)
-        if camera_intrinsics:
-            cfg['camera_intrinsics'] = dict(camera_intrinsics)
+        if alignment_config:
+            # 训练相机模型统一：内参 fx≈97.14 + Px4SceneAlignment c2w 路径
+            cfg['camera_intrinsics'] = load_camera_intrinsics(alignment_config)
+            cfg['alignment_config'] = alignment_config
     if ablation_config:
         cfg['ablation'] = dict(ablation_config)
     if scene_config:
@@ -233,7 +235,7 @@ def make_env(degradation_config=None, renderer='mock', ply_path=None,
 
 def make_fixed_depth_scale_env(renderer, ply_path, depth_scale,
                                ablation_config=None, scene_config=None,
-                               camera_intrinsics=None):
+                               alignment_config=None):
     """Create a validation environment with one fixed depth calibration."""
     cfg = {
         'renderer': renderer,
@@ -243,8 +245,9 @@ def make_fixed_depth_scale_env(renderer, ply_path, depth_scale,
         if not ply_path:
             raise ValueError("--renderer gsplat requires --ply <path to .ply>")
         cfg['ply_path'] = resolve_ply_path(ply_path)
-        if camera_intrinsics:
-            cfg['camera_intrinsics'] = dict(camera_intrinsics)
+        if alignment_config:
+            cfg['camera_intrinsics'] = load_camera_intrinsics(alignment_config)
+            cfg['alignment_config'] = alignment_config
     if ablation_config:
         cfg['ablation'] = dict(ablation_config)
     if scene_config:
@@ -277,9 +280,7 @@ def train_visual(config):
     degradation = config.get('degradation', 'clean')
     renderer = config.get('renderer', 'mock')
     ply_path = config.get('ply_path')
-    camera_intrinsics = None
-    if config.get('intrinsics'):
-        camera_intrinsics = load_camera_intrinsics(config['intrinsics'])
+    alignment_config = config.get('intrinsics')
     ablation_config = config.get('ablation')
     scene_config = dict(config.get('scene_config') or {})
     avoidance_curriculum = bool(config.get('avoidance_curriculum', False))
@@ -297,18 +298,18 @@ def train_visual(config):
     envs = [
         make_env(
             degradation, renderer, ply_path, ablation_config,
-            train_scene_config, camera_intrinsics)
+            train_scene_config, alignment_config)
         for _ in range(num_envs)
     ]
     eval_env = make_env(
         'clean', renderer, ply_path, ablation_config, eval_scene_config,
-        camera_intrinsics)
+        alignment_config)
     robust_eval_envs = None
     if degradation in ('scale_curriculum', 'scale_recovery'):
         robust_eval_envs = [
             make_fixed_depth_scale_env(
                 renderer, ply_path, scale, ablation_config,
-                eval_scene_config, camera_intrinsics)
+                eval_scene_config, alignment_config)
             for scale in DEPTH_SCALE_LEVELS
         ]
 

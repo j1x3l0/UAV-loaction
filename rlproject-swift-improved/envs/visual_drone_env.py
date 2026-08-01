@@ -197,6 +197,16 @@ class VisualDroneEnv(gym.Env):
         else:
             raise ValueError(f"Unsupported renderer: {renderer_type}")
 
+        # ── PX4 对齐相机模型 (统一训练与观测桥的相机路径) ──
+        # 配置了 alignment_config 时，真实 GS 渲染改用与只读观测桥相同的
+        # Px4SceneAlignment.camera_c2w 路径（从 env 状态模拟 PX4 等效位姿），
+        # 使训练观测的相机朝向/内参与部署一致。不带则不启用（保持旧行为）。
+        self._alignment = None
+        alignment_config = self.config.get('alignment_config')
+        if alignment_config:
+            from integrations.px4_scene_alignment import Px4SceneAlignment
+            self._alignment = Px4SceneAlignment.from_json(alignment_config)
+
         collision_ply_path = self.config.get('collision_ply_path')
         if collision_ply_path:
             self.scene_geometry = ScenePointCloudGeometry(
@@ -328,8 +338,13 @@ class VisualDroneEnv(gym.Env):
                 depth, rgb, active_obstacles, post_config)
         else:
             # Real GS: 直接渲染 → 后处理退化
-            camera_quat = self._camera_quaternion(pos, vel)
-            depth, rgb = self.renderer.render(camera_pos, camera_quat)
+            if self._alignment is not None:
+                # 统一相机模型：模拟 PX4 等效位姿 → camera_c2w（与观测桥一致）
+                c2w = self._aligned_camera_c2w(pos, vel)
+                depth, rgb = self.renderer.render(camera_pos, camera_c2w=c2w)
+            else:
+                camera_quat = self._camera_quaternion(pos, vel)
+                depth, rgb = self.renderer.render(camera_pos, camera_quat)
             post_config = {k: v for k, v in self.deg_config.items()
                            if k != 'gaussian'}
             depth, rgb, _ = apply_degradation_pipeline(
@@ -420,6 +435,31 @@ class VisualDroneEnv(gym.Env):
         down = np.cross(forward, right)
         rotation = np.column_stack([right, down, forward])
         return self._rotation_matrix_to_quaternion(rotation)
+
+    def _aligned_camera_c2w(self, pos, velocity):
+        """Simulated PX4-equivalent camera, matching the read-only bridge.
+
+        Maps the scene-space drone state to a PX4 LOCAL_NED pose (yaw follows
+        the horizontal velocity, falling back to the goal heading at low
+        speed; roll/pitch stay 0 for the point-mass model) and builds the
+        OpenCV optical camera-to-scene matrix exactly like the observation
+        bridge's ``Px4SceneAlignment.camera_c2w``.
+        """
+        alignment = self._alignment
+        position = np.asarray(pos, dtype=np.float64)
+        velocity = np.asarray(velocity, dtype=np.float64)
+        position_ned = (
+            alignment.scene_from_ned_rotation.T
+            @ (position - alignment.scene_from_ned_translation)
+        ) / alignment.scale
+        velocity_ned = alignment.vector_ned_from_scene(velocity)
+        heading = velocity_ned[:2]
+        if np.linalg.norm(heading) < 0.1:
+            target_dir_ned = alignment.vector_ned_from_scene(
+                np.asarray(self.target_pos, dtype=np.float64) - position)
+            heading = target_dir_ned[:2]
+        yaw = float(np.arctan2(heading[1], heading[0]))
+        return alignment.camera_c2w(position_ned, 0.0, 0.0, yaw)
 
     # ── Gym API ──
     def reset(self, seed: int = None,
