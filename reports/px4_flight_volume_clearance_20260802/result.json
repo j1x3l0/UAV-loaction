@@ -1,0 +1,43 @@
+{
+  "ned_bounds": {
+    "x_min": -10.46,
+    "x_max": 7.34,
+    "y_min": -5.6,
+    "y_max": 3.42,
+    "z_min": -3.66,
+    "z_max": 10.33,
+    "label": "explicit"
+  },
+  "grid_samples": 20387,
+  "clearance_m": {
+    "min": 0.00637204344789062,
+    "p5": 0.11916760430791162,
+    "median": 1.7338143015549299,
+    "max": 7.95603317930053
+  },
+  "below_threshold": {
+    "count": 3586,
+    "fraction": 0.17589640457154068
+  },
+  "collision_cloud": {
+    "points": 265329,
+    "scene_min": [
+      -7.999948501586914,
+      -3.999912738800049,
+      -0.09999042749404907
+    ],
+    "scene_max": [
+      7.999705791473389,
+      3.999896287918091,
+      3.4999375343322754
+    ]
+  },
+  "free_space": {
+    "required_clearance_m": 0.45,
+    "grid_m": 0.3,
+    "largest_component_nodes": 5677,
+    "largest_component_volume_m3": 153.27899999999997,
+    "min_acceptable_volume_m3": 10.0
+  },
+  "pass": true
+}
