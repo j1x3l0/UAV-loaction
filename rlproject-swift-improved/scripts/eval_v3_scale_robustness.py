@@ -51,10 +51,12 @@ def main() -> int:
 
     models = [item.split("=", 1) for item in args.model]
     results = {}
+    detail = {}
     for label, path in models:
         print(f"=== {label}: {path} ===", flush=True)
         policy = load_policy(path)
         scale_results = {}
+        scale_detail = {}
         for scale in DEPTH_SCALE_LEVELS:
             # Must mirror the training robust-eval env: collision geometry,
             # auto scene bounds and the 0.5 m clearance. Without
@@ -71,15 +73,27 @@ def main() -> int:
             eval_result = evaluate_model(
                 policy, env, eval_episodes=args.episodes, base_seed=args.seed)
             scale_results[str(scale)] = round(eval_result["success_rate"], 1)
+            # Save per-episode outcomes for paired McNemar / bootstrap tests.
+            scale_detail[str(scale)] = [
+                {
+                    "episode": row["episode"],
+                    "result": row["result"],
+                    "reward": round(float(row["reward"]), 4),
+                }
+                for row in eval_result["episodes_detail"]
+            ]
             env.close()
             print(f"  scale {scale}x: SR={scale_results[str(scale)]}%", flush=True)
         results[label] = scale_results
+        detail[label] = scale_detail
 
     summary = {
         "models": {label: {"checkpoint": path} for label, path in models},
         "scales": [str(scale) for scale in DEPTH_SCALE_LEVELS],
         "episodes_per_scale": args.episodes,
+        "seed": args.seed,
         "results": results,
+        "episodes_detail": detail,
     }
     output_path = os.path.abspath(args.output)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
