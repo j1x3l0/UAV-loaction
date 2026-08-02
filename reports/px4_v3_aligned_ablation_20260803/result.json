@@ -1,0 +1,40 @@
+{
+  "models": {
+    "clean_baseline": {
+      "checkpoint": "saved_models/v3_aligned_smoke_clean/seed0_r05_1500.pth"
+    },
+    "cur_robust_seed1": {
+      "checkpoint": "saved_models/v3_aligned_gentle/seed1_robust_best.pth"
+    },
+    "cur_robust_seed2": {
+      "checkpoint": "saved_models/v3_aligned_gentle/seed2_robust_best.pth"
+    }
+  },
+  "ablations": [
+    "baseline",
+    "const_depth",
+    "no_velocity",
+    "no_target_dir"
+  ],
+  "episodes_per_ablation": 50,
+  "results": {
+    "clean_baseline": {
+      "baseline": 50.0,
+      "const_depth": 28.0,
+      "no_velocity": 2.0,
+      "no_target_dir": 0.0
+    },
+    "cur_robust_seed1": {
+      "baseline": 52.0,
+      "const_depth": 40.0,
+      "no_velocity": 4.0,
+      "no_target_dir": 0.0
+    },
+    "cur_robust_seed2": {
+      "baseline": 36.0,
+      "const_depth": 34.0,
+      "no_velocity": 4.0,
+      "no_target_dir": 2.0
+    }
+  }
+}
