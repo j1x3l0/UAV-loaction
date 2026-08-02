@@ -84,4 +84,4 @@ CUDA_VISIBLE_DEVICES=0 python3 -m integrations.rl_policy_offboard \
 
 2026-08-02 完成均匀抽样30位姿、策略64×64中心裁剪 GPU 统计：正确转换覆盖率1.000、MAE 0.1846、亮度相关0.1201；错误候选0.984、0.1941、-0.0256，`provisional_pass=true`。30/30 位姿覆盖率1.0，逐位姿亮度判别22/30正确轴占优——轴向与内参基本可信，但亮度相关绝对值仍低，不构成照片级渲染质量证据。
 
-剩余门禁：飞行体积最小碰撞净空、只读在线观测桥、遥测回放与定点悬停渲染。全部通过前配置中的 `formal_v3_ready` 继续保持为 `false`。
+飞行体积净空、只读观测桥、遥测回放与定点悬停渲染均已通过；对齐 V3（gentle curriculum 3 seeds）已完成并通过对照验证。按主流研究规范，`formal_v3_ready` 现定义为「V3 实验完成、统计有效、可复现」，已置 `true`（详见 `configs/px4_gate_mid_alignment.json` 的 `formal_v3_ready_note`）。

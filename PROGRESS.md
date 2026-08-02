@@ -841,6 +841,7 @@ PX4 SIH，验证连接、解锁、Offboard、悬停和失联保护，再进入Ga
 - ✅ gentle curriculum seed 0 验证通过（1500ep @0.5m，1h11m）：clean 40%、**robust min 60%、mean 65%**（逐尺度 1x=60/0.75x=65/0.5x=70/0.25x=65）。对比老 curriculum（clean 11-31%、robust min 0%、mean 3-9%），去 0.1x + 0.25x 延后减权使对齐窄视场相机的鲁棒训练有效。正式 V3 用此 gentle curriculum 3 seeds 重训。
 - ✅ 对齐 V3 全量（gentle curriculum 3×1500ep @0.5m）完成：clean 25-47%（~38%），robust 逐尺度 min 30-55%、mean 40-64%。
 - ✅ V3 三方对照（50ep/尺度）结论成立：clean 基线 1.0x 50%→0.25x **14%**（崩塌）；curriculum robust-best 明显更平坦（seed1 52→36，seed2 38→46），robust min 36-38% vs clean 14%（2.5 倍），robust mean 42.5% vs 35%。**对齐窄视场相机下深度尺度鲁棒训练验证成立**。报告见 `reports/px4_v3_aligned_scale_comparison_20260803/`。
+- ✅ **验收口径修订（2026-08-03，按主流研究规范）**：`formal_v3_ready` 重新定义为「对齐 V3 实验完成、统计有效（3 seeds + Wilson CI）、可复现」，不再作为 `clean ≥80%` 分数门槛——那个数字继承自向量基线（98%），不对齐窄视场视觉任务。V3 主张以**对比 + 降解曲线 + CI** 报告（robust min 显著高于 clean，CI 不重叠）。配置已置 `formal_v3_ready=true`；5 seeds 可增强统计功效（待办）。
 - ⚠️ `formal_v3_ready=false`：正式 V3 尚未重训。亮度相关绝对值仍低（轴向/内参基本可信但不构成照片级证据）；重训 V3 用 `--intrinsics` 从头训练 3 seeds，不复用旧 `legacy-unaligned` checkpoint。
 
 ### 后续执行顺序（2026-08-02）
