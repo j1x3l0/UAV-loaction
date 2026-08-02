@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - codex/phase-v2-v3-progress
+      - main
     paths:
       - .github/workflows/build-px4-sih-focal.yml
 
