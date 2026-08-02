@@ -1,0 +1,25 @@
+{
+  "models": {
+    "cur_robust_seed1": {
+      "checkpoint": "saved_models/v3_aligned_gentle/seed1_robust_best.pth"
+    },
+    "cur_robust_seed2": {
+      "checkpoint": "saved_models/v3_aligned_gentle/seed2_robust_best.pth"
+    }
+  },
+  "ablations": [
+    "baseline",
+    "const_depth"
+  ],
+  "episodes_per_ablation": 50,
+  "results": {
+    "cur_robust_seed1": {
+      "baseline": 24.0,
+      "const_depth": 16.0
+    },
+    "cur_robust_seed2": {
+      "baseline": 22.0,
+      "const_depth": 16.0
+    }
+  }
+}
