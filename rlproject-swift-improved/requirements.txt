@@ -1,0 +1,33 @@
+# rlproject-swift-improved - runtime dependencies
+#
+# Install in a clean environment:
+#   pip install -r requirements.txt
+#
+# Platform notes:
+#   - torch: install from the official index for your platform
+#       CPU:  pip install torch --index-url https://download.pytorch.org/whl/cpu
+#       CUDA: see https://pytorch.org/get-started/locally/
+#   - gsplat: used only by the GPU rendering path (lazy import in
+#     envs/gs_renderer.py); optional on CPU-only machines. Needs a
+#     CUDA torch build:
+#       pip install gsplat
+#
+# Version policy: lower bounds for Python 3.10+ / modern pip; no upper
+# pins so it coexists with the server conda env (myconda).
+
+# -- Core (training / eval / env) --
+numpy>=1.26
+scipy>=1.11
+gymnasium>=1.0
+plyfile>=1.1
+matplotlib>=3.8
+Pillow>=10.0
+
+# -- PX4 integration (MAVLink offboard bridge) --
+pymavlink>=2.4.41
+
+# -- Deep learning (install torch per platform, see notes above) --
+torch>=2.2
+
+# -- Optional: GPU 3DGS rendering (skip on CPU-only machines) --
+# gsplat
