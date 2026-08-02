@@ -42,6 +42,17 @@
 | waypoint | `v3_waypoint_obs_gate_seed2_2x200_20260730/`, `v3_waypoint_oracle_200_20260730/` |
 | 输入依赖诊断 | `v3b_input_gate_seed2_7x100_20260729/`, `v3b_v3c_stage_20260729/` |
 
+## Phase PX4 / 集成门禁
+
+| 主题 | 目录 |
+| --- | --- |
+| PX4–3DGS 相机注册初检 | `px4_3dgs_camera_registration_20260801/` |
+| 旧 checkpoint 策略接口冒烟 | `px4_policy_interface_smoke_20260801/` |
+| 飞行体积碰撞净空 | `px4_flight_volume_clearance_20260802/` |
+| 定点悬停观测回放 | `px4_hover_observation_test_20260802/` |
+| 集成测试套件（83 用例） | `integration_tests_20260802/` |
+| 图表库（20 图，legacy 诊断） | `plot_gallery_20260802/` |
+
 ## 本地目录
 
 Git 未跟踪的训练目录通常包含模型、日志或可再生成的完整输出。它们可以继续位于
