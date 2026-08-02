@@ -21,9 +21,11 @@
 
 1. **clean 基线在退化尺度崩塌**：1.0x 50% → 0.25x 14%（-36pp），非鲁棒。
 2. **curriculum robust 模型明显更平坦**：seed1 1.0x→0.25x 只掉 16pp；seed2 低尺度反升（38→46）。
-3. **robust min 提升 2.5 倍**：curriculum 36-38% vs clean 14%。
+3. **robust min 提升 2.5 倍**：curriculum 36-38% vs clean 14%（点估计）。
 4. **robust mean**：curriculum 42.5% vs clean 35%。
-5. seed 方差存在：seed0 整体偏弱（mean 28%），seed1/2 为强结果；正式汇总建议以中位数/最佳 seed 或更多种子为准。
+5. seed 方差存在：seed0 整体偏弱（mean 28%），seed1/2 为强结果。
+
+> ⚠️ **统计警示（2026-08-03）**：n=50 下 clean 0.25x 14% 的 Wilson CI 为 [7.0, 26.2]，robust seed1 36% 的 CI 为 [24.1, 49.9]，**区间重叠**——当前点估计优势**不具统计显著性**。现有评估未保存逐 episode 结果，无法做配对检验；需保存逐 episode 数据并做配对 bootstrap/McNemar，并扩展 seeds 后才有统计结论。
 
 **对齐窄视场相机下，深度尺度鲁棒训练验证成立**（用 clean 换跨尺度稳定性）。
 

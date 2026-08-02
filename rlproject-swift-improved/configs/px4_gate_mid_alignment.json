@@ -43,8 +43,9 @@
     "camera_axis_registration": "gpu_30_pose_policy64_provisional_pass",
     "gpu_raster_registration": "pass_after_explicit_cuda_warmup",
     "v3_aligned": "complete_3_seeds_gentle_curriculum_robust_mean_42.5pct_vs_clean_35pct",
-    "pending_gate": "v3b_ablation_then_v3c_cross_scene",
-    "formal_v3_ready": true,
-    "formal_v3_ready_note": "per mainstream research practice: flag means the aligned V3 experiment is complete, statistically valid (3 seeds, Wilson CI) and reproducible; it is not a clean-SR>=80% score gate (that bar came from the vector baseline and does not transfer to the narrow-FOV visual task). 5 seeds would strengthen power."
+    "pending_gate": "visual_necessity_recheck_then_v3c_cross_scene",
+    "aligned_v3_experiment_complete": true,
+    "publication_ready": false,
+    "publication_ready_note": "Experiment pipeline is complete and reproducible, but publication claims are NOT established: (1) Wilson CIs at n=50 overlap between clean and robust at 0.25x (14% [7.0,26.2] vs 36% [24.1,49.9]) so the robustness gain is not statistically significant; (2) input ablation shows the policy is vector-dominated, visual necessity is unproven; (3) per-episode outcomes are not saved, preventing paired tests; (4) only 3 seeds."
   }
 }

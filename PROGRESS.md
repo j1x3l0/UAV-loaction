@@ -841,9 +841,9 @@ PX4 SIH，验证连接、解锁、Offboard、悬停和失联保护，再进入Ga
 - ✅ gentle curriculum seed 0 验证通过（1500ep @0.5m，1h11m）：clean 40%、**robust min 60%、mean 65%**（逐尺度 1x=60/0.75x=65/0.5x=70/0.25x=65）。对比老 curriculum（clean 11-31%、robust min 0%、mean 3-9%），去 0.1x + 0.25x 延后减权使对齐窄视场相机的鲁棒训练有效。正式 V3 用此 gentle curriculum 3 seeds 重训。
 - ✅ 对齐 V3 全量（gentle curriculum 3×1500ep @0.5m）完成：clean 25-47%（~38%），robust 逐尺度 min 30-55%、mean 40-64%。
 - ✅ V3 三方对照（50ep/尺度）结论成立：clean 基线 1.0x 50%→0.25x **14%**（崩塌）；curriculum robust-best 明显更平坦（seed1 52→36，seed2 38→46），robust min 36-38% vs clean 14%（2.5 倍），robust mean 42.5% vs 35%。**对齐窄视场相机下深度尺度鲁棒训练验证成立**。报告见 `reports/px4_v3_aligned_scale_comparison_20260803/`。
-- ✅ **验收口径修订（2026-08-03，按主流研究规范）**：`formal_v3_ready` 重新定义为「对齐 V3 实验完成、统计有效（3 seeds + Wilson CI）、可复现」，不再作为 `clean ≥80%` 分数门槛——那个数字继承自向量基线（98%），不对齐窄视场视觉任务。V3 主张以**对比 + 降解曲线 + CI** 报告（robust min 显著高于 clean，CI 不重叠）。配置已置 `formal_v3_ready=true`；5 seeds 可增强统计功效（待办）。
-- ⚠️ **V3b 消融（2026-08-03）视觉必要性门控存疑**：对齐任务下策略严重依赖向量输入——去掉速度 → SR 2-4%、去掉目标方向 → SR 0-2%（几近崩溃）；去掉深度（const_depth）只中度下降（-2~22pp）。**深度视觉是中等贡献者而非主驱动**。报告见 `reports/px4_v3_aligned_ablation_20260803/`。论文需重新设计任务让深度成为必要输入，或如实报告视觉贡献有限。
-- ⚠️ `formal_v3_ready=false`：正式 V3 尚未重训。亮度相关绝对值仍低（轴向/内参基本可信但不构成照片级证据）；重训 V3 用 `--intrinsics` 从头训练 3 seeds，不复用旧 `legacy-unaligned` checkpoint。
+- ✅ **状态字段拆分（2026-08-03，按评估修正）**：`aligned_v3_experiment_complete=true`（工程管线完成、可复现）；`publication_ready=false`（论文主张未成立：CI 在 n=50 下重叠、视觉必要性未证、无逐 episode 配对检验、仅 3 seeds）。原 `formal_v3_ready` 字段已按此拆分。
+- ⚠️ **统计修正（2026-08-03）**：先前称「robust 与 clean CI 不重叠」是**错误**——n=50 下 clean 0.25x 14% [7.0,26.2] 与 robust seed1 36% [24.1,49.9] **区间重叠**。鲁棒性增益当前**无统计显著性**；需保存逐 episode 结果做配对 bootstrap/McNemar，并扩展 seeds。
+- ⚠️ **V3b 消融（2026-08-03）视觉必要性门控存疑**：对齐任务下策略严重依赖向量输入——去掉速度 → SR 2-4%、去掉目标方向 → SR 0-2%（几近崩溃）；去掉深度（const_depth）只中度下降（-2~22pp）。**深度视觉是中等贡献者而非主驱动**。报告见 `reports/px4_v3_aligned_ablation_20260803/`。需重设计任务让深度成为必要输入后重做消融。
 
 ### 后续执行顺序（2026-08-02）
 
@@ -852,7 +852,7 @@ PX4 SIH，验证连接、解锁、Offboard、悬停和失联保护，再进入Ga
 3. ✅ 检查映射后 PX4 飞行区域的最小碰撞净空（连通自由空间 153 m³ @ 0.45 m）。
 4. ✅ 实现只读观测桥：PX4 位姿→3DGS 深度和策略向量，不发送控制（10 个单元测试 + 服务器回放冒烟通过）。
 5. ✅ 做遥测回放和定点悬停渲染测试（真实 PX4 悬停遥测录播 160 样本，全部有效深度）。
-6. ⏳ 门禁全部通过，训练内参已对齐（fx≈97.14）。下一步：`--renderer gsplat --ply ... --intrinsics configs/px4_gate_mid_alignment.json` 从头重训 3 seeds 正式 V3，不复用旧 checkpoint。
+6. ✅ 门禁全部通过，训练内参已对齐，正式 V3（gentle curriculum 3 seeds）已从头重训并完成对照评估。剩余：视觉必要性重验证 → V3c 跨场景。
 
 ---
 
