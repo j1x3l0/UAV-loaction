@@ -838,7 +838,7 @@ PX4 SIH，验证连接、解锁、Offboard、悬停和失联保护，再进入Ga
 - ⚠️ 任务标定发现：fx≈97.14（36° 窄视场）下默认 0.25m 碰撞半径不可学（两种偏航 500ep 均 SR 0%、CR 100%）。放宽到 **0.5m** 后收敛。新增 `--collision-radius` 参数。
 - ✅ 长验证（1500ep clean @0.5m）通过：SR 56.7%（CI 39-73）、CR 43%、avgR +111，轨迹 500ep 20%→1200ep 46.7%→1500ep 56.7% 稳定爬升。统一相机管线（窄视场+目标偏航+0.5m 净空）确认可学。
 - ⚠️ 全量 V3（scale_curriculum 原设计 3×1500ep @0.5m）结果差：clean best 11-31%，robust 逐尺度 min=0%（0.25x 全灭）、mean 3-9%。诊断：旧 curriculum foundation 阶段 20% 极端尺度（0.1x/0.25x）稀释学习，对齐窄视场下深度尺度鲁棒性远难于 legacy。
-- 🔄 调整中（2026-08-02）：gentle curriculum 重试——DEPTH_SCALE_LEVELS 去掉 0.1x（传感器失效级）、0.25x 延后减权（foundation 60% clean→0.25x 0%→robustness 20%）。seed 0 1500ep 验证运行中。
+- ✅ gentle curriculum seed 0 验证通过（1500ep @0.5m，1h11m）：clean 40%、**robust min 60%、mean 65%**（逐尺度 1x=60/0.75x=65/0.5x=70/0.25x=65）。对比老 curriculum（clean 11-31%、robust min 0%、mean 3-9%），去 0.1x + 0.25x 延后减权使对齐窄视场相机的鲁棒训练有效。正式 V3 用此 gentle curriculum 3 seeds 重训。
 - ⚠️ `formal_v3_ready=false`：正式 V3 尚未重训。亮度相关绝对值仍低（轴向/内参基本可信但不构成照片级证据）；重训 V3 用 `--intrinsics` 从头训练 3 seeds，不复用旧 `legacy-unaligned` checkpoint。
 
 ### 后续执行顺序（2026-08-02）
