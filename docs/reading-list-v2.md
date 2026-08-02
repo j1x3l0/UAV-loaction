@@ -341,12 +341,16 @@ Week 3+ (论文写作时)
 
 | 论文 | 本地路径 | 状态 |
 |------|---------|------|
-| Peng et al. (Dynamics Rand) | `docs/1710.06537v3.pdf` | ✅ 已有 |
-| Ferede et al. (One Net) | `docs/2504.21586v1.pdf` | ✅ 已有 |
-| Ferede 精读笔记 | `docs/_ferede_full.txt` | ✅ 已有 |
-| Peng 精读笔记 | `docs/_peng_full.txt` | ✅ 已有 |
+| GRaD-Nav (v3) | `docs/2503.03984v3.pdf` | ✅ 已有（8页） |
+| Peng et al. (Dynamics Rand) | `docs/1710.06537v3.pdf` | ❌ 未见（原清单声称已有，实际缺失） |
+| Ferede et al. (One Net) | `docs/2504.21586v1.pdf` | ❌ 未见（原清单声称已有，实际缺失） |
+| Ferede 精读笔记 | `docs/_ferede_full.txt` | ❌ 未见（原清单声称已有，实际缺失） |
+| Peng 精读笔记 | `docs/_peng_full.txt` | ❌ 未见（原清单声称已有，实际缺失） |
 
-**需要下载的**：GRaD-Nav, SOUS VIDE, 3DGS原论文, EmbodiedSplat, Geles (RSS 2024), ADR
+**精读笔记**（`docs/reading-notes/`）：
+- ✅ `grad-nav.md` — GRaD-Nav 全文精读（2026-08-02，含实验数据核对）
+
+**需要下载的**：Peng, Ferede, SOUS VIDE, 3DGS原论文, EmbodiedSplat, Geles (RSS 2024), ADR
 
 ---
 
