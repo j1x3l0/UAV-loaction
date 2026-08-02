@@ -51,6 +51,7 @@
 | 飞行体积碰撞净空 | `px4_flight_volume_clearance_20260802/` |
 | 定点悬停观测回放 | `px4_hover_observation_test_20260802/` |
 | 集成测试套件（83 用例） | `integration_tests_20260802/` |
+| 图表库（20 图，legacy 诊断） | `plot_gallery_20260802/` |
 
 ## 本地目录
 

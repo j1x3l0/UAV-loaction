@@ -105,6 +105,40 @@ def to_float(rows, key, default=None):
     return np.array(values)
 
 
+def plot_ablation_bar(ax, rows, color):
+    """Horizontal bar chart for ablation CSVs (label/ablation column).
+
+    Rows are sorted by success rate (baseline first if present) with
+    Wilson CI error bars when ci columns exist.
+    """
+    label_key = "label" if "label" in rows[0] else "ablation"
+    names = [row[label_key] for row in rows]
+    success = to_float(rows, "success_rate")
+    order = np.argsort(success)[::-1]
+    base_first = [i for i in range(len(names)) if names[i] == "baseline"]
+    if base_first:
+        base = base_first[0]
+        order = np.array([base] + [i for i in order if i != base])
+
+    names_o = [names[i] for i in order]
+    success_o = success[order]
+    y = np.arange(len(names_o))
+    ax.barh(y, success_o, height=0.6, color=color, alpha=0.85)
+    has_ci = "success_ci_low" in rows[0] and "success_ci_high" in rows[0]
+    ci_low_key = "success_ci_low" if has_ci else "ci95_low"
+    ci_high_key = "success_ci_high" if has_ci else "ci95_high"
+    if ci_low_key in rows[0] and ci_high_key in rows[0]:
+        lo = to_float(rows, ci_low_key)[order]
+        hi = to_float(rows, ci_high_key)[order]
+        xerr = np.maximum(0.0, np.stack([success_o - lo, hi - success_o]))
+        ax.errorbar(success_o, y, xerr=xerr,
+                    fmt="none", ecolor="black", capsize=3, linewidth=1)
+    ax.set_yticks(y, names_o)
+    ax.set_xlim(0, 105)
+    ax.set_xlabel("Success rate (%)")
+    ax.grid(True, axis="x", alpha=0.3)
+
+
 def plot_axis(ax, rows, color, label):
     """Draw one axis: success rate vs level with Wilson CI band."""
     levels = to_float(rows, "level")
@@ -150,10 +184,21 @@ def main():
     if "ci95_low" not in rows[0] or "ci95_high" not in rows[0]:
         print("warning: no ci95_low/ci95_high columns; CI band omitted")
 
+    os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
+
+    # Ablation CSVs (label/ablation column) get a horizontal bar chart.
+    if "label" in rows[0] or "ablation" in rows[0]:
+        fig, ax = plt.subplots(figsize=(6.5, max(3, 0.45 * len(rows) + 1.5)))
+        plot_ablation_bar(ax, rows, PALETTE[0])
+        if args.title:
+            ax.set_title(args.title)
+        fig.tight_layout()
+        fig.savefig(args.output)
+        print(f"Saved: {args.output}  (bar chart, {len(rows)} rows)")
+        return
+
     # Group rows by axis (or infer a single axis from the header).
     axes = infer_axis_names(rows, args.axis_column)
-
-    os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
     if len(axes) == 1:
         fig, ax = plt.subplots(figsize=(6, 4))
         (name, axis_rows), = axes.items()
