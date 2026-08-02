@@ -38,11 +38,14 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-DEPTH_SCALE_LEVELS = [1.0, 0.75, 0.5, 0.25, 0.1]
+# 对齐窄视场相机（fx≈97.14，36°）下的深度尺度集合与阶段式 curriculum。
+# 0.1x（深度读数压缩 10×，近似传感器失效）在窄视场下完全不可用，从对齐 V3
+# 分析中移除；0.25x 仍保留但在课程后期才引入且减权，避免稀释 clean 学习。
+DEPTH_SCALE_LEVELS = [1.0, 0.75, 0.5, 0.25]
 SCALE_CURRICULUM = (
-    (0.0, 'foundation', [0.35, 0.25, 0.20, 0.10, 0.10]),
-    (0.3, 'transition', [0.25, 0.20, 0.30, 0.15, 0.10]),
-    (0.7, 'robustness', [0.25, 0.15, 0.25, 0.20, 0.15]),
+    (0.0, 'foundation', [0.60, 0.25, 0.15, 0.00]),
+    (0.3, 'transition', [0.40, 0.25, 0.25, 0.10]),
+    (0.7, 'robustness', [0.30, 0.20, 0.30, 0.20]),
 )
 AVOIDANCE_CURRICULUM = (
     (0.0, 'clear_foundation', 0.10),
