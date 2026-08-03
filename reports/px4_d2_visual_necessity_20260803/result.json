@@ -1,0 +1,19 @@
+{
+  "model": "saved_models/v3_d2_necessity/d2_seed0.pth",
+  "target_scene": [
+    0.0,
+    0.0,
+    1.73
+  ],
+  "episodes_per_cell": 50,
+  "results": {
+    "0.0": {
+      "baseline": 2.0,
+      "const_depth": 2.0
+    },
+    "1.0": {
+      "baseline": 0.0,
+      "const_depth": 0.0
+    }
+  }
+}
