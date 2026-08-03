@@ -28,6 +28,12 @@ done
 
 验收：存在某 R 使 baseline SR ≥ 30% 且 `baseline − const_depth ≥ 30pp`。
 
+**D1 结果（2026-08-03）：失败。** 纯避障下 radius {0.75, 1.0} 时 baseline 与 const_depth 一起崩塌（
+8-40%，噪声主导，const_depth 偶而反高）；radius 1.25 时 `build_navigation_grid` 报
+「largest free-space component is too small」（自由空间不足以建网格）。**碰撞半径硬化未
+诱导深度必要性**——现有模型在 0.5m 训练，高半径对 baseline/const_depth 同等地过难。
+要推进 D1 需在高半径下重训（昂贵且不确定），或转 D2/D3。
+
 ## D2：去目标向量 + gate 锚定（需 wrapper，后续）
 
 `vec` 去 `target_dir` 后，目标必须深度可辨（gate 开口）。当前 `no_target_dir` 消融显示
