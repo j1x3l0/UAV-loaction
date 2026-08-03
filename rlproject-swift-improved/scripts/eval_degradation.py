@@ -192,6 +192,10 @@ def main():
     parser.add_argument('--collision-ply', type=str, default=None,
                         help='与渲染场景同坐标系的稠密碰撞点云')
     parser.add_argument('--camera-tracks-motion', action='store_true')
+    parser.add_argument('--alignment', type=str, default=None,
+                        help='PX4 对齐配置 JSON：对齐相机（fx≈97.14 + 统一 c2w）')
+    parser.add_argument('--collision-radius', type=float, default=None,
+                        help='无人机碰撞半径 (m)，对齐任务标定用')
     args = parser.parse_args()
     if args.renderer == 'gsplat':
         if not args.ply or not os.path.isfile(args.ply):
@@ -205,6 +209,12 @@ def main():
         base_config['collision_ply_path'] = args.collision_ply
         base_config['auto_scene_bounds'] = True
     base_config['camera_tracks_motion'] = args.camera_tracks_motion
+    if args.alignment:
+        from scripts.train_visual import load_camera_intrinsics
+        base_config['camera_intrinsics'] = load_camera_intrinsics(args.alignment)
+        base_config['alignment_config'] = args.alignment
+    if args.collision_radius is not None:
+        base_config['drone_collision_radius'] = args.collision_radius
 
     # 加载模型
     logger.info(f"Loading model: {args.model}")
