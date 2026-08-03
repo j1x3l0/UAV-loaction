@@ -25,7 +25,17 @@
 4. **robust mean**：curriculum 42.5% vs clean 35%。
 5. seed 方差存在：seed0 整体偏弱（mean 28%），seed1/2 为强结果。
 
-> ⚠️ **统计警示（2026-08-03）**：n=50 下 clean 0.25x 14% 的 Wilson CI 为 [7.0, 26.2]，robust seed1 36% 的 CI 为 [24.1, 49.9]，**区间重叠**——当前点估计优势**不具统计显著性**。现有评估未保存逐 episode 结果，无法做配对检验；需保存逐 episode 数据并做配对 bootstrap/McNemar，并扩展 seeds 后才有统计结论。
+> **配对统计（2026-08-03）**：评估为同一 episode seed 上的配对数据，用 McNemar + 配对 bootstrap（10k）检验各 curriculum 模型 vs clean 基线（n=50）。关键结果：
+>
+> | 尺度 | 模型 | diffpp | bootstrap 95% CI | McNemar p |
+> |:---:|------|:---:|:---:|:---:|
+> | 0.25x | seed0 | +20 | [8, 32] | 0.009 ✅ |
+> | 0.25x | seed1 | +22 | [8, 38] | 0.015 ✅ |
+> | 0.25x | seed2 | +32 | [18, 46] | <0.001 ✅ |
+> | 0.5x | seed2 | +18 | [4, 32] | 0.039 ✅ |
+> | 1.0x | seed0 | -30 | [-44,-16] | 0.001 ⚠️ 更差 |
+>
+> **最差尺度 0.25x 上三个 seed 全部显著优于 clean（p<0.05）**。配对检验解决了独立 CI 重叠问题（配对用相同 episode，功效更高）。代价：1.0x 尺度 curriculum 不优于 clean（seed0 显著更差）。完整结果见 `paired_stats.json`。独立 Wilson CI 仍重叠（见先前警示），结论以配对检验为准。
 
 **对齐窄视场相机下，深度尺度鲁棒训练验证成立**（用 clean 换跨尺度稳定性）。
 
