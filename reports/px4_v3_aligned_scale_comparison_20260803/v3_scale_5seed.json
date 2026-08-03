@@ -1,0 +1,6130 @@
+{
+  "models": {
+    "clean_baseline": {
+      "checkpoint": "saved_models/v3_aligned_smoke_clean/seed0_r05_1500.pth"
+    },
+    "cur_robust_seed0": {
+      "checkpoint": "saved_models/v3_aligned_gentle/seed0_robust_best.pth"
+    },
+    "cur_robust_seed1": {
+      "checkpoint": "saved_models/v3_aligned_gentle/seed1_robust_best.pth"
+    },
+    "cur_robust_seed2": {
+      "checkpoint": "saved_models/v3_aligned_gentle/seed2_robust_best.pth"
+    },
+    "cur_robust_seed3": {
+      "checkpoint": "saved_models/v3_aligned_gentle/seed3_robust_best.pth"
+    },
+    "cur_robust_seed4": {
+      "checkpoint": "saved_models/v3_aligned_gentle/seed4_robust_best.pth"
+    }
+  },
+  "scales": [
+    "1.0",
+    "0.75",
+    "0.5",
+    "0.25"
+  ],
+  "episodes_per_scale": 50,
+  "seed": 20260802,
+  "results": {
+    "clean_baseline": {
+      "1.0": 50.0,
+      "0.75": 48.0,
+      "0.5": 28.0,
+      "0.25": 14.0
+    },
+    "cur_robust_seed0": {
+      "1.0": 20.0,
+      "0.75": 28.0,
+      "0.5": 30.0,
+      "0.25": 34.0
+    },
+    "cur_robust_seed1": {
+      "1.0": 52.0,
+      "0.75": 44.0,
+      "0.5": 38.0,
+      "0.25": 36.0
+    },
+    "cur_robust_seed2": {
+      "1.0": 38.0,
+      "0.75": 40.0,
+      "0.5": 46.0,
+      "0.25": 46.0
+    },
+    "cur_robust_seed3": {
+      "1.0": 20.0,
+      "0.75": 24.0,
+      "0.5": 20.0,
+      "0.25": 16.0
+    },
+    "cur_robust_seed4": {
+      "1.0": 42.0,
+      "0.75": 44.0,
+      "0.5": 38.0,
+      "0.25": 38.0
+    }
+  },
+  "episodes_detail": {
+    "clean_baseline": {
+      "1.0": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -20.0876
+        },
+        {
+          "episode": 1,
+          "result": "success",
+          "reward": 214.4012
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -48.4034
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -46.6025
+        },
+        {
+          "episode": 4,
+          "result": "success",
+          "reward": 260.2348
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -53.8817
+        },
+        {
+          "episode": 6,
+          "result": "success",
+          "reward": 246.6915
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 227.5169
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -32.2191
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -19.1854
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -71.072
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 203.0529
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -65.4974
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": -40.6252
+        },
+        {
+          "episode": 14,
+          "result": "success",
+          "reward": 253.224
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -64.7273
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": 13.8504
+        },
+        {
+          "episode": 17,
+          "result": "success",
+          "reward": 230.947
+        },
+        {
+          "episode": 18,
+          "result": "success",
+          "reward": 214.2486
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -63.8465
+        },
+        {
+          "episode": 20,
+          "result": "collision",
+          "reward": -57.3818
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -72.0555
+        },
+        {
+          "episode": 22,
+          "result": "success",
+          "reward": 244.2479
+        },
+        {
+          "episode": 23,
+          "result": "success",
+          "reward": 211.6312
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 282.7661
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 213.4512
+        },
+        {
+          "episode": 26,
+          "result": "collision",
+          "reward": -297.6991
+        },
+        {
+          "episode": 27,
+          "result": "success",
+          "reward": 223.7566
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 12.0468
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -66.852
+        },
+        {
+          "episode": 30,
+          "result": "success",
+          "reward": 232.1267
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -12.0559
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -47.8422
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 193.2952
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -48.0735
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 176.9392
+        },
+        {
+          "episode": 36,
+          "result": "success",
+          "reward": 263.1575
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.6001
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 193.0192
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -75.2372
+        },
+        {
+          "episode": 40,
+          "result": "success",
+          "reward": 89.5372
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -53.842
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 179.3766
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": -49.2245
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 230.2929
+        },
+        {
+          "episode": 45,
+          "result": "success",
+          "reward": 245.954
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 213.1221
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -44.5893
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -31.3338
+        },
+        {
+          "episode": 49,
+          "result": "success",
+          "reward": 271.1817
+        }
+      ],
+      "0.75": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -18.7383
+        },
+        {
+          "episode": 1,
+          "result": "success",
+          "reward": 215.5997
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -49.5038
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -47.9715
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -14.4484
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -53.0861
+        },
+        {
+          "episode": 6,
+          "result": "success",
+          "reward": 244.7668
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 226.3225
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -40.769
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -18.441
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -71.3778
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 207.2658
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -40.1785
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": -72.1225
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": -7.6687
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -63.757
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -73.2719
+        },
+        {
+          "episode": 17,
+          "result": "success",
+          "reward": 222.7319
+        },
+        {
+          "episode": 18,
+          "result": "success",
+          "reward": 210.7029
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -65.8524
+        },
+        {
+          "episode": 20,
+          "result": "collision",
+          "reward": -61.1046
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -71.4291
+        },
+        {
+          "episode": 22,
+          "result": "success",
+          "reward": 250.7808
+        },
+        {
+          "episode": 23,
+          "result": "success",
+          "reward": 153.8902
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 279.634
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 211.8185
+        },
+        {
+          "episode": 26,
+          "result": "collision",
+          "reward": -36.9022
+        },
+        {
+          "episode": 27,
+          "result": "success",
+          "reward": 221.8812
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 14.6562
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -66.8455
+        },
+        {
+          "episode": 30,
+          "result": "success",
+          "reward": 222.366
+        },
+        {
+          "episode": 31,
+          "result": "success",
+          "reward": 202.2484
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -46.5491
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 184.7773
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -49.5295
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 184.952
+        },
+        {
+          "episode": 36,
+          "result": "success",
+          "reward": 264.1796
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.4168
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 193.2699
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -74.0592
+        },
+        {
+          "episode": 40,
+          "result": "success",
+          "reward": 93.9903
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -53.9003
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 183.1088
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": -50.1433
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 231.3563
+        },
+        {
+          "episode": 45,
+          "result": "success",
+          "reward": 246.087
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 214.5365
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -44.4387
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -30.5295
+        },
+        {
+          "episode": 49,
+          "result": "success",
+          "reward": 274.1004
+        }
+      ],
+      "0.5": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -20.0084
+        },
+        {
+          "episode": 1,
+          "result": "collision",
+          "reward": 2.3332
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -50.4317
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -47.3434
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -18.7855
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -55.3505
+        },
+        {
+          "episode": 6,
+          "result": "success",
+          "reward": 235.113
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 207.5704
+        },
+        {
+          "episode": 8,
+          "result": "success",
+          "reward": 202.878
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -22.5439
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -71.843
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 205.1876
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -41.029
+        },
+        {
+          "episode": 13,
+          "result": "collision",
+          "reward": -4.7498
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": -56.9984
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -63.2537
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -75.3466
+        },
+        {
+          "episode": 17,
+          "result": "collision",
+          "reward": -213.9092
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": 5.3836
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -65.2444
+        },
+        {
+          "episode": 20,
+          "result": "collision",
+          "reward": -65.3285
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -70.0494
+        },
+        {
+          "episode": 22,
+          "result": "collision",
+          "reward": 23.1414
+        },
+        {
+          "episode": 23,
+          "result": "collision",
+          "reward": 8.0385
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 254.3252
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 208.4121
+        },
+        {
+          "episode": 26,
+          "result": "collision",
+          "reward": -43.3782
+        },
+        {
+          "episode": 27,
+          "result": "success",
+          "reward": 211.6616
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": -76.9527
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -69.9862
+        },
+        {
+          "episode": 30,
+          "result": "collision",
+          "reward": -59.4353
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -28.8716
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -43.6471
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 177.758
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -53.0739
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 183.0621
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": -66.3627
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.3887
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 189.9963
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -75.0261
+        },
+        {
+          "episode": 40,
+          "result": "collision",
+          "reward": -73.5769
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -54.5609
+        },
+        {
+          "episode": 42,
+          "result": "collision",
+          "reward": -57.7538
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": -51.2404
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 217.3239
+        },
+        {
+          "episode": 45,
+          "result": "success",
+          "reward": 229.9902
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 203.5576
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -43.6433
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -29.7912
+        },
+        {
+          "episode": 49,
+          "result": "success",
+          "reward": 267.6836
+        }
+      ],
+      "0.25": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -25.5258
+        },
+        {
+          "episode": 1,
+          "result": "collision",
+          "reward": -7.3001
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -49.3955
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -51.4964
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -76.5041
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -54.5846
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": -23.3996
+        },
+        {
+          "episode": 7,
+          "result": "collision",
+          "reward": -70.298
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -39.3801
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -25.2252
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -71.8652
+        },
+        {
+          "episode": 11,
+          "result": "collision",
+          "reward": -18.9979
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -71.9284
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 223.587
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": -49.0281
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -63.6875
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -70.9098
+        },
+        {
+          "episode": 17,
+          "result": "success",
+          "reward": 203.6584
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -157.6619
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -64.3951
+        },
+        {
+          "episode": 20,
+          "result": "collision",
+          "reward": -61.0931
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -67.2608
+        },
+        {
+          "episode": 22,
+          "result": "collision",
+          "reward": 6.3282
+        },
+        {
+          "episode": 23,
+          "result": "collision",
+          "reward": 2.3841
+        },
+        {
+          "episode": 24,
+          "result": "collision",
+          "reward": -6.8663
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 206.4371
+        },
+        {
+          "episode": 26,
+          "result": "collision",
+          "reward": -40.012
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -69.4227
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": -78.6559
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -72.0793
+        },
+        {
+          "episode": 30,
+          "result": "collision",
+          "reward": -59.4405
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -28.9151
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -43.8276
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 180.1822
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -65.1833
+        },
+        {
+          "episode": 35,
+          "result": "collision",
+          "reward": -40.738
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": -68.1542
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.5059
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 186.6487
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -79.6478
+        },
+        {
+          "episode": 40,
+          "result": "collision",
+          "reward": -77.6365
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -54.7779
+        },
+        {
+          "episode": 42,
+          "result": "collision",
+          "reward": -61.7811
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": -50.3108
+        },
+        {
+          "episode": 44,
+          "result": "collision",
+          "reward": -16.5816
+        },
+        {
+          "episode": 45,
+          "result": "success",
+          "reward": 227.1963
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 200.5568
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -43.4471
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -27.6849
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": 40.2238
+        }
+      ]
+    },
+    "cur_robust_seed0": {
+      "1.0": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -20.0371
+        },
+        {
+          "episode": 1,
+          "result": "success",
+          "reward": 227.7296
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -49.3069
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -49.0619
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -15.8452
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -32.3622
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": -30.6464
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 221.037
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -31.5279
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -67.7438
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -71.2631
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 202.1802
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -64.6831
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 236.324
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": -29.8726
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -65.9607
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -60.7349
+        },
+        {
+          "episode": 17,
+          "result": "success",
+          "reward": 230.3976
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -55.8585
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -60.41
+        },
+        {
+          "episode": 20,
+          "result": "collision",
+          "reward": -79.067
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -82.986
+        },
+        {
+          "episode": 22,
+          "result": "collision",
+          "reward": -59.3562
+        },
+        {
+          "episode": 23,
+          "result": "collision",
+          "reward": -26.5429
+        },
+        {
+          "episode": 24,
+          "result": "collision",
+          "reward": -31.2999
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 213.4658
+        },
+        {
+          "episode": 26,
+          "result": "success",
+          "reward": 197.6992
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -63.3456
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": -75.3639
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -67.2747
+        },
+        {
+          "episode": 30,
+          "result": "collision",
+          "reward": -70.8841
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -10.6282
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -36.406
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 194.8769
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -60.9715
+        },
+        {
+          "episode": 35,
+          "result": "collision",
+          "reward": -71.9457
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": -66.2676
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.9859
+        },
+        {
+          "episode": 38,
+          "result": "collision",
+          "reward": -85.9066
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -66.6123
+        },
+        {
+          "episode": 40,
+          "result": "collision",
+          "reward": -78.6789
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -55.1343
+        },
+        {
+          "episode": 42,
+          "result": "collision",
+          "reward": -29.3341
+        },
+        {
+          "episode": 43,
+          "result": "success",
+          "reward": 252.8322
+        },
+        {
+          "episode": 44,
+          "result": "collision",
+          "reward": -80.0526
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -37.0085
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 219.4475
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -46.7338
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -39.4641
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": -69.5453
+        }
+      ],
+      "0.75": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -20.3972
+        },
+        {
+          "episode": 1,
+          "result": "success",
+          "reward": 228.3825
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -48.2452
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -47.9111
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -15.4497
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -52.9806
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": -32.1616
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 222.7828
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -32.3485
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -94.4228
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -71.6997
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 204.5748
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -65.37
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 233.3131
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": -29.5663
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -65.4405
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -61.6616
+        },
+        {
+          "episode": 17,
+          "result": "success",
+          "reward": 229.2098
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -35.1117
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -60.3868
+        },
+        {
+          "episode": 20,
+          "result": "collision",
+          "reward": -74.1314
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -81.5669
+        },
+        {
+          "episode": 22,
+          "result": "collision",
+          "reward": -58.8805
+        },
+        {
+          "episode": 23,
+          "result": "collision",
+          "reward": -19.703
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 268.8153
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 213.4941
+        },
+        {
+          "episode": 26,
+          "result": "success",
+          "reward": 194.5695
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -63.8931
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": -79.2994
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -66.5031
+        },
+        {
+          "episode": 30,
+          "result": "success",
+          "reward": 224.6621
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -9.0199
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -23.6167
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 193.9735
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -62.1821
+        },
+        {
+          "episode": 35,
+          "result": "collision",
+          "reward": -166.7182
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": -63.4073
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.9509
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 184.8629
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -66.6388
+        },
+        {
+          "episode": 40,
+          "result": "collision",
+          "reward": -77.8361
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -54.3933
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 184.1225
+        },
+        {
+          "episode": 43,
+          "result": "success",
+          "reward": 246.5312
+        },
+        {
+          "episode": 44,
+          "result": "collision",
+          "reward": -96.7966
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -37.0157
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 219.3018
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -46.2883
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -20.7783
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": -69.2059
+        }
+      ],
+      "0.5": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -21.1431
+        },
+        {
+          "episode": 1,
+          "result": "success",
+          "reward": 228.9124
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -46.3268
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -47.0527
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -17.4831
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -51.8629
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": -31.8651
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 223.54
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -32.7998
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -15.7241
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -72.4388
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 209.4044
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -66.5701
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 230.7862
+        },
+        {
+          "episode": 14,
+          "result": "success",
+          "reward": 244.2577
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -64.8785
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -62.4795
+        },
+        {
+          "episode": 17,
+          "result": "success",
+          "reward": 224.1562
+        },
+        {
+          "episode": 18,
+          "result": "success",
+          "reward": 234.802
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -59.7399
+        },
+        {
+          "episode": 20,
+          "result": "collision",
+          "reward": -78.2015
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -78.6928
+        },
+        {
+          "episode": 22,
+          "result": "collision",
+          "reward": -57.4377
+        },
+        {
+          "episode": 23,
+          "result": "collision",
+          "reward": -92.5546
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 264.6876
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 212.2976
+        },
+        {
+          "episode": 26,
+          "result": "success",
+          "reward": 195.9975
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -64.0533
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": -77.7522
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -66.3032
+        },
+        {
+          "episode": 30,
+          "result": "collision",
+          "reward": -33.0732
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -8.5221
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -4.7697
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 193.5228
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -83.5131
+        },
+        {
+          "episode": 35,
+          "result": "collision",
+          "reward": -198.1555
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": -63.3371
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.8637
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 189.0458
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -66.612
+        },
+        {
+          "episode": 40,
+          "result": "collision",
+          "reward": -79.2924
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -54.8735
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 188.242
+        },
+        {
+          "episode": 43,
+          "result": "success",
+          "reward": 240.9209
+        },
+        {
+          "episode": 44,
+          "result": "collision",
+          "reward": -82.226
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -35.1218
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 220.2105
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -46.0578
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -24.3768
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": -67.2057
+        }
+      ],
+      "0.25": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -17.976
+        },
+        {
+          "episode": 1,
+          "result": "success",
+          "reward": 225.3897
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -47.5241
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -45.5568
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -71.4516
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -54.4918
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": -31.1358
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 220.4291
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -32.2576
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -20.9498
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -72.691
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 190.6832
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -67.4578
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 223.2151
+        },
+        {
+          "episode": 14,
+          "result": "success",
+          "reward": 245.7459
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -64.7577
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -61.4269
+        },
+        {
+          "episode": 17,
+          "result": "success",
+          "reward": 221.257
+        },
+        {
+          "episode": 18,
+          "result": "success",
+          "reward": 228.7941
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -59.7774
+        },
+        {
+          "episode": 20,
+          "result": "collision",
+          "reward": -92.1923
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -80.0528
+        },
+        {
+          "episode": 22,
+          "result": "collision",
+          "reward": -53.7533
+        },
+        {
+          "episode": 23,
+          "result": "success",
+          "reward": 218.9546
+        },
+        {
+          "episode": 24,
+          "result": "collision",
+          "reward": -71.5652
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 210.7807
+        },
+        {
+          "episode": 26,
+          "result": "success",
+          "reward": 193.1069
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -67.4402
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": -79.5074
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -65.1146
+        },
+        {
+          "episode": 30,
+          "result": "collision",
+          "reward": -35.7717
+        },
+        {
+          "episode": 31,
+          "result": "success",
+          "reward": 207.3362
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": 0.5537
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 191.5241
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -89.5953
+        },
+        {
+          "episode": 35,
+          "result": "collision",
+          "reward": -172.4013
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": -67.1235
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.8535
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 196.9375
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -66.6211
+        },
+        {
+          "episode": 40,
+          "result": "collision",
+          "reward": -81.7186
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -56.0918
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 184.9709
+        },
+        {
+          "episode": 43,
+          "result": "success",
+          "reward": 246.0544
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 208.9612
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -34.6422
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 222.8009
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -45.989
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -23.3758
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": -67.7088
+        }
+      ]
+    },
+    "cur_robust_seed1": {
+      "1.0": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -21.2393
+        },
+        {
+          "episode": 1,
+          "result": "success",
+          "reward": 215.1478
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -52.9216
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -53.9061
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -15.5905
+        },
+        {
+          "episode": 5,
+          "result": "success",
+          "reward": 205.4519
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": -30.8575
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 216.1858
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -31.5306
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -36.6184
+        },
+        {
+          "episode": 10,
+          "result": "success",
+          "reward": 179.5972
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 193.4379
+        },
+        {
+          "episode": 12,
+          "result": "success",
+          "reward": 171.5978
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 165.8069
+        },
+        {
+          "episode": 14,
+          "result": "success",
+          "reward": 233.1538
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -67.5058
+        },
+        {
+          "episode": 16,
+          "result": "success",
+          "reward": 230.5266
+        },
+        {
+          "episode": 17,
+          "result": "success",
+          "reward": 223.9085
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -68.0655
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -59.7542
+        },
+        {
+          "episode": 20,
+          "result": "success",
+          "reward": 135.1445
+        },
+        {
+          "episode": 21,
+          "result": "success",
+          "reward": 159.2613
+        },
+        {
+          "episode": 22,
+          "result": "success",
+          "reward": 240.1262
+        },
+        {
+          "episode": 23,
+          "result": "success",
+          "reward": 205.5803
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 266.2341
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 206.3635
+        },
+        {
+          "episode": 26,
+          "result": "collision",
+          "reward": -65.0006
+        },
+        {
+          "episode": 27,
+          "result": "success",
+          "reward": 113.4119
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 3.8046
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -72.1054
+        },
+        {
+          "episode": 30,
+          "result": "success",
+          "reward": 223.4428
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -16.2173
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -47.9986
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 185.2513
+        },
+        {
+          "episode": 34,
+          "result": "success",
+          "reward": 168.998
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 179.2856
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": -42.913
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.8194
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 174.7298
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -73.2544
+        },
+        {
+          "episode": 40,
+          "result": "success",
+          "reward": 174.1852
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -55.3802
+        },
+        {
+          "episode": 42,
+          "result": "collision",
+          "reward": -44.1811
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": -49.2501
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 214.2627
+        },
+        {
+          "episode": 45,
+          "result": "success",
+          "reward": 231.8547
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 212.8003
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -45.2447
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -36.955
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": -38.7516
+        }
+      ],
+      "0.75": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -22.2857
+        },
+        {
+          "episode": 1,
+          "result": "success",
+          "reward": 219.533
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -53.2522
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -49.7059
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -17.2401
+        },
+        {
+          "episode": 5,
+          "result": "success",
+          "reward": 204.9935
+        },
+        {
+          "episode": 6,
+          "result": "success",
+          "reward": 227.6565
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 209.2641
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -31.9268
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -33.006
+        },
+        {
+          "episode": 10,
+          "result": "success",
+          "reward": 183.3525
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 196.1224
+        },
+        {
+          "episode": 12,
+          "result": "success",
+          "reward": 175.7492
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 225.5917
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": -37.1541
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -68.0147
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -59.0042
+        },
+        {
+          "episode": 17,
+          "result": "success",
+          "reward": 225.616
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -63.6019
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -59.7722
+        },
+        {
+          "episode": 20,
+          "result": "success",
+          "reward": 169.2443
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -61.6372
+        },
+        {
+          "episode": 22,
+          "result": "success",
+          "reward": 242.7748
+        },
+        {
+          "episode": 23,
+          "result": "collision",
+          "reward": -17.026
+        },
+        {
+          "episode": 24,
+          "result": "collision",
+          "reward": 2.2851
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 208.9881
+        },
+        {
+          "episode": 26,
+          "result": "collision",
+          "reward": -55.3653
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -62.8928
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 9.0766
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -71.1064
+        },
+        {
+          "episode": 30,
+          "result": "success",
+          "reward": 226.3702
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -13.9747
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -44.8378
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 185.8577
+        },
+        {
+          "episode": 34,
+          "result": "success",
+          "reward": 168.2577
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 175.5735
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": -17.0338
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.4897
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 171.1757
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -73.8282
+        },
+        {
+          "episode": 40,
+          "result": "success",
+          "reward": 171.1353
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -55.0565
+        },
+        {
+          "episode": 42,
+          "result": "collision",
+          "reward": -33.1387
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": -49.1572
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 206.4708
+        },
+        {
+          "episode": 45,
+          "result": "success",
+          "reward": 228.3388
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 210.817
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -45.3312
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -30.8896
+        },
+        {
+          "episode": 49,
+          "result": "success",
+          "reward": 260.5943
+        }
+      ],
+      "0.5": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -17.6329
+        },
+        {
+          "episode": 1,
+          "result": "collision",
+          "reward": 7.1827
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -52.3449
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -49.0007
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -21.0791
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -56.298
+        },
+        {
+          "episode": 6,
+          "result": "success",
+          "reward": 236.8985
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 212.4457
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -37.7352
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -29.0015
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -67.2975
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 193.1191
+        },
+        {
+          "episode": 12,
+          "result": "success",
+          "reward": 174.0094
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 221.6234
+        },
+        {
+          "episode": 14,
+          "result": "success",
+          "reward": 225.3358
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -68.0702
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -58.2511
+        },
+        {
+          "episode": 17,
+          "result": "success",
+          "reward": 208.928
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -2.3172
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -60.1936
+        },
+        {
+          "episode": 20,
+          "result": "success",
+          "reward": 177.8672
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -66.795
+        },
+        {
+          "episode": 22,
+          "result": "success",
+          "reward": 244.0251
+        },
+        {
+          "episode": 23,
+          "result": "collision",
+          "reward": -15.2319
+        },
+        {
+          "episode": 24,
+          "result": "collision",
+          "reward": -8.3476
+        },
+        {
+          "episode": 25,
+          "result": "collision",
+          "reward": -49.6412
+        },
+        {
+          "episode": 26,
+          "result": "collision",
+          "reward": -46.7227
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -61.6769
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": -78.3408
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -69.463
+        },
+        {
+          "episode": 30,
+          "result": "success",
+          "reward": 216.6489
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -25.4732
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -49.2063
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 178.9631
+        },
+        {
+          "episode": 34,
+          "result": "success",
+          "reward": 108.749
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 161.6217
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": 41.3587
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.5451
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 178.6721
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -73.6319
+        },
+        {
+          "episode": 40,
+          "result": "success",
+          "reward": 170.8636
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -54.7024
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 115.6777
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": -49.7045
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 196.5088
+        },
+        {
+          "episode": 45,
+          "result": "success",
+          "reward": 233.8809
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 215.9283
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -45.2059
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -29.5513
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": 43.8898
+        }
+      ],
+      "0.25": [
+        {
+          "episode": 0,
+          "result": "success",
+          "reward": 153.0659
+        },
+        {
+          "episode": 1,
+          "result": "collision",
+          "reward": -25.9367
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -50.0853
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -50.586
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -20.5642
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -56.0019
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": -31.6141
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 152.9251
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -31.9324
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -22.086
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -69.6021
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 193.0367
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -42.2641
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 203.5744
+        },
+        {
+          "episode": 14,
+          "result": "success",
+          "reward": 229.8402
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -65.0674
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -71.2322
+        },
+        {
+          "episode": 17,
+          "result": "collision",
+          "reward": -19.6585
+        },
+        {
+          "episode": 18,
+          "result": "success",
+          "reward": 214.9338
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -60.5394
+        },
+        {
+          "episode": 20,
+          "result": "timeout",
+          "reward": -1614.8405
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -66.6554
+        },
+        {
+          "episode": 22,
+          "result": "success",
+          "reward": 248.5015
+        },
+        {
+          "episode": 23,
+          "result": "success",
+          "reward": 216.6908
+        },
+        {
+          "episode": 24,
+          "result": "collision",
+          "reward": -26.4133
+        },
+        {
+          "episode": 25,
+          "result": "collision",
+          "reward": -49.16
+        },
+        {
+          "episode": 26,
+          "result": "success",
+          "reward": 179.5188
+        },
+        {
+          "episode": 27,
+          "result": "success",
+          "reward": 209.5976
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 13.0406
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -75.0216
+        },
+        {
+          "episode": 30,
+          "result": "success",
+          "reward": 206.9963
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -14.9251
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -49.882
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 168.3736
+        },
+        {
+          "episode": 34,
+          "result": "success",
+          "reward": 183.9308
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 155.7734
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": 56.018
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.7681
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 182.9267
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -74.157
+        },
+        {
+          "episode": 40,
+          "result": "timeout",
+          "reward": -1260.3392
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -54.0283
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 179.7395
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": -51.4632
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 220.8119
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -38.7467
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 220.7349
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -46.7536
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -32.6634
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": 56.6261
+        }
+      ]
+    },
+    "cur_robust_seed2": {
+      "1.0": [
+        {
+          "episode": 0,
+          "result": "success",
+          "reward": 206.259
+        },
+        {
+          "episode": 1,
+          "result": "success",
+          "reward": 230.8361
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -42.965
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -45.3422
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -14.1506
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -52.8137
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": -31.0606
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 221.822
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -31.6244
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -16.174
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -69.9377
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 210.4573
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -38.7805
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 240.4417
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": -29.7722
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -63.1772
+        },
+        {
+          "episode": 16,
+          "result": "success",
+          "reward": 242.2681
+        },
+        {
+          "episode": 17,
+          "result": "collision",
+          "reward": -10.8748
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -59.0113
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -56.9167
+        },
+        {
+          "episode": 20,
+          "result": "success",
+          "reward": 172.1829
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -146.9257
+        },
+        {
+          "episode": 22,
+          "result": "success",
+          "reward": 255.0874
+        },
+        {
+          "episode": 23,
+          "result": "success",
+          "reward": 214.1557
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 285.9942
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 211.9338
+        },
+        {
+          "episode": 26,
+          "result": "success",
+          "reward": 189.8597
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -60.6718
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 13.4659
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -64.9892
+        },
+        {
+          "episode": 30,
+          "result": "success",
+          "reward": 223.8894
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -4.9135
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -46.1139
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 187.5328
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -104.4937
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 186.5666
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": -34.7837
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.3825
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 190.16
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -67.9038
+        },
+        {
+          "episode": 40,
+          "result": "collision",
+          "reward": -96.6451
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -52.5841
+        },
+        {
+          "episode": 42,
+          "result": "collision",
+          "reward": -41.1802
+        },
+        {
+          "episode": 43,
+          "result": "success",
+          "reward": 249.7368
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 226.9724
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -37.44
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 224.5638
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -43.3905
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -25.6151
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": 7.4431
+        }
+      ],
+      "0.75": [
+        {
+          "episode": 0,
+          "result": "success",
+          "reward": 206.7716
+        },
+        {
+          "episode": 1,
+          "result": "success",
+          "reward": 232.4978
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -43.5249
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -44.8874
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -16.8743
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -53.4726
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": -31.0815
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 222.7964
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -31.6416
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -17.8712
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -70.1374
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 208.2601
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -38.7478
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 237.797
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": -29.0894
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -63.0932
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -56.6676
+        },
+        {
+          "episode": 17,
+          "result": "collision",
+          "reward": -19.5487
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -44.2841
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -56.3543
+        },
+        {
+          "episode": 20,
+          "result": "success",
+          "reward": 187.4593
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -147.9648
+        },
+        {
+          "episode": 22,
+          "result": "success",
+          "reward": 259.4449
+        },
+        {
+          "episode": 23,
+          "result": "collision",
+          "reward": -26.1735
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 285.9452
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 211.2754
+        },
+        {
+          "episode": 26,
+          "result": "success",
+          "reward": 188.9198
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -61.0943
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 15.1151
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -64.7261
+        },
+        {
+          "episode": 30,
+          "result": "success",
+          "reward": 223.204
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -9.8525
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -43.5681
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 191.8012
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -123.6604
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 187.5336
+        },
+        {
+          "episode": 36,
+          "result": "success",
+          "reward": 259.6339
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.4373
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 191.2616
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -67.6674
+        },
+        {
+          "episode": 40,
+          "result": "collision",
+          "reward": -103.3759
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -52.8294
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 178.417
+        },
+        {
+          "episode": 43,
+          "result": "success",
+          "reward": 251.6918
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 231.0549
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -37.2074
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 225.9783
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -43.7408
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -28.7453
+        },
+        {
+          "episode": 49,
+          "result": "success",
+          "reward": 275.2296
+        }
+      ],
+      "0.5": [
+        {
+          "episode": 0,
+          "result": "success",
+          "reward": 206.5938
+        },
+        {
+          "episode": 1,
+          "result": "success",
+          "reward": 235.4958
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -44.3017
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -42.0599
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -14.3494
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -53.5663
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": -31.1117
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 222.3458
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -29.8877
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -20.0022
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -71.2115
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 199.1374
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -39.7954
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 235.0261
+        },
+        {
+          "episode": 14,
+          "result": "success",
+          "reward": 251.326
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -63.2068
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -58.6733
+        },
+        {
+          "episode": 17,
+          "result": "collision",
+          "reward": -19.87
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -36.5545
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -58.7049
+        },
+        {
+          "episode": 20,
+          "result": "success",
+          "reward": 176.0147
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -143.37
+        },
+        {
+          "episode": 22,
+          "result": "success",
+          "reward": 259.4941
+        },
+        {
+          "episode": 23,
+          "result": "success",
+          "reward": 214.2105
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 281.2491
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 210.5286
+        },
+        {
+          "episode": 26,
+          "result": "success",
+          "reward": 183.7806
+        },
+        {
+          "episode": 27,
+          "result": "success",
+          "reward": 220.2321
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 12.4368
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -65.0763
+        },
+        {
+          "episode": 30,
+          "result": "success",
+          "reward": 229.3184
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -10.5326
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -43.6125
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 192.521
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -113.0697
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 190.538
+        },
+        {
+          "episode": 36,
+          "result": "success",
+          "reward": 264.4031
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.4637
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 190.9081
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -67.46
+        },
+        {
+          "episode": 40,
+          "result": "collision",
+          "reward": -94.2205
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -53.2476
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 182.2764
+        },
+        {
+          "episode": 43,
+          "result": "success",
+          "reward": 247.5885
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 233.9761
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -36.5885
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 225.2724
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -43.6595
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -30.424
+        },
+        {
+          "episode": 49,
+          "result": "success",
+          "reward": 279.7996
+        }
+      ],
+      "0.25": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -18.2101
+        },
+        {
+          "episode": 1,
+          "result": "success",
+          "reward": 232.3948
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -41.9053
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -44.5816
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -18.5504
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -53.4454
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": -30.6737
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 222.5975
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -30.1154
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -20.1187
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -71.1324
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 194.461
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -41.1833
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 236.1033
+        },
+        {
+          "episode": 14,
+          "result": "success",
+          "reward": 251.4919
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -62.9919
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -71.6408
+        },
+        {
+          "episode": 17,
+          "result": "success",
+          "reward": 218.4699
+        },
+        {
+          "episode": 18,
+          "result": "success",
+          "reward": 222.6965
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -58.858
+        },
+        {
+          "episode": 20,
+          "result": "success",
+          "reward": 140.3543
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -146.2607
+        },
+        {
+          "episode": 22,
+          "result": "success",
+          "reward": 254.1967
+        },
+        {
+          "episode": 23,
+          "result": "success",
+          "reward": 217.3981
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 267.9998
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 209.3175
+        },
+        {
+          "episode": 26,
+          "result": "collision",
+          "reward": -247.8329
+        },
+        {
+          "episode": 27,
+          "result": "success",
+          "reward": 218.512
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": -76.6213
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -66.9074
+        },
+        {
+          "episode": 30,
+          "result": "success",
+          "reward": 232.9293
+        },
+        {
+          "episode": 31,
+          "result": "success",
+          "reward": 202.0549
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -43.3754
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 196.533
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -108.4289
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 189.6096
+        },
+        {
+          "episode": 36,
+          "result": "success",
+          "reward": 269.8574
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.4346
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 187.0145
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -67.0327
+        },
+        {
+          "episode": 40,
+          "result": "collision",
+          "reward": -106.4359
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -53.765
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 183.728
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": -44.6152
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 228.3298
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -36.5737
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 221.0289
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -43.2344
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -30.8273
+        },
+        {
+          "episode": 49,
+          "result": "success",
+          "reward": 279.2438
+        }
+      ]
+    },
+    "cur_robust_seed3": {
+      "1.0": [
+        {
+          "episode": 0,
+          "result": "success",
+          "reward": 189.5646
+        },
+        {
+          "episode": 1,
+          "result": "collision",
+          "reward": -0.8391
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -56.327
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -55.165
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -14.5314
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -55.0248
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": 3.6912
+        },
+        {
+          "episode": 7,
+          "result": "collision",
+          "reward": -73.4592
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -82.2984
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -20.1139
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -71.9713
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 195.8869
+        },
+        {
+          "episode": 12,
+          "result": "success",
+          "reward": 196.9769
+        },
+        {
+          "episode": 13,
+          "result": "collision",
+          "reward": -147.0678
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": -12.15
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -65.3203
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -59.6846
+        },
+        {
+          "episode": 17,
+          "result": "collision",
+          "reward": -81.7897
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -66.4245
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -64.9112
+        },
+        {
+          "episode": 20,
+          "result": "collision",
+          "reward": -48.6378
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -71.2644
+        },
+        {
+          "episode": 22,
+          "result": "success",
+          "reward": 253.0921
+        },
+        {
+          "episode": 23,
+          "result": "collision",
+          "reward": -25.305
+        },
+        {
+          "episode": 24,
+          "result": "collision",
+          "reward": 21.6733
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 216.6528
+        },
+        {
+          "episode": 26,
+          "result": "collision",
+          "reward": -48.0954
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -60.2233
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 16.6884
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -69.7348
+        },
+        {
+          "episode": 30,
+          "result": "collision",
+          "reward": -88.9688
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -34.8051
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -45.3354
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 191.9996
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -93.7042
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 190.6612
+        },
+        {
+          "episode": 36,
+          "result": "success",
+          "reward": 266.9786
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.6695
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 187.7184
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -67.1278
+        },
+        {
+          "episode": 40,
+          "result": "collision",
+          "reward": -65.4085
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -51.9931
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 178.3686
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": -52.5832
+        },
+        {
+          "episode": 44,
+          "result": "collision",
+          "reward": -101.8762
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -34.3232
+        },
+        {
+          "episode": 46,
+          "result": "collision",
+          "reward": -39.3442
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -46.0302
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -31.0839
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": -68.2741
+        }
+      ],
+      "0.75": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -46.3176
+        },
+        {
+          "episode": 1,
+          "result": "collision",
+          "reward": 18.5239
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -58.1715
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -54.8155
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -14.4417
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -54.4537
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": 17.0255
+        },
+        {
+          "episode": 7,
+          "result": "collision",
+          "reward": -74.1856
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -85.674
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -22.672
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -71.5456
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 201.6359
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -16.2142
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 228.0842
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": 0.1005
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -67.5992
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -62.5042
+        },
+        {
+          "episode": 17,
+          "result": "collision",
+          "reward": -81.6425
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -61.4224
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -65.7217
+        },
+        {
+          "episode": 20,
+          "result": "collision",
+          "reward": -65.279
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -71.2923
+        },
+        {
+          "episode": 22,
+          "result": "success",
+          "reward": 256.3417
+        },
+        {
+          "episode": 23,
+          "result": "success",
+          "reward": 209.7794
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 260.1267
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 216.6839
+        },
+        {
+          "episode": 26,
+          "result": "collision",
+          "reward": -43.6973
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -60.8028
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 13.4302
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -69.9098
+        },
+        {
+          "episode": 30,
+          "result": "collision",
+          "reward": -73.8951
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -7.081
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -42.9747
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 184.2562
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -93.4162
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 188.5628
+        },
+        {
+          "episode": 36,
+          "result": "success",
+          "reward": 271.2788
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.57
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 182.9817
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -66.8372
+        },
+        {
+          "episode": 40,
+          "result": "collision",
+          "reward": -82.9517
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -55.7003
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 185.1836
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": -51.8402
+        },
+        {
+          "episode": 44,
+          "result": "collision",
+          "reward": -98.9615
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -28.9133
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 209.3981
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -40.9383
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -27.9977
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": -67.9231
+        }
+      ],
+      "0.5": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -21.9629
+        },
+        {
+          "episode": 1,
+          "result": "collision",
+          "reward": 22.1234
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -61.325
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -55.3607
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -13.6262
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -53.9897
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": 15.5516
+        },
+        {
+          "episode": 7,
+          "result": "collision",
+          "reward": -73.8554
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -84.9031
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -24.412
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -71.2719
+        },
+        {
+          "episode": 11,
+          "result": "collision",
+          "reward": -18.5019
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -16.835
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 225.0593
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": -51.3754
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -66.7379
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -62.3104
+        },
+        {
+          "episode": 17,
+          "result": "collision",
+          "reward": -38.7743
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -61.0766
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -66.2909
+        },
+        {
+          "episode": 20,
+          "result": "success",
+          "reward": 117.986
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -69.9703
+        },
+        {
+          "episode": 22,
+          "result": "success",
+          "reward": 259.4847
+        },
+        {
+          "episode": 23,
+          "result": "collision",
+          "reward": -83.7767
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 263.4486
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 215.5327
+        },
+        {
+          "episode": 26,
+          "result": "collision",
+          "reward": -41.7052
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -65.0841
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 11.1321
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": 9.1246
+        },
+        {
+          "episode": 30,
+          "result": "collision",
+          "reward": -86.0921
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -100.5264
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -43.1476
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 183.6112
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -99.24
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 186.4155
+        },
+        {
+          "episode": 36,
+          "result": "success",
+          "reward": 271.7063
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.5513
+        },
+        {
+          "episode": 38,
+          "result": "collision",
+          "reward": -131.9981
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -66.6151
+        },
+        {
+          "episode": 40,
+          "result": "success",
+          "reward": 194.2718
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -55.5053
+        },
+        {
+          "episode": 42,
+          "result": "collision",
+          "reward": -180.3587
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": -51.5569
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 209.5891
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -25.3653
+        },
+        {
+          "episode": 46,
+          "result": "collision",
+          "reward": -54.1243
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -40.1238
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -26.9023
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": -68.4908
+        }
+      ],
+      "0.25": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -28.1534
+        },
+        {
+          "episode": 1,
+          "result": "collision",
+          "reward": 10.2028
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -59.0987
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -57.1695
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -13.7119
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -54.2665
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": 6.3671
+        },
+        {
+          "episode": 7,
+          "result": "collision",
+          "reward": -73.4017
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -84.9679
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -19.4738
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -70.8853
+        },
+        {
+          "episode": 11,
+          "result": "collision",
+          "reward": -36.8313
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -31.9162
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 237.3476
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": -58.4349
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -64.289
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -63.0285
+        },
+        {
+          "episode": 17,
+          "result": "collision",
+          "reward": -81.5328
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -58.3514
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -65.0646
+        },
+        {
+          "episode": 20,
+          "result": "collision",
+          "reward": -237.3979
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -69.9327
+        },
+        {
+          "episode": 22,
+          "result": "success",
+          "reward": 257.4772
+        },
+        {
+          "episode": 23,
+          "result": "collision",
+          "reward": -96.6086
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 267.0386
+        },
+        {
+          "episode": 25,
+          "result": "collision",
+          "reward": -110.1192
+        },
+        {
+          "episode": 26,
+          "result": "collision",
+          "reward": -38.769
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -65.2069
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 11.4947
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -67.7708
+        },
+        {
+          "episode": 30,
+          "result": "collision",
+          "reward": -53.9986
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -87.2152
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -43.7326
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 191.1336
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -96.2673
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 189.8156
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": -34.6285
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.5025
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 176.3137
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -66.3275
+        },
+        {
+          "episode": 40,
+          "result": "success",
+          "reward": 187.6565
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -54.9474
+        },
+        {
+          "episode": 42,
+          "result": "collision",
+          "reward": -151.0897
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": -51.2599
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 219.5857
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -39.0156
+        },
+        {
+          "episode": 46,
+          "result": "collision",
+          "reward": -32.263
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -43.8914
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -28.6358
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": -69.4607
+        }
+      ]
+    },
+    "cur_robust_seed4": {
+      "1.0": [
+        {
+          "episode": 0,
+          "result": "success",
+          "reward": 194.478
+        },
+        {
+          "episode": 1,
+          "result": "success",
+          "reward": 211.689
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -48.1067
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": 24.4164
+        },
+        {
+          "episode": 4,
+          "result": "success",
+          "reward": 246.5177
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -52.9588
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": -34.8854
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 218.844
+        },
+        {
+          "episode": 8,
+          "result": "success",
+          "reward": 215.2853
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -27.2471
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": 2.7102
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 193.3996
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -70.3731
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 217.0826
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": 31.9785
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -68.7655
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -64.7501
+        },
+        {
+          "episode": 17,
+          "result": "success",
+          "reward": 219.1787
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -65.4422
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -63.488
+        },
+        {
+          "episode": 20,
+          "result": "success",
+          "reward": 99.8813
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -69.7324
+        },
+        {
+          "episode": 22,
+          "result": "collision",
+          "reward": -56.8222
+        },
+        {
+          "episode": 23,
+          "result": "collision",
+          "reward": -31.569
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 270.6451
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 149.8459
+        },
+        {
+          "episode": 26,
+          "result": "success",
+          "reward": 180.0427
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -62.0452
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 7.9961
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -65.0556
+        },
+        {
+          "episode": 30,
+          "result": "success",
+          "reward": 220.0358
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -50.5103
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -44.1413
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 176.2961
+        },
+        {
+          "episode": 34,
+          "result": "collision",
+          "reward": -39.6328
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 147.6403
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": -38.3325
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -70.8771
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 187.9163
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -65.2278
+        },
+        {
+          "episode": 40,
+          "result": "success",
+          "reward": 172.4671
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -53.0414
+        },
+        {
+          "episode": 42,
+          "result": "collision",
+          "reward": -45.9527
+        },
+        {
+          "episode": 43,
+          "result": "success",
+          "reward": 178.4502
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 211.727
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -37.2942
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 216.0573
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -47.9257
+        },
+        {
+          "episode": 48,
+          "result": "success",
+          "reward": 183.5156
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": -70.1237
+        }
+      ],
+      "0.75": [
+        {
+          "episode": 0,
+          "result": "success",
+          "reward": 195.0947
+        },
+        {
+          "episode": 1,
+          "result": "success",
+          "reward": 200.022
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -48.3847
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -44.4938
+        },
+        {
+          "episode": 4,
+          "result": "success",
+          "reward": 251.1157
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -55.8712
+        },
+        {
+          "episode": 6,
+          "result": "success",
+          "reward": 225.2829
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 215.6218
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -31.6005
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -24.4546
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": 0.5549
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 198.1189
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -68.4271
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 207.9982
+        },
+        {
+          "episode": 14,
+          "result": "success",
+          "reward": 230.184
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -68.6555
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -63.5348
+        },
+        {
+          "episode": 17,
+          "result": "success",
+          "reward": 223.0917
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -66.255
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -64.443
+        },
+        {
+          "episode": 20,
+          "result": "success",
+          "reward": 90.1812
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -68.9337
+        },
+        {
+          "episode": 22,
+          "result": "collision",
+          "reward": -56.6153
+        },
+        {
+          "episode": 23,
+          "result": "collision",
+          "reward": -26.3474
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 269.7735
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 157.2706
+        },
+        {
+          "episode": 26,
+          "result": "success",
+          "reward": 174.1931
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -62.2946
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 8.6097
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -65.6866
+        },
+        {
+          "episode": 30,
+          "result": "success",
+          "reward": 219.0287
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -49.0622
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -43.6712
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 177.1839
+        },
+        {
+          "episode": 34,
+          "result": "success",
+          "reward": 168.7832
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 156.3512
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": -36.2666
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -70.5658
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 179.7029
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -66.536
+        },
+        {
+          "episode": 40,
+          "result": "success",
+          "reward": 181.4893
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -53.0444
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 156.8899
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": 27.6042
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 216.5266
+        },
+        {
+          "episode": 45,
+          "result": "collision",
+          "reward": -37.7958
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 218.2463
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -46.9344
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -27.6473
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": -57.4406
+        }
+      ],
+      "0.5": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -25.0418
+        },
+        {
+          "episode": 1,
+          "result": "collision",
+          "reward": -16.8329
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -49.081
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -47.6208
+        },
+        {
+          "episode": 4,
+          "result": "success",
+          "reward": 239.0211
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -55.2598
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": 14.7257
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 212.3461
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -37.0095
+        },
+        {
+          "episode": 9,
+          "result": "collision",
+          "reward": -19.1216
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -71.4651
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 196.5974
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -68.0489
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 219.3966
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": -30.5117
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -67.5959
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -60.6807
+        },
+        {
+          "episode": 17,
+          "result": "success",
+          "reward": 217.1795
+        },
+        {
+          "episode": 18,
+          "result": "collision",
+          "reward": -42.0739
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -64.3505
+        },
+        {
+          "episode": 20,
+          "result": "success",
+          "reward": 17.3195
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -65.6445
+        },
+        {
+          "episode": 22,
+          "result": "collision",
+          "reward": -56.5336
+        },
+        {
+          "episode": 23,
+          "result": "success",
+          "reward": 204.6295
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 272.0464
+        },
+        {
+          "episode": 25,
+          "result": "timeout",
+          "reward": -1642.4946
+        },
+        {
+          "episode": 26,
+          "result": "success",
+          "reward": 170.7005
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -64.0383
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": 8.1208
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -69.361
+        },
+        {
+          "episode": 30,
+          "result": "collision",
+          "reward": -57.6008
+        },
+        {
+          "episode": 31,
+          "result": "collision",
+          "reward": -50.2203
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -44.5153
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 177.1143
+        },
+        {
+          "episode": 34,
+          "result": "success",
+          "reward": 183.32
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 151.2476
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": -33.1552
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.8162
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 145.3645
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -67.2559
+        },
+        {
+          "episode": 40,
+          "result": "success",
+          "reward": 179.0796
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -55.5795
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 165.2038
+        },
+        {
+          "episode": 43,
+          "result": "success",
+          "reward": 234.8629
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 213.8483
+        },
+        {
+          "episode": 45,
+          "result": "success",
+          "reward": 224.2451
+        },
+        {
+          "episode": 46,
+          "result": "success",
+          "reward": 209.8538
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -47.0284
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -27.9769
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": -66.9113
+        }
+      ],
+      "0.25": [
+        {
+          "episode": 0,
+          "result": "collision",
+          "reward": -27.7528
+        },
+        {
+          "episode": 1,
+          "result": "collision",
+          "reward": -14.1283
+        },
+        {
+          "episode": 2,
+          "result": "collision",
+          "reward": -48.8013
+        },
+        {
+          "episode": 3,
+          "result": "collision",
+          "reward": -49.6764
+        },
+        {
+          "episode": 4,
+          "result": "collision",
+          "reward": -16.0467
+        },
+        {
+          "episode": 5,
+          "result": "collision",
+          "reward": -55.9481
+        },
+        {
+          "episode": 6,
+          "result": "collision",
+          "reward": 1.8385
+        },
+        {
+          "episode": 7,
+          "result": "success",
+          "reward": 186.1635
+        },
+        {
+          "episode": 8,
+          "result": "collision",
+          "reward": -42.3293
+        },
+        {
+          "episode": 9,
+          "result": "success",
+          "reward": 207.769
+        },
+        {
+          "episode": 10,
+          "result": "collision",
+          "reward": -16.297
+        },
+        {
+          "episode": 11,
+          "result": "success",
+          "reward": 173.1058
+        },
+        {
+          "episode": 12,
+          "result": "collision",
+          "reward": -42.729
+        },
+        {
+          "episode": 13,
+          "result": "success",
+          "reward": 153.2959
+        },
+        {
+          "episode": 14,
+          "result": "collision",
+          "reward": -36.6793
+        },
+        {
+          "episode": 15,
+          "result": "collision",
+          "reward": -66.4798
+        },
+        {
+          "episode": 16,
+          "result": "collision",
+          "reward": -60.3178
+        },
+        {
+          "episode": 17,
+          "result": "collision",
+          "reward": -13.7108
+        },
+        {
+          "episode": 18,
+          "result": "success",
+          "reward": 208.2407
+        },
+        {
+          "episode": 19,
+          "result": "collision",
+          "reward": -62.0046
+        },
+        {
+          "episode": 20,
+          "result": "success",
+          "reward": 167.2961
+        },
+        {
+          "episode": 21,
+          "result": "collision",
+          "reward": -69.2109
+        },
+        {
+          "episode": 22,
+          "result": "collision",
+          "reward": -56.4855
+        },
+        {
+          "episode": 23,
+          "result": "success",
+          "reward": 210.9889
+        },
+        {
+          "episode": 24,
+          "result": "success",
+          "reward": 255.3838
+        },
+        {
+          "episode": 25,
+          "result": "success",
+          "reward": 155.2714
+        },
+        {
+          "episode": 26,
+          "result": "success",
+          "reward": 169.5625
+        },
+        {
+          "episode": 27,
+          "result": "collision",
+          "reward": -64.2434
+        },
+        {
+          "episode": 28,
+          "result": "collision",
+          "reward": -77.9923
+        },
+        {
+          "episode": 29,
+          "result": "collision",
+          "reward": -71.8982
+        },
+        {
+          "episode": 30,
+          "result": "collision",
+          "reward": -57.5981
+        },
+        {
+          "episode": 31,
+          "result": "success",
+          "reward": 163.1336
+        },
+        {
+          "episode": 32,
+          "result": "collision",
+          "reward": -44.2427
+        },
+        {
+          "episode": 33,
+          "result": "success",
+          "reward": 135.9231
+        },
+        {
+          "episode": 34,
+          "result": "success",
+          "reward": 195.7108
+        },
+        {
+          "episode": 35,
+          "result": "success",
+          "reward": 120.5293
+        },
+        {
+          "episode": 36,
+          "result": "collision",
+          "reward": -36.8498
+        },
+        {
+          "episode": 37,
+          "result": "collision",
+          "reward": -69.5973
+        },
+        {
+          "episode": 38,
+          "result": "success",
+          "reward": 120.8885
+        },
+        {
+          "episode": 39,
+          "result": "collision",
+          "reward": -67.7083
+        },
+        {
+          "episode": 40,
+          "result": "success",
+          "reward": 178.7915
+        },
+        {
+          "episode": 41,
+          "result": "collision",
+          "reward": -54.9793
+        },
+        {
+          "episode": 42,
+          "result": "success",
+          "reward": 166.5734
+        },
+        {
+          "episode": 43,
+          "result": "collision",
+          "reward": 10.8463
+        },
+        {
+          "episode": 44,
+          "result": "success",
+          "reward": 222.5687
+        },
+        {
+          "episode": 45,
+          "result": "success",
+          "reward": 202.3873
+        },
+        {
+          "episode": 46,
+          "result": "collision",
+          "reward": -18.2104
+        },
+        {
+          "episode": 47,
+          "result": "collision",
+          "reward": -46.8736
+        },
+        {
+          "episode": 48,
+          "result": "collision",
+          "reward": -27.9392
+        },
+        {
+          "episode": 49,
+          "result": "collision",
+          "reward": -66.736
+        }
+      ]
+    }
+  }
+}
