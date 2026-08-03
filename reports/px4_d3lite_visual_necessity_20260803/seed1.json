@@ -1,0 +1,19 @@
+{
+  "model": "saved_models/v3_d3lite/d3lite_seed1.pth",
+  "episodes_per_cell": 50,
+  "seed": 20260803,
+  "results": {
+    "baseline": 88.0,
+    "const_depth": 42.0
+  },
+  "paired": {
+    "baseline_minus_const_pp": 46.0,
+    "bootstrap_95ci_pp": [
+      32.0,
+      60.0
+    ],
+    "mcnemar_p": 4.489784498638631e-06,
+    "discordant_pairs": 23
+  },
+  "gate_pass": true
+}
