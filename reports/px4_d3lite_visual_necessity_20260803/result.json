@@ -1,0 +1,9 @@
+{
+  "model": "saved_models/v3_d3lite/d3lite_seed0.pth",
+  "episodes_per_cell": 50,
+  "results": {
+    "baseline": 54.0,
+    "const_depth": 0.0
+  },
+  "gate_pass": true
+}
