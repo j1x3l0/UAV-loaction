@@ -56,8 +56,17 @@ def main() -> int:
     parser.add_argument("--collision-radius", type=float, default=0.5)
     parser.add_argument("--episodes", type=int, default=50)
     parser.add_argument("--seed", type=int, default=20260803)
+    parser.add_argument("--avoidance-probability", type=float, default=None,
+                        help="0.0 = clear-only, 1.0 = avoidance-only episodes; "
+                             "default keeps the env default (0.5). Use to "
+                             "isolate whether depth matters for obstacle "
+                             "avoidance (visual necessity).")
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
+
+    if args.avoidance_probability is not None \
+            and not 0.0 <= args.avoidance_probability <= 1.0:
+        raise ValueError("--avoidance-probability must be in [0, 1]")
 
     selected = (
         list(ABLATIONS) if args.ablation == "all"
@@ -72,6 +81,9 @@ def main() -> int:
         "auto_scene_bounds": True,
         "drone_collision_radius": args.collision_radius,
     }
+    if args.avoidance_probability is not None:
+        scene_config["avoidance_episode_probability"] = \
+            args.avoidance_probability
     models = [item.split("=", 1) for item in args.model]
     results = {}
     for label, path in models:
