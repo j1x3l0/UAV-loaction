@@ -56,14 +56,21 @@ def main() -> int:
         "scene_boundary_margin": (0.2, 0.2, 0.2),
     }
     results = {}
+    detail = {}
     for name, ablation in ABLATIONS.items():
         env = make_env("clean", "gsplat", args.ply,
                        ablation_config=ablation, scene_config=scene_config)
         eval_result = evaluate_model(
             policy, env, eval_episodes=args.episodes, base_seed=args.seed)
         results[name] = round(eval_result["success_rate"], 1)
+        detail[name] = [row["result"] for row in eval_result["episodes_detail"]]
         env.close()
         print(f"{name}: SR={results[name]}%", flush=True)
+
+    baseline_vec = np.array([1 if r == "success" else 0 for r in detail["baseline"]])
+    const_vec = np.array([1 if r == "success" else 0 for r in detail["const_depth"]])
+    mcnemar_p, discordant = _mcnemar(baseline_vec, const_vec)
+    low, high = _paired_bootstrap(baseline_vec, const_vec)
 
     output_path = os.path.abspath(args.output)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -71,12 +78,45 @@ def main() -> int:
         json.dump({
             "model": args.model,
             "episodes_per_cell": args.episodes,
+            "seed": args.seed,
             "results": results,
+            "paired": {
+                "baseline_minus_const_pp": round(results["baseline"] - results["const_depth"], 1),
+                "bootstrap_95ci_pp": [round(low * 100, 1), round(high * 100, 1)],
+                "mcnemar_p": mcnemar_p,
+                "discordant_pairs": discordant,
+            },
             "gate_pass": results["baseline"] >= 30.0
                          and results["baseline"] - results["const_depth"] >= 30.0,
         }, handle, indent=2)
+    print(f"baseline-const = {results['baseline'] - results['const_depth']}pp "
+          f"| paired CI [{low*100:.1f},{high*100:.1f}] | McNemar p={mcnemar_p:.4f}")
     print(f"Saved: {output_path}")
     return 0
+
+
+def _mcnemar(baseline, model):
+    """Paired McNemar on success outcomes -> (p_value, discordant_pairs)."""
+    from scipy import stats
+    b = int(np.sum((baseline == 1) & (model == 0)))
+    c = int(np.sum((baseline == 0) & (model == 1)))
+    total = b + c
+    if total == 0:
+        return 1.0, 0
+    chi2 = (abs(b - c) - 1.0) ** 2 / total
+    return float(stats.chi2.sf(chi2, df=1)), total
+
+
+def _paired_bootstrap(baseline, model, n_boot=10000):
+    """Paired bootstrap 95% CI for (baseline - const) difference."""
+    rng = np.random.default_rng(20260803)
+    n = len(baseline)
+    diffs = []
+    for _ in range(n_boot):
+        idx = rng.integers(0, n, size=n)
+        diffs.append(float(baseline[idx].mean() - model[idx].mean()))
+    diffs = np.asarray(diffs)
+    return float(np.percentile(diffs, 2.5)), float(np.percentile(diffs, 97.5))
 
 
 if __name__ == "__main__":
