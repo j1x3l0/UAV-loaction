@@ -12,19 +12,22 @@
    其中 13 个是噪声）。
 
 清洗逻辑：去掉 ground 板层（z < `--ground-z`）后对剩余点做连通分量，
-保留 `>= --min-cluster-voxels` 的障碍簇，丢弃噪声簇。输出渲染器 ply +
-碰撞 npy。
+保留 `>= --min-cluster-voxels` 的障碍簇，丢弃噪声簇。输出渲染器 gsplat ply、
+碰撞 ply（env 的 `--collision-ply` 需要的 xyz 格式）与碰撞点 npy，并可选
+写结构化统计报告（`--report-json`）。
 
 ```bash
 python clean_sv1007.py \
   --ply ../../data/gs_data/sv_1007_gate_mid/splatfacto/2024-10-07_145741/exports/splat/splat.ply \
   --out-ply ../../data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean.ply \
-  --out-npy ../../data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean.npy
+  --out-collision-ply ../../data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean_collision.ply \
+  --out-npy ../../data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean.npy \
+  --report-json ../../data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean_report.json
 ```
 
 结果（voxel=0.5, ground_z=0.5, min_cluster_voxels=8）：**ground + 5 障碍簇**，
 移除 13 个噪声簇（30 个噪声点）。`sv1007_alignment.json` 已从"16 障碍簇"
-更正为清洗后计数。
+更正为清洗后计数。逐簇明细见 `reports/px4_sv1007_clean_20260804/`。
 
 ## D1：碰撞半径硬化扫描（首选，纯配置）
 

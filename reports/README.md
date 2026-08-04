@@ -27,6 +27,7 @@
 | 对齐 V3 尺度对照 + 配对统计 | `px4_v3_aligned_scale_comparison_20260803/` |
 | 对齐 V3 输入消融 | `px4_v3_aligned_ablation_20260803/` |
 | 视觉必要性（D3-lite 通过） | `px4_d3lite_visual_necessity_20260803/` |
+| sv_1007 低保真清洗（16→5 障碍簇） | `px4_sv1007_clean_20260804/` |
 | 集成测试套件（83 用例） | `integration_tests_20260802/` |
 | 图表库（20 图，legacy 诊断） | `plot_gallery_20260802/` |
 
