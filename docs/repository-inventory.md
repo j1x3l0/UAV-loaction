@@ -1,6 +1,6 @@
 # Repository inventory
 
-盘点日期：2026-08-01。
+盘点日期：2026-08-04（首次：2026-08-01）。
 
 ## 容量概览
 
@@ -30,9 +30,7 @@ Git 当前跟踪约 21 MB 的工作树内容，其中 `reports/` 约 7 MB、169 
 
 ## 已知待办
 
-- 筛选 `reports/` 中 70 个已跟踪二进制图，只保留关键图。
-- 为实验结果建立 Phase V2/V3 索引。
-- 检查 `past/` 与 `docs/` 的同名或重复材料。
-- 决定 `better_vibe_coding/` 是继续冻结还是迁入历史归档。
-- 在线核实 GitHub PR 状态；当前本机 GitHub CLI 认证失效。
+- ✅ 已核实 GitHub 功能与 PR 状态（2026-08-04）：git push/gh CLI 均正常（认证已修复）；PR #13/#14 有用部分已本地合并，#10 冗余待关，#11 requirements 位置待统一。
+- ✅ 已建立 Phase V3/PX4 报告索引（`reports/README.md` 更新至 2026-08-04）。
+- ⏳ 仍待办：筛选 `reports/` 中旧二进制图（保留关键图，含 plot_gallery 2.4MB）；`past/` 与 `docs/` 重复材料比对；`better_vibe_coding/` 冻结或归档决定。
 
