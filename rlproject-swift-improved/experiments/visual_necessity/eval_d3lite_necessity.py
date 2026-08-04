@@ -42,6 +42,8 @@ def main() -> int:
     parser.add_argument("--ply", required=True)
     parser.add_argument("--collision-ply", required=True)
     parser.add_argument("--collision-radius", type=float, default=0.5)
+    parser.add_argument("--alignment", default=None,
+                        help="synthetic alignment config for narrow-FOV camera")
     parser.add_argument("--episodes", type=int, default=50)
     parser.add_argument("--seed", type=int, default=20260803)
     parser.add_argument("--output", required=True)
@@ -59,7 +61,8 @@ def main() -> int:
     detail = {}
     for name, ablation in ABLATIONS.items():
         env = make_env("clean", "gsplat", args.ply,
-                       ablation_config=ablation, scene_config=scene_config)
+                       ablation_config=ablation, scene_config=scene_config,
+                       alignment_config=args.alignment)
         eval_result = evaluate_model(
             policy, env, eval_episodes=args.episodes, base_seed=args.seed)
         results[name] = round(eval_result["success_rate"], 1)

@@ -32,6 +32,9 @@ def main() -> int:
     parser.add_argument("--ply", required=True)
     parser.add_argument("--collision-ply", required=True)
     parser.add_argument("--collision-radius", type=float, default=0.5)
+    parser.add_argument("--alignment", default=None,
+                        help="synthetic alignment config for the corridor camera "
+                             "(narrow-FOV fx~97.14 + goal-yaw pose model)")
     parser.add_argument("--episodes", type=int, default=1200)
     parser.add_argument("--rollout-steps", type=int, default=256)
     parser.add_argument("--num-envs", type=int, default=2)
@@ -55,7 +58,8 @@ def main() -> int:
         "scene_boundary_margin": (0.2, 0.2, 0.2),
     }
     envs = [
-        make_env("clean", "gsplat", args.ply, scene_config=scene_config)
+        make_env("clean", "gsplat", args.ply, scene_config=scene_config,
+                 alignment_config=args.alignment)
         for _ in range(args.num_envs)
     ]
     ppo = VisualPPO(vec_dim=6, action_dim=3)
