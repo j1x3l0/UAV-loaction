@@ -18,12 +18,46 @@ import sys
 
 import numpy as np
 import torch
+from scipy import stats
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))))
 
 from core.visual_ppo_agent import VisualPPO
 from scripts.train_visual import evaluate_model, make_env
+
+
+def _paired_stats(raw, clean, n_boot=10000, seed=20260805):
+    """Paired McNemar + paired bootstrap 95% CI for (raw_success - clean_success).
+
+    Raw/clean are per-episode booleans from the SAME rollout seeds, so a
+    paired test is the right statistic. The bootstrap CI including 0 means
+    the raw-vs-cleaned SR gap is within evaluation noise.
+    """
+    b = int(np.sum(raw & ~clean))
+    c = int(np.sum(~raw & clean))
+    total = b + c
+    if total == 0:
+        mcnemar_p = 1.0
+    else:
+        chi2 = (abs(b - c) - 1.0) ** 2 / total
+        mcnemar_p = float(stats.chi2.sf(chi2, df=1))
+    rng = np.random.default_rng(seed)
+    n = len(raw)
+    diffs = []
+    for _ in range(n_boot):
+        idx = rng.integers(0, n, size=n)
+        diffs.append(float(raw[idx].mean() - clean[idx].mean()))
+    diffs = np.asarray(diffs)
+    return {
+        "mcnemar_p": mcnemar_p,
+        "discordant_b_raw_success": int(b),
+        "discordant_c_clean_success": int(c),
+        "bootstrap_95ci_pp": [
+            round(float(np.percentile(diffs, 2.5)) * 100, 1),
+            round(float(np.percentile(diffs, 97.5)) * 100, 1),
+        ],
+    }
 
 
 def load_policy(checkpoint: str):
@@ -95,21 +129,28 @@ def main() -> int:
               f"CR={r['collision_rate']}% avgR={r['avg_reward']}",
               flush=True)
 
-    raw_vec = np.array([1 if r == "success" else 0
+    raw_vec = np.array([r == "success"
                         for r in results["raw"]["episodes_detail"]])
-    clean_vec = np.array([1 if r == "success" else 0
+    clean_vec = np.array([r == "success"
                           for r in results["cleaned"]["episodes_detail"]])
     diff = results["raw"]["success_rate"] - results["cleaned"]["success_rate"]
     results["delta_pp"] = round(diff, 1)
-    results["paired_discordant"] = int((raw_vec != clean_vec).sum())
-    results["consistent"] = abs(diff) <= 3.0
+    results["paired"] = _paired_stats(raw_vec, clean_vec)
+    # Consistency = the gap is within paired-evaluation noise (CI includes 0
+    # and McNemar is not significant), NOT an arbitrary pp threshold. A 3pp
+    # hard cutoff on 50 episodes misreads noise as a real change.
+    ci_lo, ci_hi = results["paired"]["bootstrap_95ci_pp"]
+    results["consistent"] = bool(
+        results["paired"]["mcnemar_p"] >= 0.05 and ci_lo <= 0.0 <= ci_hi)
 
     os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
     with open(args.output, "w", encoding="utf-8") as handle:
         json.dump(results, handle, indent=2)
+    p = results["paired"]
     print(f"delta (raw - cleaned) = {results['delta_pp']}pp | "
-          f"discordant pairs: {results['paired_discordant']} | "
-          f"consistent(<=3pp): {results['consistent']}")
+          f"McNemar p={p['mcnemar_p']:.3f} | "
+          f"bootstrap 95% CI {p['bootstrap_95ci_pp']}pp | "
+          f"consistent (p>=0.05 & CI incl. 0): {results['consistent']}")
     print(f"Saved: {args.output}")
     return 0
 

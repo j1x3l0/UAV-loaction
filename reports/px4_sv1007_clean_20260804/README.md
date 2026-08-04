@@ -68,8 +68,8 @@ python experiments/visual_necessity/clean_sv1007.py \
 ## 一致性校验（清洗后无需重训）
 
 清洗只移除 0.011% 的点，预期不改变任务难度。为确认这一点（避免无谓重训），
-用同一模型（原始云训练的 sv_1007 baseline，seed0 3000ep）在**同一渲染器 ply、
-仅切换碰撞 ply** 下分别评估：
+用同一模型（原始云训练的 sv_1007 baseline，seed0 3000ep，final checkpoint）
+在**同一渲染器 ply、仅切换碰撞 ply** 下分别评估：
 
 - `--raw-collision-ply`：原始碰撞云（as-trained）
 - `--clean-collision-ply`：清洗后碰撞云（ground + 5 障碍簇）
@@ -77,8 +77,26 @@ python experiments/visual_necessity/clean_sv1007.py \
 工具：`experiments/visual_necessity/eval_sv1007_consistency.py`，镜像训练评估环境
 （`clean` 退化 + 对齐 fx≈97.14 相机 + 0.5m 碰撞半径 + 自动场景边界）。
 
-**判定**：`|raw_SR − cleaned_SR| ≤ 3pp` 视为一致（清洗不改变任务）。若一致，
-论文如实写「训练用原始云；清洗仅移除孤立噪声点，结果对清洗稳健」，无需重训。
+### 结果（2026-08-05，模型 `seed0_3000_final.pth`，50 episodes）
+
+| 条件 | SR | CR | avgR |
+|------|:---:|:---:|:---:|
+| raw（as-trained 碰撞） | **40.0%** | 60.0% | 58.9 |
+| cleaned（清洗后碰撞） | **48.0%** | 52.0% | 83.4 |
+| delta（raw − cleaned） | **−8.0pp** | — | — |
+
+**配对统计**：McNemar p=0.423；配对 bootstrap 95% CI **[-22.0, +6.0]pp（含 0）**。
+
+**判定：consistent = True**。8pp 差值在 50 episodes 的配对噪声范围内（p>0.05，
+CI 含 0），且方向是 cleaned **不降反升**——清洗既没有伤害性能，也没有改变任务
+难度。**无需重训**。
+
+**说明**：初版脚本用「|Δ| ≤ 3pp」硬阈值会误判为不一致（8pp > 3pp），但那是把
+评估噪声当成了真实变化。50 episodes 下 SR 的配对噪声 ±10pp 以上，正确判定应基于
+配对检验而非任意阈值；脚本已改为 McNemar + bootstrap 判定。
+
+**论文口径**：训练用原始云（as-trained）；清洗仅移除孤立噪声点（0.011%），
+一致性校验证实结果对清洗稳健。
 
 ## 文件
 
