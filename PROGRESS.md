@@ -41,6 +41,11 @@
 验收后重新验证；旧结果只能用于代码演进、内部有效性和“错位环境会产生
 误导性高SR”的方法学分析。
 
+> **2026-08-04**：legacy-unaligned 的 40 个报告目录已移入
+> `past/reports_legacy_unaligned/`（mock eval_results 移入
+> `past/eval_results_mock/`），以清理当前 `reports/` 索引、避免混淆。
+> 历史引用如指向旧路径请改到 `past/` 下对应目录。
+
 ### 当前强制执行顺序
 
 1. 完成 PX4 依赖、SIH/SITL 构建和 MAVLink Offboard 接口测试；

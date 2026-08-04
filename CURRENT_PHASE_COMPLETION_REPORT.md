@@ -178,12 +178,12 @@ robust-best 汇总 timeout：
 | 产物 | 路径 |
 |------|------|
 | 总进度 | `PROGRESS.md` |
-| 三方 checkpoint 对照报告 | `reports/v3_checkpoint_selection_comparison_20260729/README.md` |
-| 三方汇总 CSV | `reports/v3_checkpoint_selection_comparison_20260729/aggregate_comparison.csv` |
-| 三方汇总 JSON | `reports/v3_checkpoint_selection_comparison_20260729/summary.json` |
-| robust-best 原始评估 | `reports/v3_ckptfix_robust_eval_3x5x200_20260728_160950/` |
-| final 原始评估 | `reports/v3_ckptfix_final_eval_3x5x100_20260728_160950/` |
-| clean-best 原始评估 | `reports/v3_ckptfix_clean_eval_3x5x100_20260729_022411/` |
+| 三方 checkpoint 对照报告 | `past/reports_legacy_unaligned/v3_checkpoint_selection_comparison_20260729/README.md` |
+| 三方汇总 CSV | `past/reports_legacy_unaligned/v3_checkpoint_selection_comparison_20260729/aggregate_comparison.csv` |
+| 三方汇总 JSON | `past/reports_legacy_unaligned/v3_checkpoint_selection_comparison_20260729/summary.json` |
+| robust-best 原始评估 | `past/reports_legacy_unaligned/v3_ckptfix_robust_eval_3x5x200_20260728_160950/` |
+| final 原始评估 | `past/reports_legacy_unaligned/v3_ckptfix_final_eval_3x5x100_20260728_160950/` |
+| clean-best 原始评估 | `past/reports_legacy_unaligned/v3_ckptfix_clean_eval_3x5x100_20260729_022411/` |
 | checkpoint 修复代码 | `rlproject-swift-improved/scripts/train_visual.py` |
 | checkpoint helper 测试 | `rlproject-swift-improved/scripts/test_train_visual_helpers.py` |
 
