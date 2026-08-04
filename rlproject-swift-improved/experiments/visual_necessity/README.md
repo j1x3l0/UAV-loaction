@@ -3,6 +3,29 @@
 > 本目录是隔离实验，**不修改任何核心代码**（`envs/`、`scripts/train_visual.py`、`core/`、`configs/`）。
 > 失败直接删除本目录即可回退。设计草案见 `docs/visual-necessity-redesign.md`。
 
+## sv_1007 低保真数据清洗
+
+`clean_sv1007.py` 清洗低保真 sv_1007 重建中的噪声簇。低保真 3DGS 会产生
+大量微小的孤立高斯斑点（1-3 voxel），它们不是真实障碍物，却会：
+1. 在渲染深度图上产生虚假深度尖刺；
+2. 把原始点云的"障碍簇计数"虚高（sv_1007 原始 0.5m 体素有 16 个连通分量，
+   其中 13 个是噪声）。
+
+清洗逻辑：去掉 ground 板层（z < `--ground-z`）后对剩余点做连通分量，
+保留 `>= --min-cluster-voxels` 的障碍簇，丢弃噪声簇。输出渲染器 ply +
+碰撞 npy。
+
+```bash
+python clean_sv1007.py \
+  --ply ../../data/gs_data/sv_1007_gate_mid/splatfacto/2024-10-07_145741/exports/splat/splat.ply \
+  --out-ply ../../data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean.ply \
+  --out-npy ../../data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean.npy
+```
+
+结果（voxel=0.5, ground_z=0.5, min_cluster_voxels=8）：**ground + 5 障碍簇**，
+移除 13 个噪声簇（30 个噪声点）。`sv1007_alignment.json` 已从"16 障碍簇"
+更正为清洗后计数。
+
 ## D1：碰撞半径硬化扫描（首选，纯配置）
 
 在纯避障 episode（avoid=1.0）下扫 `drone_collision_radius`，测 curriculum robust 模型的

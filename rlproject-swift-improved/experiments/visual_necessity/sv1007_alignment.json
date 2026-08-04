@@ -27,6 +27,8 @@
     "cy": 32.0
   },
   "status": {
-    "note": "Synthetic identity alignment for the FULL sv_1007 scene (22x25x9m, 16 obstacle clusters). Uses the same narrow-FOV fx~97.14 camera as the main V3, so the complexity-vs-necessity test holds the camera constant."
+    "note": "Synthetic identity alignment for the FULL sv_1007 scene (22x25x9m). Uses the same narrow-FOV fx~97.14 camera as the main V3, so the complexity-vs-necessity test holds the camera constant.",
+    "obstacle_clusters": "5 obstacle clusters + ground slab, after cleaning with clean_sv1007.py (voxel=0.5, ground_z=0.5, min_cluster_voxels=8); 13 tiny noise blobs removed",
+    "cleaned_assets": "data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean.ply (renderer) + sv1007_clean.npy (collision points)"
   }
 }

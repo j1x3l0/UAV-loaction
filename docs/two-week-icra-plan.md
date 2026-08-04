@@ -45,7 +45,9 @@ SHAC 对照失败 → Discussion 理论分析（预案 R4）
 
 ## 当前执行指针（2026-08-04 更新）
 
-> **2026-08-04 主场景切换**：主场景定为 **sv_1007**（完整 gate，16 障碍簇，22×25×9m）。
+> **2026-08-04 主场景切换**：主场景定为 **sv_1007**（完整 gate，22×25×9m）。
+> 障碍簇计数已更正：原始点云在 0.5m 体素有 16 个连通分量，但其中 13 个是低保真噪声斑点；
+> `clean_sv1007.py` 清洗后为 **ground + 5 障碍簇**（详见 `experiments/visual_necessity/README.md`）。
 > 对齐方式采用**合成 identity**（fx≈97.14 相机 + 目标偏航 + 无场景旋转，`experiments/visual_necessity/sv1007_alignment.json`）——相机对齐是视觉感知关键，已达成；如需完整 PX4 场景注册另行补（选项 B）。gate_mid_new 结果保留作对比/V3c。sv_1007 baseline（clean 3000ep）训练中。
 
 1. **D4 clean SR 攻关**：3000ep clean 达 **66.0%**（1500ep 56.7% +9.3pp），未达 70%；reward 调优空间已记录。
