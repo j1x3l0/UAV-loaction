@@ -23,12 +23,12 @@
 
 ```bash
 python experiments/visual_necessity/clean_sv1007.py \
-  --ply data/point_cloud/sv_1007_gate_mid.ply \
+  --ply data/gs_data/sv_1007_gate_mid/splatfacto/2024-10-07_145741/exports/splat/splat.ply \
   --voxel 0.5 --ground-z 0.5 --min-cluster-voxels 8 \
-  --out-ply data/point_cloud/cleaned/sv_1007_gate_mid_clean.ply \
-  --out-collision-ply data/point_cloud/cleaned/sv_1007_gate_mid_clean_collision.ply \
-  --out-npy data/point_cloud/cleaned/sv_1007_gate_mid_clean.npy \
-  --report-json data/point_cloud/cleaned/sv_1007_clean_report.json
+  --out-ply data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean.ply \
+  --out-collision-ply data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean_collision.ply \
+  --out-npy data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean.npy \
+  --report-json data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean_report.json
 ```
 
 ## 结果
@@ -65,12 +65,28 @@ python experiments/visual_necessity/clean_sv1007.py \
   说明被移除的确实是纯噪声，不损失任何真实障碍。
 - 文档口径已修正：`sv1007_alignment.json` 与 `docs/two-week-icra-plan.md`。
 
+## 一致性校验（清洗后无需重训）
+
+清洗只移除 0.011% 的点，预期不改变任务难度。为确认这一点（避免无谓重训），
+用同一模型（原始云训练的 sv_1007 baseline，seed0 3000ep）在**同一渲染器 ply、
+仅切换碰撞 ply** 下分别评估：
+
+- `--raw-collision-ply`：原始碰撞云（as-trained）
+- `--clean-collision-ply`：清洗后碰撞云（ground + 5 障碍簇）
+
+工具：`experiments/visual_necessity/eval_sv1007_consistency.py`，镜像训练评估环境
+（`clean` 退化 + 对齐 fx≈97.14 相机 + 0.5m 碰撞半径 + 自动场景边界）。
+
+**判定**：`|raw_SR − cleaned_SR| ≤ 3pp` 视为一致（清洗不改变任务）。若一致，
+论文如实写「训练用原始云；清洗仅移除孤立噪声点，结果对清洗稳健」，无需重训。
+
 ## 文件
 
 - 清洗脚本：`experiments/visual_necessity/clean_sv1007.py`
+- 一致性校验：`experiments/visual_necessity/eval_sv1007_consistency.py`
 - 清洗产物（`data/` 下，gitignore，服务器同步）：
-  - `data/point_cloud/cleaned/sv_1007_gate_mid_clean.ply`（渲染器 gsplat ply）
-  - `data/point_cloud/cleaned/sv_1007_gate_mid_clean_collision.ply`（碰撞 ply）
-  - `data/point_cloud/cleaned/sv_1007_gate_mid_clean.npy`（碰撞点数组）
-  - `data/point_cloud/cleaned/sv_1007_clean_report.json`（结构化统计）
+  - `data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean.ply`（渲染器 gsplat ply）
+  - `data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean_collision.ply`（碰撞 ply）
+  - `data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean.npy`（碰撞点数组）
+  - `data/gs_data/sv_1007_gate_mid/cleaned/sv1007_clean_report.json`（结构化统计）
 - 对比图：`sv1007_clean_before_after.png`（俯视密度 + 簇大小分布）
