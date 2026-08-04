@@ -45,6 +45,6 @@ SHAC 对照失败 → Discussion 理论分析（预案 R4）
 
 ## 当前执行指针
 
-1. **D3-lite 强化**：正在自动跑（seeds 1-4 + 5-seed 评估 watcher），~2h 后出结果。
-2. **下一步 GPU**（D3-lite 完成后）：退化轴补齐（对齐环境 5 轴）。
+1. **D4 clean SR 攻关**：3000ep clean 达到 **66.0%**（1500ep 56.7% +9.3pp），**未达 70% 目标**。已记录 **reward 调优空间**——若 70% 是硬门槛，下一步调 7 组件奖励权重（当前最可能的提升杠杆）。
+2. **curriculum 补 3000ep**（公平对比）：clean 3000ep vs curriculum 1500ep 算力不对等；启动 curriculum 5 seeds × 3000ep 长训。
 3. **并行（不占 GPU）**：论文骨架、审计 framing、门控跟踪。
