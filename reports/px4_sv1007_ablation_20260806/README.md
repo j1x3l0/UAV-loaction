@@ -42,4 +42,5 @@
 ## 文件
 
 - `seed{0-4}.json`：各 seed 逐配置 SR
+- `sv1007_input_ablation.png`：混合任务输入消融柱状图
 - 服务器日志：`/root/px4-deploy/sv1007_ablation.log`

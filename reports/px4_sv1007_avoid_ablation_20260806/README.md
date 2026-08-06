@@ -37,4 +37,5 @@
 ## 文件
 
 - `seed{0-4}.json`：各 seed 逐配置 SR
+- `sv1007_avoid_ablation.png`：纯避障深度必要性柱状图（34.4→6.0%）
 - 服务器日志：`/root/px4-deploy/sv1007_avoid_ablation.log`
