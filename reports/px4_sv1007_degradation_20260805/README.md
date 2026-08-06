@@ -78,4 +78,5 @@
 
 - `clean/seed{0-4}.csv`、`curriculum/seed{0-4}.csv`：各 seed 逐轴逐档 SR
 - `summarize.py`、`key_diffs.py`：汇总脚本
+- `sv1007_clean_vs_curriculum.png`：7 轴退化曲线对比图（5-seed 均值）
 - 服务器日志：`/root/px4-deploy/sv1007_degradation.log`
