@@ -54,8 +54,13 @@ SHAC 对照失败 → Discussion 理论分析（预案 R4）
 2. **curriculum 3000ep 公平对比（sv_1007）**：✅ 5 seeds × 3000ep 完成，best_SR **41/40/51/34/36，均值 40.4%**（训练用 scale_curriculum，模型 `v3_sv1007_curriculum/`）。
 3. **退化轴评估（sv_1007，clean vs curriculum 5 seeds）**：✅ 7 轴 × 5 档 × 50ep 完成，见 `reports/px4_sv1007_degradation_20260805/`。
    **⚠️ 新结论（与旧场景相反）**：sv_1007 上 **clean 全面优于 curriculum**——无退化档 clean 52.4% vs curriculum 31.6%（**+20.8pp**），绝大多数轴每档 clean 领先 10–21pp；仅视角 45°（+1.6pp）、相机遮挡 50%（−3.2pp）curriculum 接近或略好。对比旧场景 gate_mid_new（curriculum 视角轴显著更鲁棒，clean 45° 掉 18%），**curriculum 鲁棒优势不泛化到 sv_1007**。待核对 curriculum 训练 robust eval 曲线确认是"优势不泛化"还是"场景失效"。
-4. **资源约束**：后续训练**仅用 GPU0**（GPU1 保留给其他任务）。
-5. **视觉必要性**：D3-lite 5-seed 4/5 显著（✅）；D1/D2 失败；sv_712 复杂度测试 / 相机统一 / 重构叙事**待决策**。
+4. **输入消融（sv_1007 clean 5 seeds）**：✅ 完成，见 `reports/px4_sv1007_ablation_20260806/`。
+   baseline 54.0% → const_depth 37.2%（−16.8pp）/ no_velocity 7.2%（−46.8pp）/
+   no_target_dir 0.8%（−53.2pp）。**目标方向与速度是决定性输入，深度提供 16.8pp 中等
+   贡献**——与 D3-lite（稠密走廊深度必要）对照，支持"深度必要性随障碍密度增强"叙事。
+5. **资源约束**：后续训练**仅用 GPU0**（GPU1 保留给其他任务）。
+6. **视觉必要性**：D3-lite 5-seed 4/5 显著（✅）；D1/D2 失败；sv_1007 输入消融 ✅（见上）；
+   sv_712 复杂度测试 / 相机统一 / 重构叙事**待决策**。
 
 ## 全项目优先级评估（含高保真加强项）
 
