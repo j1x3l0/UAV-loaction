@@ -355,6 +355,7 @@ def train_visual(config):
         hidden_dim=config.get('hidden_dim', 128),
         use_adaptive_entropy=True,
         num_envs=num_envs,
+        arch_config=config.get('arch_config'),
     )
     if resume_model:
         resolved_resume_model = os.path.abspath(resume_model)
@@ -529,6 +530,24 @@ def train_visual(config):
     }
 
 
+def _parse_arch(arch_arg):
+    """解析 --arch 'rgb,shallow_cnn,no_privileged_critic' → arch_config dict."""
+    if not arch_arg:
+        return None
+    flags = {part.strip() for part in arch_arg.split(',') if part.strip()}
+    valid = {'rgb', 'shallow_cnn', 'no_privileged_critic'}
+    unknown = flags - valid
+    if unknown:
+        raise ValueError(
+            f"unknown --arch entries {sorted(unknown)}; choose from "
+            f"{sorted(valid)}")
+    return {
+        'use_rgb': 'rgb' in flags,
+        'shallow_cnn': 'shallow_cnn' in flags,
+        'no_privileged_critic': 'no_privileged_critic' in flags,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--episodes', type=int, default=20)
@@ -550,6 +569,11 @@ def main():
     parser.add_argument('--multiscene', type=str, default=None,
                        help='多场景联合训练：逗号分隔的 name=ply:alignment '
                             '(重复可多场景)。训练 env 轮流分配场景，评估用第 1 个。')
+    parser.add_argument('--arch', type=str, default=None,
+                       help='结构消融：逗号分隔子集 {rgb, shallow_cnn, '
+                            'no_privileged_critic}。rgb 用 3 通道输入，'
+                            'shallow_cnn 用 2 层 CNN，no_privileged_critic 的 '
+                            'Critic 只用 vec（不用视觉）。')
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--model-out', type=str,
                         default='saved_models/visual_ppo_best.pth')
@@ -609,6 +633,7 @@ def main():
             if args.ablation == 'no_velocity' else None
         ),
         'avoidance_curriculum': args.avoidance_curriculum,
+        'arch_config': _parse_arch(args.arch),
         'scene_config': ({
             'collision_ply_path': args.collision_ply,
             'auto_scene_bounds': True,
@@ -619,8 +644,10 @@ def main():
             'geodesic_waypoint_lookahead':
                 args.geodesic_waypoint_lookahead,
             'use_waypoint_observation': args.waypoint_observation,
+            'use_rgb': bool(args.arch and 'rgb' in args.arch.split(',')),
         } if args.collision_ply else {
             'camera_tracks_motion': args.camera_tracks_motion,
+            'use_rgb': bool(args.arch and 'rgb' in args.arch.split(',')),
         }),
     }
 
