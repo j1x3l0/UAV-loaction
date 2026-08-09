@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "scene": "sv_917_3_right",
+  "world_frame": "nerfstudio_transformed_world",
+  "px4_frame": "LOCAL_NED",
+  "anchor": {
+    "px4_position_ned_m": [0.0, 0.0, -1.0],
+    "px4_attitude_rpy_rad": [0.0, 0.0, 0.0]
+  },
+  "scene_from_ned": {
+    "rotation": [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+    "translation_m": [0.0, 0.0, 0.0],
+    "scale": 1.0
+  },
+  "body_frd_from_camera_opencv": [
+    [0.0, 0.0, 1.0],
+    [1.0, 0.0, 0.0],
+    [0.0, 1.0, 0.0]
+  ],
+  "camera": {
+    "model": "PINHOLE",
+    "source_resolution": [64, 64],
+    "policy_resolution": [64, 64],
+    "fx": 97.1433427374,
+    "fy": 97.0647991673,
+    "cx": 32.0,
+    "cy": 32.0
+  },
+  "status": {
+    "note": "Synthetic identity alignment for sv_917_3_right (V3c cross-scene). Same narrow-FOV fx~97.14 camera as main V3; synthetic identity alignment (no scene rotation) so the cross-scene test holds camera constant and isolates scene generalization."
+  }
+}

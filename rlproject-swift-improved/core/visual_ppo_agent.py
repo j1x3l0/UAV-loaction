@@ -31,24 +31,40 @@ logger.info(f"Visual PPO Device: {DEVICE}")
 # 128D输出 vs GRaD-Nav的16D: 我们的信息瓶颈更宽，端到端训练可充分利用
 
 class VisualEncoder(nn.Module):
-    """深度图 → 128D 视觉特征"""
-    def __init__(self, in_channels=1, feature_dim=128):
-        super().__init__()
-        self.conv = nn.Sequential(
-            nn.Conv2d(in_channels, 32, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),                                      # 64→32
-            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),                                      # 32→16
-            nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),                                      # 16→8
-            nn.Flatten(),
-        )
-        # 计算展平维度: 64ch × 8 × 8 = 4096
-        self.fc = nn.Linear(64 * 8 * 8, feature_dim)
+    """深度图/RGB → 128D 视觉特征
 
-    def forward(self, depth):
-        """depth: (B, 1, 64, 64) → (B, 128)"""
-        x = self.conv(depth)
+    arch_config:
+      - shallow_cnn: 用 2 层 CNN（64→32→16）而非 3 层，缩小视觉容量（结构消融）。
+      - in_channels: 输入通道数（1=深度，3=RGB），RGB 输入消融。
+    """
+    def __init__(self, in_channels=1, feature_dim=128, shallow_cnn=False):
+        super().__init__()
+        if shallow_cnn:
+            # 浅 CNN 结构消融：2 层（64→32→16），feature = 32ch × 16 × 16
+            self.conv = nn.Sequential(
+                nn.Conv2d(in_channels, 32, kernel_size=3, stride=2, padding=1),
+                nn.ReLU(),                                      # 64→32
+                nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1),
+                nn.ReLU(),                                      # 32→16
+                nn.Flatten(),
+            )
+            self.fc = nn.Linear(32 * 16 * 16, feature_dim)
+        else:
+            self.conv = nn.Sequential(
+                nn.Conv2d(in_channels, 32, kernel_size=3, stride=2, padding=1),
+                nn.ReLU(),                                      # 64→32
+                nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),
+                nn.ReLU(),                                      # 32→16
+                nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1),
+                nn.ReLU(),                                      # 16→8
+                nn.Flatten(),
+            )
+            # 计算展平维度: 64ch × 8 × 8 = 4096
+            self.fc = nn.Linear(64 * 8 * 8, feature_dim)
+
+    def forward(self, x):
+        """x: (B, C, 64, 64) → (B, 128)"""
+        x = self.conv(x)
         return self.fc(x)
 
 
@@ -57,13 +73,23 @@ class VisualEncoder(nn.Module):
 # tanh(mean)将动作限制在(-1,1), 匹配归一化动作空间
 
 class VisualActorCritic(nn.Module):
-    """CNN编码器 + 共享MLP → Actor(3D动作) + Critic(1D价值)"""
+    """CNN编码器 + 共享MLP → Actor(3D动作) + Critic(1D价值)
+
+    arch_config:
+      - shallow_cnn: 浅 CNN（2 层而非 3 层）。
+      - use_rgb: 输入 3 通道 RGB 而非单通道深度。
+      - no_privileged_critic: Critic 只用 vec（不用视觉），去掉特权信息。
+    """
 
     def __init__(self, vec_dim=6, visual_feature_dim=128,
-                 hidden_dim=128, action_dim=3):
+                 hidden_dim=128, action_dim=3,
+                 shallow_cnn=False, use_rgb=False,
+                 no_privileged_critic=False):
         super().__init__()
-        self.visual_encoder = VisualEncoder(in_channels=1,
-                                             feature_dim=visual_feature_dim)
+        in_channels = 3 if use_rgb else 1
+        self.visual_encoder = VisualEncoder(
+            in_channels=in_channels, feature_dim=visual_feature_dim,
+            shallow_cnn=shallow_cnn)
         combined_dim = visual_feature_dim + vec_dim  # 128 + 6 = 134
 
         # 共享层
@@ -79,12 +105,21 @@ class VisualActorCritic(nn.Module):
             nn.Linear(hidden_dim, action_dim),
         )
 
-        # Critic
-        self.critic = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, 1),
-        )
+        # Critic（无特权消融：只用 vec，不看视觉）
+        if no_privileged_critic:
+            self.critic = nn.Sequential(
+                nn.Linear(vec_dim, hidden_dim),
+                nn.ReLU(),
+                nn.Linear(hidden_dim, 1),
+            )
+            self.critic_use_vec_only = True
+        else:
+            self.critic = nn.Sequential(
+                nn.Linear(hidden_dim, hidden_dim),
+                nn.ReLU(),
+                nn.Linear(hidden_dim, 1),
+            )
+            self.critic_use_vec_only = False
 
         # 可学习 log_std
         # init=-0.5 gives std≈0.61 and total 3-D entropy≈2.76.
@@ -105,7 +140,7 @@ class VisualActorCritic(nn.Module):
 
     def forward(self, depth, vec):
         """
-        depth: (B, 1, 64, 64)
+        depth: (B, 1|3, 64, 64)
         vec:   (B, 6)
         → mean: (B, 3), std: (B, 3), value: (B,)
         """
@@ -118,7 +153,12 @@ class VisualActorCritic(nn.Module):
         # exp(log_std) here: once log_std crossed 0, torch.clamp produced zero
         # gradient and permanently pinned std=1 / entropy=4.26.
         std = self.log_std.exp()
-        value = self.critic(shared).squeeze(-1)     # (B,)
+        if self.critic_use_vec_only:
+            # 无特权 Critic 消融：价值函数只用 vec，不看视觉（测试视觉是否被
+            # critic 当作"特权"捷径）
+            value = self.critic(vec).squeeze(-1)   # (B,)
+        else:
+            value = self.critic(shared).squeeze(-1)  # (B,)
 
         return mean, std, value
 
@@ -185,13 +225,16 @@ class VisualPPO:
                  lr=3e-4, gamma=0.99, gae_lambda=0.95, clip_eps=0.2,
                  epochs=10, minibatch_size=64, hidden_dim=128,
                  use_adaptive_entropy=True, num_envs=8,
-                 reward_scale=0.1):
+                 reward_scale=0.1,
+                 arch_config=None):
         """
         Args:
             reward_scale: 奖励缩放因子。原始reward量级[-10, 100],
                           256步returns ~[-2500, 100]。Critic初始输出~0-1,
                           不做缩放会导致MSE loss ~10⁶, 梯度淹没actor信号。
                           缩放后returns ~[-25, 1], 与critic初始化匹配。
+            arch_config: 结构消融配置 dict，传给 VisualActorCritic：
+                         {shallow_cnn, use_rgb, no_privileged_critic}
         """
         self.action_dim = action_dim
         self.action_max = action_max
@@ -203,9 +246,14 @@ class VisualPPO:
         self.num_envs = num_envs
         self.reward_scale = reward_scale
 
+        arch = arch_config or {}
         self.model = VisualActorCritic(
-            vec_dim=vec_dim, hidden_dim=hidden_dim, action_dim=action_dim
+            vec_dim=vec_dim, hidden_dim=hidden_dim, action_dim=action_dim,
+            shallow_cnn=bool(arch.get('shallow_cnn', False)),
+            use_rgb=bool(arch.get('use_rgb', False)),
+            no_privileged_critic=bool(arch.get('no_privileged_critic', False)),
         ).to(DEVICE)
+        self.use_rgb = bool(arch.get('use_rgb', False))
 
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
 
@@ -230,20 +278,25 @@ class VisualPPO:
 
     def get_action(self, observation: Dict, deterministic=False
                    ) -> Tuple[np.ndarray, float, float, float]:
-        """observation = {'depth': (64,64,1), 'vec': (6,)}
-        
+        """observation = {'depth': (64,64,1), 'vec': (6,)}（或 use_rgb 时含 'rgb'）
+
         P0修复：使用 tanh-squashed Gaussian
         """
-        depth = torch.tensor(observation['depth'], dtype=torch.float32
-                            ).unsqueeze(0).to(DEVICE)  # (1,64,64,1) → (1,1,64,64)
-        depth = depth.permute(0, 3, 1, 2)              # NHWC → NCHW
+        if self.use_rgb:
+            img = torch.tensor(observation['rgb'], dtype=torch.float32
+                              ).unsqueeze(0).to(DEVICE)  # (1,64,64,3)
+            img = img.permute(0, 3, 1, 2)                # NHWC → NCHW
+        else:
+            img = torch.tensor(observation['depth'], dtype=torch.float32
+                              ).unsqueeze(0).to(DEVICE)  # (1,64,64,1)
+            img = img.permute(0, 3, 1, 2)                # NHWC → NCHW
         vec = torch.tensor(observation['vec'], dtype=torch.float32
                           ).unsqueeze(0).to(DEVICE)
 
         with torch.no_grad():
-            mean, std, value = self.model(depth, vec)
+            mean, std, value = self.model(img, vec)
             dist = Normal(mean, std)
-            
+
             # P0修复：tanh-squashed action
             pre_tanh_action = mean if deterministic else dist.sample()
             action_tensor = torch.tanh(pre_tanh_action) * self.action_max
@@ -270,14 +323,15 @@ class VisualPPO:
                           ) -> Tuple[np.ndarray, np.ndarray,
                                      np.ndarray, np.ndarray]:
         """Select actions for multiple environments with one CNN forward pass."""
-        depth_batch = np.stack([obs['depth'] for obs in observations])
+        img_key = 'rgb' if self.use_rgb else 'depth'
+        img_batch = np.stack([obs[img_key] for obs in observations])
         vec_batch = np.stack([obs['vec'] for obs in observations])
-        depth = torch.tensor(depth_batch, dtype=torch.float32, device=DEVICE)
-        depth = depth.permute(0, 3, 1, 2)
+        img = torch.tensor(img_batch, dtype=torch.float32, device=DEVICE)
+        img = img.permute(0, 3, 1, 2)
         vec = torch.tensor(vec_batch, dtype=torch.float32, device=DEVICE)
 
         with torch.no_grad():
-            mean, std, value = self.model(depth, vec)
+            mean, std, value = self.model(img, vec)
             dist = Normal(mean, std)
             pre_tanh_action = mean if deterministic else dist.sample()
             action = torch.tanh(pre_tanh_action) * self.action_max
@@ -327,7 +381,8 @@ class VisualPPO:
                     'critic_loss': 0.0, 'entropy': 0.0, 'entropy_coeff': 0.0}
 
         # 汇总 rollout 数据
-        states_depth = np.stack([t['state']['depth'] for t in self.memory])
+        img_key = 'rgb' if self.use_rgb else 'depth'
+        states_depth = np.stack([t['state'][img_key] for t in self.memory])
         states_vec = np.stack([t['state']['vec'] for t in self.memory])
         actions = np.array([t['action'] for t in self.memory], dtype=np.float32)
         rewards = np.array([t['reward'] for t in self.memory], dtype=np.float32)
@@ -335,7 +390,7 @@ class VisualPPO:
         old_log_probs = np.array([t['log_prob'] for t in self.memory],
                                   dtype=np.float32)
         values = np.array([t['value'] for t in self.memory], dtype=np.float32)
-        next_states_depth = np.stack([t['next_state']['depth'] for t in self.memory])  # P0修复
+        next_states_depth = np.stack([t['next_state'][img_key] for t in self.memory])  # P0修复
         next_states_vec = np.stack([t['next_state']['vec'] for t in self.memory])      # P0修复
 
         total_samples = len(states_depth)

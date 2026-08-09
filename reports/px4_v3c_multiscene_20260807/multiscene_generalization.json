@@ -1,0 +1,658 @@
+{
+  "models": {
+    "multiscene": "saved_models/v3c_multiscene/seed0_final.pth"
+  },
+  "scenes": [
+    {
+      "name": "sv1007",
+      "ply": "/root/data/gs_data/ply_exports/sv_1007_gate_mid_gs.ply",
+      "alignment": "experiments/visual_necessity/sv1007_alignment.json"
+    },
+    {
+      "name": "left",
+      "ply": "/root/data/gs_data/ply_exports/sv_917_3_left_nerfstudio_gs.ply",
+      "alignment": "experiments/visual_necessity/sv917_left_alignment.json"
+    },
+    {
+      "name": "right",
+      "ply": "/root/data/gs_data/ply_exports/sv_917_3_right_nerfstudio_gs.ply",
+      "alignment": "experiments/visual_necessity/sv917_right_alignment.json"
+    }
+  ],
+  "episodes": 50,
+  "seed": 20260806,
+  "results": {
+    "multiscene->sv1007": {
+      "success_rate": 26.0,
+      "collision_rate": 74.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 4.975,
+      "sr_ci_low": 15.9,
+      "sr_ci_high": 39.6
+    },
+    "multiscene->left": {
+      "success_rate": 28.0,
+      "collision_rate": 72.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 13.441,
+      "sr_ci_low": 17.5,
+      "sr_ci_high": 41.7
+    },
+    "multiscene->right": {
+      "success_rate": 36.0,
+      "collision_rate": 64.0,
+      "timeout_rate": 0.0,
+      "avg_reward": 32.203,
+      "sr_ci_low": 24.1,
+      "sr_ci_high": 49.9
+    }
+  },
+  "episodes_detail": {
+    "multiscene->sv1007": [
+      {
+        "episode": 0,
+        "result": "collision"
+      },
+      {
+        "episode": 1,
+        "result": "collision"
+      },
+      {
+        "episode": 2,
+        "result": "collision"
+      },
+      {
+        "episode": 3,
+        "result": "collision"
+      },
+      {
+        "episode": 4,
+        "result": "collision"
+      },
+      {
+        "episode": 5,
+        "result": "collision"
+      },
+      {
+        "episode": 6,
+        "result": "collision"
+      },
+      {
+        "episode": 7,
+        "result": "success"
+      },
+      {
+        "episode": 8,
+        "result": "collision"
+      },
+      {
+        "episode": 9,
+        "result": "success"
+      },
+      {
+        "episode": 10,
+        "result": "collision"
+      },
+      {
+        "episode": 11,
+        "result": "collision"
+      },
+      {
+        "episode": 12,
+        "result": "collision"
+      },
+      {
+        "episode": 13,
+        "result": "collision"
+      },
+      {
+        "episode": 14,
+        "result": "collision"
+      },
+      {
+        "episode": 15,
+        "result": "collision"
+      },
+      {
+        "episode": 16,
+        "result": "success"
+      },
+      {
+        "episode": 17,
+        "result": "collision"
+      },
+      {
+        "episode": 18,
+        "result": "success"
+      },
+      {
+        "episode": 19,
+        "result": "success"
+      },
+      {
+        "episode": 20,
+        "result": "collision"
+      },
+      {
+        "episode": 21,
+        "result": "collision"
+      },
+      {
+        "episode": 22,
+        "result": "collision"
+      },
+      {
+        "episode": 23,
+        "result": "collision"
+      },
+      {
+        "episode": 24,
+        "result": "collision"
+      },
+      {
+        "episode": 25,
+        "result": "collision"
+      },
+      {
+        "episode": 26,
+        "result": "collision"
+      },
+      {
+        "episode": 27,
+        "result": "success"
+      },
+      {
+        "episode": 28,
+        "result": "collision"
+      },
+      {
+        "episode": 29,
+        "result": "success"
+      },
+      {
+        "episode": 30,
+        "result": "success"
+      },
+      {
+        "episode": 31,
+        "result": "collision"
+      },
+      {
+        "episode": 32,
+        "result": "collision"
+      },
+      {
+        "episode": 33,
+        "result": "collision"
+      },
+      {
+        "episode": 34,
+        "result": "success"
+      },
+      {
+        "episode": 35,
+        "result": "collision"
+      },
+      {
+        "episode": 36,
+        "result": "success"
+      },
+      {
+        "episode": 37,
+        "result": "success"
+      },
+      {
+        "episode": 38,
+        "result": "collision"
+      },
+      {
+        "episode": 39,
+        "result": "collision"
+      },
+      {
+        "episode": 40,
+        "result": "collision"
+      },
+      {
+        "episode": 41,
+        "result": "collision"
+      },
+      {
+        "episode": 42,
+        "result": "success"
+      },
+      {
+        "episode": 43,
+        "result": "collision"
+      },
+      {
+        "episode": 44,
+        "result": "collision"
+      },
+      {
+        "episode": 45,
+        "result": "collision"
+      },
+      {
+        "episode": 46,
+        "result": "collision"
+      },
+      {
+        "episode": 47,
+        "result": "success"
+      },
+      {
+        "episode": 48,
+        "result": "collision"
+      },
+      {
+        "episode": 49,
+        "result": "collision"
+      }
+    ],
+    "multiscene->left": [
+      {
+        "episode": 0,
+        "result": "collision"
+      },
+      {
+        "episode": 1,
+        "result": "collision"
+      },
+      {
+        "episode": 2,
+        "result": "collision"
+      },
+      {
+        "episode": 3,
+        "result": "success"
+      },
+      {
+        "episode": 4,
+        "result": "collision"
+      },
+      {
+        "episode": 5,
+        "result": "collision"
+      },
+      {
+        "episode": 6,
+        "result": "success"
+      },
+      {
+        "episode": 7,
+        "result": "success"
+      },
+      {
+        "episode": 8,
+        "result": "success"
+      },
+      {
+        "episode": 9,
+        "result": "collision"
+      },
+      {
+        "episode": 10,
+        "result": "collision"
+      },
+      {
+        "episode": 11,
+        "result": "collision"
+      },
+      {
+        "episode": 12,
+        "result": "collision"
+      },
+      {
+        "episode": 13,
+        "result": "success"
+      },
+      {
+        "episode": 14,
+        "result": "collision"
+      },
+      {
+        "episode": 15,
+        "result": "collision"
+      },
+      {
+        "episode": 16,
+        "result": "collision"
+      },
+      {
+        "episode": 17,
+        "result": "collision"
+      },
+      {
+        "episode": 18,
+        "result": "success"
+      },
+      {
+        "episode": 19,
+        "result": "success"
+      },
+      {
+        "episode": 20,
+        "result": "collision"
+      },
+      {
+        "episode": 21,
+        "result": "collision"
+      },
+      {
+        "episode": 22,
+        "result": "collision"
+      },
+      {
+        "episode": 23,
+        "result": "collision"
+      },
+      {
+        "episode": 24,
+        "result": "collision"
+      },
+      {
+        "episode": 25,
+        "result": "collision"
+      },
+      {
+        "episode": 26,
+        "result": "collision"
+      },
+      {
+        "episode": 27,
+        "result": "success"
+      },
+      {
+        "episode": 28,
+        "result": "collision"
+      },
+      {
+        "episode": 29,
+        "result": "collision"
+      },
+      {
+        "episode": 30,
+        "result": "success"
+      },
+      {
+        "episode": 31,
+        "result": "collision"
+      },
+      {
+        "episode": 32,
+        "result": "collision"
+      },
+      {
+        "episode": 33,
+        "result": "collision"
+      },
+      {
+        "episode": 34,
+        "result": "success"
+      },
+      {
+        "episode": 35,
+        "result": "collision"
+      },
+      {
+        "episode": 36,
+        "result": "collision"
+      },
+      {
+        "episode": 37,
+        "result": "success"
+      },
+      {
+        "episode": 38,
+        "result": "collision"
+      },
+      {
+        "episode": 39,
+        "result": "collision"
+      },
+      {
+        "episode": 40,
+        "result": "success"
+      },
+      {
+        "episode": 41,
+        "result": "collision"
+      },
+      {
+        "episode": 42,
+        "result": "collision"
+      },
+      {
+        "episode": 43,
+        "result": "collision"
+      },
+      {
+        "episode": 44,
+        "result": "success"
+      },
+      {
+        "episode": 45,
+        "result": "collision"
+      },
+      {
+        "episode": 46,
+        "result": "collision"
+      },
+      {
+        "episode": 47,
+        "result": "collision"
+      },
+      {
+        "episode": 48,
+        "result": "collision"
+      },
+      {
+        "episode": 49,
+        "result": "success"
+      }
+    ],
+    "multiscene->right": [
+      {
+        "episode": 0,
+        "result": "collision"
+      },
+      {
+        "episode": 1,
+        "result": "collision"
+      },
+      {
+        "episode": 2,
+        "result": "collision"
+      },
+      {
+        "episode": 3,
+        "result": "success"
+      },
+      {
+        "episode": 4,
+        "result": "collision"
+      },
+      {
+        "episode": 5,
+        "result": "collision"
+      },
+      {
+        "episode": 6,
+        "result": "collision"
+      },
+      {
+        "episode": 7,
+        "result": "success"
+      },
+      {
+        "episode": 8,
+        "result": "success"
+      },
+      {
+        "episode": 9,
+        "result": "success"
+      },
+      {
+        "episode": 10,
+        "result": "collision"
+      },
+      {
+        "episode": 11,
+        "result": "collision"
+      },
+      {
+        "episode": 12,
+        "result": "collision"
+      },
+      {
+        "episode": 13,
+        "result": "collision"
+      },
+      {
+        "episode": 14,
+        "result": "collision"
+      },
+      {
+        "episode": 15,
+        "result": "collision"
+      },
+      {
+        "episode": 16,
+        "result": "collision"
+      },
+      {
+        "episode": 17,
+        "result": "collision"
+      },
+      {
+        "episode": 18,
+        "result": "success"
+      },
+      {
+        "episode": 19,
+        "result": "success"
+      },
+      {
+        "episode": 20,
+        "result": "collision"
+      },
+      {
+        "episode": 21,
+        "result": "success"
+      },
+      {
+        "episode": 22,
+        "result": "collision"
+      },
+      {
+        "episode": 23,
+        "result": "success"
+      },
+      {
+        "episode": 24,
+        "result": "collision"
+      },
+      {
+        "episode": 25,
+        "result": "collision"
+      },
+      {
+        "episode": 26,
+        "result": "collision"
+      },
+      {
+        "episode": 27,
+        "result": "collision"
+      },
+      {
+        "episode": 28,
+        "result": "success"
+      },
+      {
+        "episode": 29,
+        "result": "success"
+      },
+      {
+        "episode": 30,
+        "result": "success"
+      },
+      {
+        "episode": 31,
+        "result": "success"
+      },
+      {
+        "episode": 32,
+        "result": "collision"
+      },
+      {
+        "episode": 33,
+        "result": "collision"
+      },
+      {
+        "episode": 34,
+        "result": "collision"
+      },
+      {
+        "episode": 35,
+        "result": "collision"
+      },
+      {
+        "episode": 36,
+        "result": "collision"
+      },
+      {
+        "episode": 37,
+        "result": "success"
+      },
+      {
+        "episode": 38,
+        "result": "success"
+      },
+      {
+        "episode": 39,
+        "result": "collision"
+      },
+      {
+        "episode": 40,
+        "result": "success"
+      },
+      {
+        "episode": 41,
+        "result": "collision"
+      },
+      {
+        "episode": 42,
+        "result": "collision"
+      },
+      {
+        "episode": 43,
+        "result": "success"
+      },
+      {
+        "episode": 44,
+        "result": "collision"
+      },
+      {
+        "episode": 45,
+        "result": "collision"
+      },
+      {
+        "episode": 46,
+        "result": "collision"
+      },
+      {
+        "episode": 47,
+        "result": "collision"
+      },
+      {
+        "episode": 48,
+        "result": "success"
+      },
+      {
+        "episode": 49,
+        "result": "success"
+      }
+    ]
+  }
+}

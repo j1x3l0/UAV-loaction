@@ -266,6 +266,11 @@ class VisualDroneEnv(gym.Env):
             'depth': spaces.Box(0.0, 20.0, (64, 64, 1), dtype=np.float32),
             'vec': spaces.Box(-10.0, 10.0, (6,), dtype=np.float32),
         })
+        # RGB 输入消融：use_rgb 时观测含 rgb (64,64,3)
+        self.use_rgb = bool(self.config.get('use_rgb', False))
+        if self.use_rgb:
+            self.observation_space.spaces['rgb'] = spaces.Box(
+                0.0, 1.0, (64, 64, 3), dtype=np.float32)
         self.action_space = spaces.Box(-1.0, 1.0, (3,), dtype=np.float32)
 
         self.np_random, _ = seeding.np_random(None)
@@ -366,7 +371,11 @@ class VisualDroneEnv(gym.Env):
             target_dir[0], target_dir[1], target_dir[2]
         ], dtype=np.float32)
 
-        return {'depth': depth.astype(np.float32), 'vec': vec}
+        obs = {'depth': depth.astype(np.float32), 'vec': vec}
+        if self.use_rgb:
+            # RGB 已由 renderer 计算（rgb: H,W,3），归一化到 [0,1]
+            obs['rgb'] = rgb.astype(np.float32)
+        return obs
 
     # ── 物理仿真 (复用v1) ──
     def _get_min_obstacle_distance(self, pos: np.ndarray) -> float:

@@ -43,17 +43,33 @@ clean SR 攻关失败 → 仍 ICRA，绝对数字如实报告（对比 + CI 主�
 SHAC 对照失败 → Discussion 理论分析（预案 R4）
 ```
 
-## 当前执行指针（2026-08-04 更新）
+## 当前执行指针（2026-08-06 更新）
 
 > **2026-08-04 主场景切换**：主场景定为 **sv_1007**（完整 gate，22×25×9m）。
 > 障碍簇计数已更正：原始点云在 0.5m 体素有 16 个连通分量，但其中 13 个是低保真噪声斑点；
 > `clean_sv1007.py` 清洗后为 **ground + 5 障碍簇**（详见 `experiments/visual_necessity/README.md`）。
-> 对齐方式采用**合成 identity**（fx≈97.14 相机 + 目标偏航 + 无场景旋转，`experiments/visual_necessity/sv1007_alignment.json`）——相机对齐是视觉感知关键，已达成；如需完整 PX4 场景注册另行补（选项 B）。gate_mid_new 结果保留作对比/V3c。sv_1007 baseline（clean 3000ep）训练中。
+> 对齐方式采用**合成 identity**（fx≈97.14 相机 + 目标偏航 + 无场景旋转，`experiments/visual_necessity/sv1007_alignment.json`）——相机对齐是视觉感知关键，已达成。gate_mid_new 结果保留作对比/V3c。
 
-1. **D4 clean SR 攻关**：3000ep clean 达 **66.0%**（1500ep 56.7% +9.3pp），未达 70%；reward 调优空间已记录。
-2. **curriculum 3000ep 公平对比**：5 seeds × 3000ep 训练中（seed 3/5），完成后 vs 3000ep clean（66%）出公平对照。
-3. **退化轴补齐**：✅ 对齐环境 5 轴完成（视角轴是关键发现）。
-4. **视觉必要性**：D3-lite 5-seed 4/5 显著（✅）；D1/D2 失败；sv_712 复杂度测试 / 相机统一 / 重构叙事**待决策**。
+1. **D4 clean SR 攻关（sv_1007 新主场景）**：✅ 3000ep clean 5 seeds 完成，best_SR **43/60/55/64/44，均值 53.2%**（seed 方差大，44–64%）。
+2. **curriculum 3000ep 公平对比（sv_1007）**：✅ 5 seeds × 3000ep 完成，best_SR **41/40/51/34/36，均值 40.4%**（训练用 scale_curriculum，模型 `v3_sv1007_curriculum/`）。
+3. **退化轴评估（sv_1007，clean vs curriculum 5 seeds）**：✅ 7 轴 × 5 档 × 50ep 完成，见 `reports/px4_sv1007_degradation_20260805/`。
+   **⚠️ 新结论（与旧场景相反）**：sv_1007 上 **clean 全面优于 curriculum**——无退化档 clean 52.4% vs curriculum 31.6%（**+20.8pp**），绝大多数轴每档 clean 领先 10–21pp；仅视角 45°（+1.6pp）、相机遮挡 50%（−3.2pp）curriculum 接近或略好。对比旧场景 gate_mid_new（curriculum 视角轴显著更鲁棒，clean 45° 掉 18%），**curriculum 鲁棒优势不泛化到 sv_1007**。待核对 curriculum 训练 robust eval 曲线确认是"优势不泛化"还是"场景失效"。
+4. **输入消融（sv_1007 clean 5 seeds）**：✅ 完成，见 `reports/px4_sv1007_ablation_20260806/`。
+   baseline 54.0% → const_depth 37.2%（−16.8pp）/ no_velocity 7.2%（−46.8pp）/
+   no_target_dir 0.8%（−53.2pp）。**目标方向与速度是决定性输入，深度提供 16.8pp 中等贡献**。
+5. **纯避障消融（sv_1007，avoidance=1.0）**：✅ 完成，见 `reports/px4_sv1007_avoid_ablation_20260806/`。
+   baseline **34.4%** → const_depth **6.0%**（**−28.4pp**），5 seeds 方向一致。
+   **深度必要性在 sv_1007 纯避障下强成立**——对比旧 D1（gate_mid_new 诱导失败），
+   支持"深度必要性随场景复杂度增强"叙事。
+6. **资源约束**：后续训练**仅用 GPU0**（GPU1 保留给其他任务）。
+7. **V3c 跨场景（sv_1007 / sv_917 left/right）**：✅ 完成，见 `reports/px4_v3c_cross_scene_20260807/`。
+   - left 训练 53/52/55%（均值 53.3%），right 训练 43/45/45%（均值 44.3%），GPU0。
+   - **跨场景泛化失败**：3×3 矩阵对角线 in-domain 42-50% 正常，但 sv_1007 ↔ left/right
+     **全部 0%**（zero-shot 零泛化）；仅 left ↔ right 部分泛化（46/36%，同源相似）。
+   - **方法明确边界**：CNN 编码器场景特定，真实重建场景间不泛化 → 论文如实报告，或
+     论证 domain randomization 必要性。
+8. **视觉必要性**：D3-lite 5-seed 4/5 显著（✅）；D1 失败但 sv_1007 纯避障深度必要 ✅；
+   sv_1007 输入消融 ✅；sv_712 复杂度测试 / 相机统一 / 重构叙事**待决策**。
 
 ## 全项目优先级评估（含高保真加强项）
 
