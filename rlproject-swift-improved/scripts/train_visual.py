@@ -299,22 +299,47 @@ def train_visual(config):
         # Evaluation remains balanced throughout training.
         eval_scene_config['avoidance_episode_probability'] = 0.5
 
-    # 创建环境
-    envs = [
-        make_env(
-            degradation, renderer, ply_path, ablation_config,
-            train_scene_config, alignment_config)
-        for _ in range(num_envs)
-    ]
+    # 多场景联合训练：--multiscene 提供 name=ply:alignment 列表，训练 env
+    # 轮流分配场景，评估环境固定用第 1 个场景（与各单场景模型可比）。
+    multiscene = config.get('multiscene')
+    if multiscene:
+        scenes = [s.split('=', 1) for s in multiscene.split(',')]
+        parsed_scenes = []
+        for name, spec in scenes:
+            ply, _, align = spec.partition(':')
+            parsed_scenes.append(
+                (name, resolve_ply_path(ply), align or None))
+        logger.info(
+            f"Multi-scene training: {len(parsed_scenes)} scenes "
+            f"({[s[0] for s in parsed_scenes]})")
+        envs = [
+            make_env(
+                degradation, renderer,
+                parsed_scenes[i % len(parsed_scenes)][1],
+                ablation_config,
+                train_scene_config,
+                parsed_scenes[i % len(parsed_scenes)][2])
+            for i in range(num_envs)
+        ]
+        eval_ply, eval_align = parsed_scenes[0][1], parsed_scenes[0][2]
+    else:
+        parsed_scenes = None
+        eval_ply, eval_align = ply_path, alignment_config
+        envs = [
+            make_env(
+                degradation, renderer, ply_path, ablation_config,
+                train_scene_config, alignment_config)
+            for _ in range(num_envs)
+        ]
     eval_env = make_env(
-        'clean', renderer, ply_path, ablation_config, eval_scene_config,
-        alignment_config)
+        'clean', renderer, eval_ply, ablation_config, eval_scene_config,
+        eval_align)
     robust_eval_envs = None
     if degradation in ('scale_curriculum', 'scale_recovery'):
         robust_eval_envs = [
             make_fixed_depth_scale_env(
-                renderer, ply_path, scale, ablation_config,
-                eval_scene_config, alignment_config)
+                renderer, eval_ply, scale, ablation_config,
+                eval_scene_config, eval_align)
             for scale in DEPTH_SCALE_LEVELS
         ]
 
@@ -330,6 +355,7 @@ def train_visual(config):
         hidden_dim=config.get('hidden_dim', 128),
         use_adaptive_entropy=True,
         num_envs=num_envs,
+        arch_config=config.get('arch_config'),
     )
     if resume_model:
         resolved_resume_model = os.path.abspath(resume_model)
@@ -504,6 +530,24 @@ def train_visual(config):
     }
 
 
+def _parse_arch(arch_arg):
+    """解析 --arch 'rgb,shallow_cnn,no_privileged_critic' → arch_config dict."""
+    if not arch_arg:
+        return None
+    flags = {part.strip() for part in arch_arg.split(',') if part.strip()}
+    valid = {'rgb', 'shallow_cnn', 'no_privileged_critic'}
+    unknown = flags - valid
+    if unknown:
+        raise ValueError(
+            f"unknown --arch entries {sorted(unknown)}; choose from "
+            f"{sorted(valid)}")
+    return {
+        'use_rgb': 'rgb' in flags,
+        'shallow_cnn': 'shallow_cnn' in flags,
+        'no_privileged_critic': 'no_privileged_critic' in flags,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--episodes', type=int, default=20)
@@ -522,6 +566,14 @@ def main():
                        help='PX4 对齐配置 JSON，取其 camera 块作为策略相机内参 '
                             '(fx≈97.14)，使训练观测与观测桥/注册门禁一致；'
                             '不传则回退 fov=90')
+    parser.add_argument('--multiscene', type=str, default=None,
+                       help='多场景联合训练：逗号分隔的 name=ply:alignment '
+                            '(重复可多场景)。训练 env 轮流分配场景，评估用第 1 个。')
+    parser.add_argument('--arch', type=str, default=None,
+                       help='结构消融：逗号分隔子集 {rgb, shallow_cnn, '
+                            'no_privileged_critic}。rgb 用 3 通道输入，'
+                            'shallow_cnn 用 2 层 CNN，no_privileged_critic 的 '
+                            'Critic 只用 vec（不用视觉）。')
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--model-out', type=str,
                         default='saved_models/visual_ppo_best.pth')
@@ -566,6 +618,7 @@ def main():
         'renderer': args.renderer,
         'ply_path': args.ply,
         'intrinsics': args.intrinsics,
+        'multiscene': args.multiscene,
         'collision_radius': args.collision_radius,
         'minibatch_size': 32,
         'epochs': 5,
@@ -580,6 +633,7 @@ def main():
             if args.ablation == 'no_velocity' else None
         ),
         'avoidance_curriculum': args.avoidance_curriculum,
+        'arch_config': _parse_arch(args.arch),
         'scene_config': ({
             'collision_ply_path': args.collision_ply,
             'auto_scene_bounds': True,
@@ -590,8 +644,10 @@ def main():
             'geodesic_waypoint_lookahead':
                 args.geodesic_waypoint_lookahead,
             'use_waypoint_observation': args.waypoint_observation,
+            'use_rgb': bool(args.arch and 'rgb' in args.arch.split(',')),
         } if args.collision_ply else {
             'camera_tracks_motion': args.camera_tracks_motion,
+            'use_rgb': bool(args.arch and 'rgb' in args.arch.split(',')),
         }),
     }
 

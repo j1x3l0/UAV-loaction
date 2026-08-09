@@ -1,0 +1,24 @@
+{
+  "models": {
+    "clean": {
+      "checkpoint": "saved_models/v3_sv1007/seed0_3000_final.pth"
+    }
+  },
+  "ablations": [
+    "baseline",
+    "const_depth",
+    "no_velocity",
+    "no_target_dir",
+    "all_inputs_ablated"
+  ],
+  "episodes_per_ablation": 50,
+  "results": {
+    "clean": {
+      "baseline": 42.0,
+      "const_depth": 34.0,
+      "no_velocity": 4.0,
+      "no_target_dir": 2.0,
+      "all_inputs_ablated": 0.0
+    }
+  }
+}
