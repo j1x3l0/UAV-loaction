@@ -86,10 +86,12 @@ def main() -> int:
             args.avoidance_probability
     models = [item.split("=", 1) for item in args.model]
     results = {}
+    detail = {}
     for label, path in models:
         print(f"=== {label}: {path} ===", flush=True)
         policy = load_policy(path)
         results[label] = {}
+        detail[label] = {}
         for name in selected:
             env = make_env(
                 "clean", "gsplat", args.ply,
@@ -99,6 +101,12 @@ def main() -> int:
             eval_result = evaluate_model(
                 policy, env, eval_episodes=args.episodes, base_seed=args.seed)
             results[label][name] = round(eval_result["success_rate"], 1)
+            # 保存逐 episode 结果（同 seed 下各消融用相同 episode 序列，
+            # 支持配对 McNemar / bootstrap 检验）。
+            detail[label][name] = [
+                {"episode": row["episode"], "result": row["result"]}
+                for row in eval_result["episodes_detail"]
+            ]
             env.close()
             print(f"  {name}: SR={results[label][name]}%", flush=True)
 
@@ -107,6 +115,7 @@ def main() -> int:
         "ablations": selected,
         "episodes_per_ablation": args.episodes,
         "results": results,
+        "episodes_detail": detail,
     }
     output_path = os.path.abspath(args.output)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)

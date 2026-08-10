@@ -63,6 +63,7 @@ def evaluate_single_config(agent, env, num_episodes=50, base_seed=20260726):
     """
     successes = 0; collisions = 0; timeouts = 0
     rewards = []; steps_list = []
+    per_episode = []
 
     for ep in range(num_episodes):
         # Common random numbers: every degradation level sees exactly the
@@ -78,13 +79,17 @@ def evaluate_single_config(agent, env, num_episodes=50, base_seed=20260726):
             if terminated or truncated:
                 if info.get('reached_target'):
                     successes += 1
+                    result_type = 'success'
                 elif info.get('collision'):
                     collisions += 1
+                    result_type = 'collision'
                 else:
                     timeouts += 1
+                    result_type = 'timeout'
                 break
 
         rewards.append(ep_reward)
+        per_episode.append({'episode': ep, 'result': result_type})
         if info.get('reached_target'):
             steps_list.append(ep_steps)
 
@@ -97,6 +102,7 @@ def evaluate_single_config(agent, env, num_episodes=50, base_seed=20260726):
         'reward_std': float(np.std(rewards)),
         'avg_steps': float(np.mean(steps_list)) if steps_list else 0.0,
         'episodes': num_episodes,
+        'episodes_detail': per_episode,
     }
 
 
@@ -150,14 +156,22 @@ def save_results(all_results, output_dir, timestamp):
             writer.writerows(all_results)
         logger.info(f"CSV saved: {csv_path}")
 
-    # JSON (含退化轴定义)
+    # JSON (含退化轴定义 + per-episode 数据)
     json_path = os.path.join(output_dir, f"degradation_{timestamp}.json")
+    results_no_detail = [
+        {k: v for k, v in r.items() if k != 'episodes_detail'}
+        for r in all_results
+    ]
     with open(json_path, 'w') as f:
         json.dump({
             'axes_definition': {k: {kk: vv for kk, vv in v.items()
                                     if kk != 'description'}
                                for k, v in DEGRADATION_AXES.items()},
-            'results': all_results,
+            'results': results_no_detail,
+            'episodes_detail': {
+                f"{r['axis']}_{r['level']}": r.get('episodes_detail', [])
+                for r in all_results
+            },
             'timestamp': timestamp,
         }, f, indent=2)
     logger.info(f"JSON saved: {json_path}")
