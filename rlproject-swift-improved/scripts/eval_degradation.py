@@ -144,7 +144,7 @@ def save_results(all_results, output_dir, timestamp):
     """保存结果为 CSV + JSON"""
     os.makedirs(output_dir, exist_ok=True)
 
-    # CSV
+    # CSV (只写汇总字段，episodes_detail 只进 JSON)
     csv_path = os.path.join(output_dir, f"degradation_{timestamp}.csv")
     if all_results:
         fieldnames = ['axis', 'axis_name', 'level', 'unit',
@@ -153,7 +153,8 @@ def save_results(all_results, output_dir, timestamp):
         with open(csv_path, 'w', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
-            writer.writerows(all_results)
+            writer.writerows(
+                {k: r[k] for k in fieldnames if k in r} for r in all_results)
         logger.info(f"CSV saved: {csv_path}")
 
     # JSON (含退化轴定义 + per-episode 数据)
@@ -178,10 +179,11 @@ def save_results(all_results, output_dir, timestamp):
 
 
 def load_agent_for_eval(model_path):
-    """加载模型用于评估"""
+    """加载模型用于评估（必须切 eval 模式，否则 train-mode 下 SR 严重低估）"""
     from core.visual_ppo_agent import VisualPPO
     agent = VisualPPO(vec_dim=6, action_dim=3)
     agent.load_model(model_path)
+    agent.model.eval()
     return agent
 
 
