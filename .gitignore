@@ -55,3 +55,5 @@ PX4-Autopilot-1.17.0/
 *.pid
 artifacts/
 reports/**/models/
+local_results/models/
+local_results/eval/
