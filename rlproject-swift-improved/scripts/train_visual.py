@@ -41,11 +41,14 @@ logger = logging.getLogger(__name__)
 # 对齐窄视场相机（fx≈97.14，36°）下的深度尺度集合与阶段式 curriculum。
 # 0.1x（深度读数压缩 10×，近似传感器失效）在窄视场下完全不可用，从对齐 V3
 # 分析中移除；0.25x 仍保留但在课程后期才引入且减权，避免稀释 clean 学习。
+# 2026-08-10 调整：v1 curriculum 的 robustness 阶段 1.0x 仅 30%，正常环境性能
+# 比 clean 低 20.8pp（配对 4/5 显著）。新版大幅提高 clean 占比（robustness 65%），
+# 仅保留轻度尺度扰动，目标正常性能降 <=5pp（评审优先级第 2 条）。
 DEPTH_SCALE_LEVELS = [1.0, 0.75, 0.5, 0.25]
 SCALE_CURRICULUM = (
-    (0.0, 'foundation', [0.60, 0.25, 0.15, 0.00]),
-    (0.3, 'transition', [0.40, 0.25, 0.25, 0.10]),
-    (0.7, 'robustness', [0.30, 0.20, 0.30, 0.20]),
+    (0.0, 'foundation', [0.85, 0.10, 0.05, 0.00]),
+    (0.3, 'transition', [0.75, 0.15, 0.08, 0.02]),
+    (0.7, 'robustness', [0.65, 0.20, 0.10, 0.05]),
 )
 AVOIDANCE_CURRICULUM = (
     (0.0, 'clear_foundation', 0.10),
